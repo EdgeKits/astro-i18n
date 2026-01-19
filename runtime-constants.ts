@@ -11,4 +11,4 @@ export const LOCALES_WITH_TRANSLATIONS = ['de', 'en', 'es', 'ja'] as const;
  * Updated on every `npm run i18n:bundle` run, based on the current timestamp.
  * Used for edge-cache invalidation in fetcher.ts.
  */
-export const TRANSLATIONS_VERSION = '6fe94fd40a2d'
+export const TRANSLATIONS_VERSION = '848dc0294cfe'
