@@ -55,8 +55,11 @@ export const FALLBACK_FORMS = {
   "error": {
     "INVALID_EMAIL": "Invalid email address.",
     "FILTHY_EMAIL": "Please, use a different email address.",
+    "EMAIL_ALREADY_EXISTS": "This email address already exists.",
     "INTERESTS_REQUIRED": "Please select at least one product.",
-    "BILLING_OTHER_REQUIRED": "Please specify your billing provider."
+    "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
+    "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again.",
+    "INTERNAL_SERVER_ERROR": "Network error. Please try again."
   }
 } as const;
 
