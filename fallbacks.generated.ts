@@ -90,5 +90,9 @@ export const FALLBACK_LANDING = {
   "builtWith": {
     "title": "Built With",
     "subtitle": "Edge-native stack combining Astro, React Islands, Cloudflare Workers & KV, Tailwind CSS, and Shadcn/ui."
+  },
+  "subscribed": {
+    "title": "You’re on the Early Birds list.",
+    "description": "We'll email you when the first kits are ready."
   }
 } as const;
