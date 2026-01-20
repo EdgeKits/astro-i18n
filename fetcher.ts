@@ -1,4 +1,4 @@
-import { PROJECT_ID } from '@/utils/shared/constants'
+import { PROJECT } from '@/config'
 import { TRANSLATIONS_VERSION } from './runtime-constants'
 import type { Locale, Namespace, PickSchema } from './schema.ts'
 import { deepMerge } from '@/utils/shared/deep-merge'
@@ -54,7 +54,7 @@ export async function fetchTranslations<N extends Namespace>(
     ? getEdgeCache(runtime)
     : { cache: null, waitUntil: null }
 
-  const keys = namespaces.map((ns) => `${PROJECT_ID}:${ns}:${lang}`)
+  const keys = namespaces.map((ns) => `${PROJECT.id}:${ns}:${lang}`)
 
   const { cacheRequest } = buildCacheKey(lang, namespaces)
 
@@ -151,7 +151,7 @@ function buildCacheKey<N extends Namespace>(
   lang: Locale,
   namespaces: readonly N[],
 ): { cacheId: string; cacheRequest: Request } {
-  const cacheId = `${PROJECT_ID}:i18n:v${TRANSLATIONS_VERSION}:${lang}:${namespaces.join(',')}`
+  const cacheId = `${PROJECT.id}:i18n:v${TRANSLATIONS_VERSION}:${lang}:${namespaces.join(',')}`
 
   const cacheRequest = new Request(
     `https://i18n-cache/${encodeURIComponent(cacheId)}`,

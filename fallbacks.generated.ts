@@ -34,6 +34,10 @@ export const FALLBACK_BLOG = {
 } as const;
 
 export const FALLBACK_COMMON = {
+  "social": {
+    "title": "Edge-native starter kits for Astro & Cloudflare builders",
+    "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
+  },
   "nav": {
     "home": "Astro components & islands",
     "blog": "Markdown i18n examples",
@@ -43,10 +47,15 @@ export const FALLBACK_COMMON = {
     "license": "Under the MIT license."
   },
   "error": {
-    "notFound": {
-      "title": "404 — Page not found",
-      "message": "The page you are looking for does not exist or has been moved.",
-      "backToHome": "Go back to homepage"
+    "page": {
+      "notFound": {
+        "title": "404 — Page not found",
+        "message": "The page you are looking for does not exist or has been moved.",
+        "backToHome": "Go back to homepage"
+      }
+    },
+    "server": {
+      "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
     }
   }
 } as const;
@@ -58,8 +67,7 @@ export const FALLBACK_FORMS = {
     "EMAIL_ALREADY_EXISTS": "This email address already exists.",
     "INTERESTS_REQUIRED": "Please select at least one product.",
     "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
-    "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again.",
-    "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
+    "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again."
   }
 } as const;
 
