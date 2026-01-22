@@ -82,17 +82,6 @@ export async function fetchTranslations<N extends Namespace>(
     // 3. Store the resulting payload in the edge cache asynchronously (if enabled)
     if (useCache && cache && waitUntil) {
       try {
-        // const response = new Response(JSON.stringify(data), {
-        //   headers: {
-        //     'Content-Type': 'application/json; charset=utf-8',
-        //     'Cache-Control':
-        //       'public, s-maxage=3600, stale-while-revalidate=86400',
-        //   },
-        // })
-
-        // waitUntil(cache.put(cacheRequest, response.clone()))
-        // debug(env, 'i18n cache PUT scheduled', { lang, namespaces })
-
         const response = new Response(JSON.stringify(data), {
           headers: {
             'Content-Type': 'application/json; charset=utf-8',

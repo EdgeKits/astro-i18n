@@ -5,6 +5,10 @@ export const FALLBACK_LOCALE = "en" as const;
 
 export const FALLBACK_BLOG = {
   "indexPageTitle": "Blog",
+  "readMore": "Read more",
+  "backToOverview": "Back to Overview",
+  "publishedOn": "Published on",
+  "readTime": "{min} min read",
   "newsletter": {
     "title": "Stay Updated",
     "description": "Get the latest EdgeKits news directly to your inbox.",
@@ -14,12 +18,6 @@ export const FALLBACK_BLOG = {
     "validation": {
       "invalidEmail": "Please enter a valid email address."
     }
-  },
-  "ui": {
-    "readMore": "Read more",
-    "backToOverview": "Back to Overview",
-    "publishedOn": "Published on",
-    "readTime": "{min} min read"
   },
   "counter": {
     "title": "Counter demo",
@@ -34,24 +32,16 @@ export const FALLBACK_BLOG = {
 } as const;
 
 export const FALLBACK_COMMON = {
-  "social": {
+  "seo": {
     "title": "Edge-native starter kits for Astro & Cloudflare builders",
     "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
   },
-  "nav": {
-    "home": "Astro components & islands",
-    "blog": "Markdown i18n examples",
-    "mobileButton": "Menu"
-  },
-  "footer": {
-    "license": "Under the MIT license."
-  },
+  "backToHome": "Back to home",
   "error": {
     "page": {
       "notFound": {
-        "title": "404 — Page not found",
-        "message": "The page you are looking for does not exist or has been moved.",
-        "backToHome": "Go back to homepage"
+        "title": "404 - Page not found",
+        "message": "The page you are looking for does not exist or has been moved."
       }
     },
     "server": {
@@ -72,27 +62,184 @@ export const FALLBACK_FORMS = {
 } as const;
 
 export const FALLBACK_LANDING = {
+  "deliveryPolicyBanner": {
+    "title": "Digital delivery (instant)",
+    "description": "Upon successful payment, you will receive an automated email with an invitation to the private GitHub repository. Access is granted instantly via GitHub Teams."
+  },
+  "nav": {
+    "tools": "Tools",
+    "product": "Product",
+    "legal": "Legal",
+    "resources": "Resources",
+    "support": "Support",
+    "menu": "Menu",
+    "toggleNavAriaLabel": "Toggle navigation",
+    "closeNavAriaLabel": "Close navigation"
+  },
+  "links": {
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "delivery": "Delivery Policy",
+    "refund": "Refund Policy",
+    "tools": "Tools",
+    "blog": "Blog",
+    "openSource": "Open Source",
+    "docs": "Documentation",
+    "email": "Email",
+    "contact": "Contact",
+    "viewCoreRepo": "View EdgeKits Core Repo",
+    "readBuildNotes": "Read the build notes"
+  },
   "hero": {
-    "title": "Astro Component Demo",
-    "subtitle": "A high-performance <strong>Astro 5.0 + Cloudflare Workers</strong> template featuring an <strong>Edge-Native Internationalization Engine</strong> with a <strong>0 KB client bundle</strong>.",
-    "description": "Unlike traditional setups that ship heavy JSON dictionaries to the client, this architecture stores translations in <strong>Cloudflare KV</strong>, fetches only the locale required by the user or browser, loads only the specific namespaces needed for each page or component via a <strong>single batch request</strong>, and serves <strong>pre-rendered HTML</strong>, which is cached to reduce KV requests.",
-    "cta": "Explore the Blog"
-  },
-  "features": {
-    "title": "The cards below are the React Islands",
-    "feature1Title": "Edge-Loaded Translations",
-    "feature1Desc": "Translations are fetched at the edge in a single KV batch request, with 0 KB client bundle and sub-10ms access to the exact locale and namespaces required for the page.",
-    "feature2Title": "Dynamic Locale Resolution",
-    "feature2Desc": "No duplicated pages like /en/about.astro, /es/about.astro, etc. Locales and translation namespaces are resolved dynamically per request, keeping routing clean and the project easy to maintain.",
-    "feature3Title": "Strictly Typed Translations",
-    "feature3Desc": "Translation types are auto-generated from your src/locales JSON files, ensuring a fully type-safe i18n schema across Astro and React Islands — with built-in IntelliSense and compile-time guarantees."
-  },
-  "builtWith": {
-    "title": "Built With",
-    "subtitle": "Edge-native stack combining Astro, React Islands, Cloudflare Workers & KV, Tailwind CSS, and Shadcn/ui."
+    "urgency": "Early access closes when first kits ship",
+    "heading": "Edge-native starter kits for <span class='text-brand-astro'>Astro</span> & <span class='text-primary'>Cloudflare</span> builders.",
+    "subHeading": {
+      "start": "Production-ready foundations for",
+      "mid": "launch faster with a proven baseline.",
+      "end": "ownership-first and cost-efficient to scale."
+    },
+    "cta": "Leave your email to get launch discount • No spam ever",
+    "subscribed": {
+      "title": "You're in.",
+      "description": "Early access, launch updates, and release notes will be sent to your inbox."
+    },
+    "segment": {
+      "title": "Optional - help us tailor updates for you:"
+    }
   },
   "subscribed": {
     "title": "You’re on the Early Birds list.",
     "description": "We'll email you when the first kits are ready."
+  },
+  "earlyBirdsBenefits": {
+    "access": "Private Repo Access",
+    "purchase": "One-time Purchase",
+    "pricing": "Early-bird pricing",
+    "updates": "Release updates"
+  },
+  "productCards": {
+    "heading": "Engineered for Production",
+    "subHeading": "Select the foundation that matches your roadmap",
+    "saas": {
+      "description": "A production-ready baseline for every SaaS you build.",
+      "badge": "Available soon",
+      "bullets": {
+        "b1": "i18n (edge-native, SSR-first)",
+        "b2": "Multi-tenant foundation (users, orgs, teams)",
+        "b3": "RBAC + entitlements engine",
+        "b4": "Stripe & Paddle native integration",
+        "b5": "AI Gateway + Agents hooks (v1)",
+        "b6": "Production-ready project structure"
+      },
+      "buttonText": "Get early access"
+    },
+    "tma": {
+      "description": "Monetization-ready Telegram Mini App foundation.",
+      "badge": "Available soon",
+      "bullets": {
+        "b1": "Telegram auth & user binding (initData)",
+        "b2": "i18n (edge-native, SSR-first)",
+        "b3": "Entitlements-ready architecture",
+        "b4": "AI Gateway + Agents hooks (v1)",
+        "b5": "Referrals + leaderboards",
+        "b6": "Telegram Stars monetization"
+      },
+      "buttonText": "Get early access"
+    },
+    "repoAccess": {
+      "description": "Automated private repo delivery. No SaaS lock-in.",
+      "badge": "Available soon",
+      "bullets": {
+        "b1": "Self-hosted Cloudflare Worker",
+        "b2": "Any payment provider with webhook support",
+        "b3": "Payment webhooks → GitHub Teams access",
+        "b4": "Automated email invitations",
+        "b5": "Internal tool for EdgeKits",
+        "b6": "Available standalone later"
+      },
+      "buttonText": "Join waitlist"
+    }
+  },
+  "builtWith": "Built with industry standards",
+  "why": {
+    "block1": {
+      "title": "Ship faster",
+      "description": "Stop rebuilding i18n, auth, billing, and project structure. Start from a production-ready baseline designed for high-velocity teams."
+    },
+    "block2": {
+      "title": "Proof-first, open by default",
+      "description": "Explore the open-source reference implementation to validate quality, architecture, and DX before ever making a purchase."
+    },
+    "block3": {
+      "title": "Ownership-first on the Edge",
+      "description": "Built for Cloudflare Workers: minimal ops overhead, edge performance, and cost-efficient scaling without vendor lock-in."
+    }
+  },
+  "resources": {
+    "repo": {
+      "title": "Open Source Reference",
+      "titleSpan": "Never Gated",
+      "bullet1": "DX and project conventions",
+      "bullet2": "edge-native i18n patterns",
+      "bullet3": "SEO-ready routing & SSR"
+    },
+    "blog": {
+      "title": "Build in Public",
+      "text": "Architecture notes, real-world patterns, and lessons learned while building EdgeKits (join Early Birds to get updates when new posts ship)."
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": {
+      "f1": {
+        "q": "What will I receive after purchase?",
+        "a": "Private GitHub repository access delivered automatically. You’ll get early-bird pricing (launch discount), release notes, and upgrade path details. Access is granted shortly after payment via an automated email invitation."
+      },
+      "f2": {
+        "q": "Is this a subscription?",
+        "a": "No. EdgeKits are sold as one-time purchases. You own the code and can use it for your own products without SaaS lock-in."
+      },
+      "f3": {
+        "q": "When will the kits launch?",
+        "a": "We’re actively building the first EdgeKits. Join the Early Birds list for launch timing and release updates."
+      },
+      "f4": {
+        "q": "Can I use EdgeKits for my own commercial projects?",
+        "a": "Yes. You can use EdgeKits to build and sell your own SaaS products or Telegram Mini Apps. Licensing details will be clearly documented at launch."
+      },
+      "f5": {
+        "q": "Will there be updates after launch?",
+        "a": "Yes. We plan to ship improvements and refinements over time. Early Birds will receive release notes and upgrade details."
+      },
+      "f6": {
+        "q": "What tech stack do the kits use?",
+        "a": "Cloudflare Workers, Astro, and Hono. Pure TypeScript. Edge-native, serverless-first, and designed for ownership and cost-efficient scaling."
+      },
+      "f7": {
+        "q": "Do I need a Cloudflare account?",
+        "a": "Yes. EdgeKits are built on Cloudflare Workers and related services, so a free Cloudflare account is a must-have minimum. Some advanced features like Queues or Realtime require the $5/month Workers tier."
+      },
+      "f8": {
+        "q": "Is the RepoAccess Worker a SaaS?",
+        "a": "No. RepoAccess Worker is a self-hosted Cloudflare Worker you run in your own account."
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Get Early Bird Access",
+    "buttonText": "Join Now",
+    "description": "Private GitHub Access • Early-bird Pricing • Release Notes"
+  },
+  "footer": {
+    "supportNotice": "If you don’t receive the email within 10 minutes, contact support at",
+    "needGithub": "You may need a GitHub account to accept the invitation.",
+    "copyright": "All rights reserved."
   }
+} as const;
+
+export const FALLBACK_LEGAL = {
+  "indexPageTitle": "Legal",
+  "indexPageDescription": "Information and policies related to EdgeKits.dev",
+  "readMore": "Read more",
+  "backToIndex": "Back"
 } as const;
