@@ -104,7 +104,7 @@ export const FALLBACK_LANDING = {
       "description": "Early access, launch updates, and release notes will be sent to your inbox."
     },
     "segment": {
-      "title": "Optional - help us tailor updates for you:"
+      "title": "Optional - help us tailor updates for you"
     }
   },
   "subscribed": {
