@@ -31,37 +31,25 @@ export const FALLBACK_BLOG = {
   }
 } as const;
 
-export const FALLBACK_COMMON = {
-  "seo": {
-    "title": "Edge-native starter kits for Astro & Cloudflare builders",
-    "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
-  },
-  "backToHome": "Back to home",
-  "error": {
-    "page": {
-      "notFound": {
-        "title": "404 - Page not found",
-        "message": "The page you are looking for does not exist or has been moved."
-      }
-    },
-    "server": {
-      "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
-    }
-  }
-} as const;
-
-export const FALLBACK_FORMS = {
-  "error": {
+export const FALLBACK_ERRORS = {
+  "ui": {
     "INVALID_EMAIL": "Invalid email address.",
     "FILTHY_EMAIL": "Please, use a different email address.",
     "EMAIL_ALREADY_EXISTS": "This email address already exists.",
     "INTERESTS_REQUIRED": "Please select at least one product.",
     "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
     "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again."
+  },
+  "server": {
+    "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
   }
 } as const;
 
 export const FALLBACK_LANDING = {
+  "seo": {
+    "title": "Edge-native starter kits for Astro & Cloudflare builders",
+    "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
+  },
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
     "description": "Upon successful payment, you will receive an automated email with an invitation to the private GitHub repository. Access is granted instantly via GitHub Teams."
@@ -88,7 +76,8 @@ export const FALLBACK_LANDING = {
     "email": "Email",
     "contact": "Contact",
     "viewCoreRepo": "View EdgeKits Core Repo",
-    "readBuildNotes": "Read the build notes"
+    "readBuildNotes": "Read the build notes",
+    "backToHome": "Back to home"
   },
   "hero": {
     "urgency": "Early access closes when first kits ship",
@@ -234,6 +223,10 @@ export const FALLBACK_LANDING = {
     "supportNotice": "If you don’t receive the email within 10 minutes, contact support at",
     "needGithub": "You may need a GitHub account to accept the invitation.",
     "copyright": "All rights reserved."
+  },
+  "notFound": {
+    "title": "404 - Page not found",
+    "message": "The page you are looking for does not exist or has been moved."
   }
 } as const;
 
