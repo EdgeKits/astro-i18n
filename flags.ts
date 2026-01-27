@@ -1,14 +1,15 @@
-import type { SupportedLocales } from './constants'
-
-// List of flag codes for which there are corresponding
-// SVGs in the /assets/icons/flags directory
-export const FLAG_CODES = ['us', 'jp', 'de', 'es'] as const
-export type FlagCode = (typeof FLAG_CODES)[number]
+import type { Locale } from '@/domain/i18n/schema'
 
 // Explicit locale → flag mapping
-export const localeToFlagCode: Record<SupportedLocales, FlagCode> = {
+export const FLAG_CODES = {
   en: 'us',
   ja: 'jp',
   de: 'de',
   es: 'es',
+} as const
+
+export type FlagCode = (typeof FLAG_CODES)[keyof typeof FLAG_CODES]
+
+export const localeToFlagCode = (locale: Locale): FlagCode | null => {
+  return FLAG_CODES[locale as keyof typeof FLAG_CODES] || null
 }
