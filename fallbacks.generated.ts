@@ -31,20 +31,6 @@ export const FALLBACK_BLOG = {
   }
 } as const;
 
-export const FALLBACK_ERRORS = {
-  "ui": {
-    "INVALID_EMAIL": "Invalid email address.",
-    "FILTHY_EMAIL": "Please, use a different email address.",
-    "EMAIL_ALREADY_EXISTS": "This email address already exists.",
-    "INTERESTS_REQUIRED": "Please select at least one product.",
-    "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
-    "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again."
-  },
-  "server": {
-    "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
-  }
-} as const;
-
 export const FALLBACK_LANDING = {
   "seo": {
     "title": "Edge-native starter kits for Astro & Cloudflare builders",
@@ -235,4 +221,23 @@ export const FALLBACK_LEGAL = {
   "indexPageDescription": "Information and policies related to EdgeKits.dev",
   "readMore": "Read more",
   "backToIndex": "Back"
+} as const;
+
+export const FALLBACK_MESSAGES = {
+  "errors": {
+    "ui": {
+      "INVALID_EMAIL": "Invalid email address.",
+      "FILTHY_EMAIL": "Please, use a different email address.",
+      "EMAIL_ALREADY_EXISTS": "This email address already exists.",
+      "INTERESTS_REQUIRED": "Please select at least one product.",
+      "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
+      "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again."
+    },
+    "server": {
+      "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."
+    }
+  },
+  "common": {
+    "SUBSCRIPTION_SUCCEED": "Thanks for your subscription!"
+  }
 } as const;
