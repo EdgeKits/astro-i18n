@@ -1,0 +1,32 @@
+---
+import { checkMissingTranslation } from '@/domain/i18n/resolve-locale'
+import { fetchTranslations } from '@/domain/i18n/fetcher'
+
+const missingType = checkMissingTranslation(
+  Astro.locals.uiLocale,
+  Astro.locals.isMissingContent
+)
+
+let bannerText: string | null = null
+
+if (missingType) {
+  const { messages } = await fetchTranslations(
+    Astro.locals.runtime,
+    Astro.locals.translationLocale,
+    ['messages']
+  )
+
+  bannerText =
+    missingType === 'content'
+      ? messages.errors.ui.MISSING_TRANSLATED_CONTENT
+      : messages.errors.ui.MISSING_TRANSLATED_UI
+}
+---
+
+{
+  bannerText && (
+    <div class='px-4 py-2 mx-6 @xl:mx-auto mt-6 max-w-3xl border border-brand-astro/20 bg-brand-astro/5 text-brand-astro text-center text-balance'>
+      {bannerText}
+    </div>
+  )
+}
