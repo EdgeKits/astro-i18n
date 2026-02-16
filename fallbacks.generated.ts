@@ -231,7 +231,9 @@ export const FALLBACK_MESSAGES = {
       "EMAIL_ALREADY_EXISTS": "This email address already exists.",
       "INTERESTS_REQUIRED": "Please select at least one product.",
       "BILLING_OTHER_REQUIRED": "Please specify your billing provider.",
-      "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again."
+      "FAILED_TO_INSERT_SUBSCRIBER": "Faild to insert email address. Please try again.",
+      "MISSING_TRANSLATED_UI": "Sorry, this page is not yet fully available in your selected language.",
+      "MISSING_TRANSLATED_CONTENT": "Sorry, this article is not yet available in your selected language."
     },
     "server": {
       "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again."

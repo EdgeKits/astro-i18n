@@ -5,10 +5,10 @@ export const NAMESPACE_KEYS = ['blog', 'landing', 'legal', 'messages'] as [strin
 
 export const LOCALES_WITH_TRANSLATIONS = ['de', 'en', 'es', 'ja'] as const;
 
+export const FULLY_TRANSLATED_LOCALES = ['de', 'en', 'ja'] as const;
+
 /**
  * Monotonic translation bundle version.
- *
- * Updated on every `npm run i18n:bundle` run, based on the current timestamp.
- * Used for edge-cache invalidation in fetcher.ts.
+ * Updated on every `npm run i18n:bundle` run.
  */
-export const TRANSLATIONS_VERSION = '969d80658998'
+export const TRANSLATIONS_VERSION = 'e19538e2f861'

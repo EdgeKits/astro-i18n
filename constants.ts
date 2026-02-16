@@ -8,10 +8,6 @@ export const DEFAULT_LOCALE: SupportedLocales = 'en'
 // Missing translation banner flag
 export const ENABLE_MISSING_TRANSLATION_BANNER = true
 
-// Missing translation banner message (write it in DEFAULT_LOCALE language)
-export const DEFAULT_MISSING_TRANSLATION_MESSAGE =
-  'Sorry, this page is not yet available in your selected language.'
-
 // UI Labels
 export const LANGUAGES: Record<SupportedLocales, string> = {
   en: 'English',

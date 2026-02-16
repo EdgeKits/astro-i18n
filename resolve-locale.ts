@@ -1,15 +1,41 @@
 import type { AstroGlobal } from 'astro'
 
 import { LocaleSchema, type Locale } from './schema'
+import { DEFAULT_LOCALE, ENABLE_MISSING_TRANSLATION_BANNER } from './constants'
 import {
-  DEFAULT_LOCALE,
-  ENABLE_MISSING_TRANSLATION_BANNER,
-  DEFAULT_MISSING_TRANSLATION_MESSAGE,
-} from './constants'
-import { LOCALES_WITH_TRANSLATIONS } from './runtime-constants'
+  LOCALES_WITH_TRANSLATIONS,
+  FULLY_TRANSLATED_LOCALES,
+} from './runtime-constants'
 
+// Checking for the presence of at least one file with translations
 function hasTranslations(locale: Locale): boolean {
   return (LOCALES_WITH_TRANSLATIONS as readonly string[]).includes(locale)
+}
+
+// Checking the completeness of translations
+function isFullyTranslated(locale: Locale): boolean {
+  return (FULLY_TRANSLATED_LOCALES as readonly string[]).includes(locale)
+}
+
+/**
+ * Optional: return a “missing translation” banner message
+ * when uiLocale has no translations or (blog) content is missing in required language.
+ *
+ * Returns:
+ *   - MissingTranslationType: type of message to show ('ui' or 'content')
+ *   - null: if banner should not be shown
+ */
+type MissingTranslationType = 'ui' | 'content' | null
+
+export function checkMissingTranslation(
+  uiLocale: Locale,
+  isMissingContent: boolean | undefined,
+): MissingTranslationType {
+  if (!ENABLE_MISSING_TRANSLATION_BANNER) return null
+
+  if (isFullyTranslated(uiLocale) && !isMissingContent) return null
+
+  return isMissingContent ? 'content' : 'ui'
 }
 
 /**
@@ -30,22 +56,4 @@ export function resolveLocale(Astro: AstroGlobal): Locale {
  */
 export function resolveLocaleForTranslations(locale: Locale): Locale {
   return hasTranslations(locale) ? locale : DEFAULT_LOCALE
-}
-
-/**
- * Optional: return a “missing translation” banner message
- * when uiLocale has no translations.
- *
- * Returns:
- *   - string: message to show
- *   - null: if banner should not be shown
- */
-export function getMissingTranslationBanner(uiLocale: Locale): string | null {
-  if (!ENABLE_MISSING_TRANSLATION_BANNER) return null
-
-  // If this locale already has translations, no banner
-  if (hasTranslations(uiLocale)) return null
-
-  // Otherwise display default message
-  return DEFAULT_MISSING_TRANSLATION_MESSAGE
 }
