@@ -65,6 +65,11 @@ export const FALLBACK_LANDING = {
     "readBuildNotes": "Read the build notes",
     "backToHome": "Back to home"
   },
+  "buttons": {
+    "joinEarlyBirds": "Join Early Birds",
+    "joinNow": "Join Now",
+    "savePreferences": "Save preferences"
+  },
   "hero": {
     "urgency": "Early access closes when first kits ship",
     "heading": "Edge-native starter kits for <span class='text-brand-astro'>Astro</span> & <span class='text-primary'>Cloudflare</span> builders.",
