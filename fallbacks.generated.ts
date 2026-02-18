@@ -7,8 +7,8 @@ export const FALLBACK_BLOG = {
   "indexPageTitle": "Blog",
   "readMore": "Read more",
   "backToOverview": "Back to Overview",
-  "publishedOn": "Published on",
-  "readTime": "{min} min read",
+  "resourcesHeading": "Resources & Further Reading",
+  "authorSlogan": "Happy Coding on the Edge!",
   "newsletter": {
     "title": "Stay Updated",
     "description": "Get the latest EdgeKits news directly to your inbox.",
@@ -17,16 +17,6 @@ export const FALLBACK_BLOG = {
     "success": "Thanks for subscribing!",
     "validation": {
       "invalidEmail": "Please enter a valid email address."
-    }
-  },
-  "counter": {
-    "title": "Counter demo",
-    "increment": "Increment",
-    "reset": "Reset",
-    "patterns": {
-      "zero": "No items",
-      "one": "{count} item",
-      "other": "{count} items"
     }
   }
 } as const;
