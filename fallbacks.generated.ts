@@ -4,7 +4,12 @@
 export const FALLBACK_LOCALE = "en" as const;
 
 export const FALLBACK_BLOG = {
-  "indexPageTitle": "Blog",
+  "seo": {
+    "title": "The EdgeKits Blog: Building on the Edge",
+    "description": "Documenting the journey of building blazingly fast SaaS and Telegram Mini Apps. Edge-native architectures, performance deep dives, and open-source solutions."
+  },
+  "heading": "Blog",
+  "subHeading": "Build in public",
   "readMore": "Read more",
   "backToOverview": "Back to Overview",
   "resourcesHeading": "Resources & Further Reading",
