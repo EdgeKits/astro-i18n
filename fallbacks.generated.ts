@@ -13,17 +13,7 @@ export const FALLBACK_BLOG = {
   "readMore": "Read more",
   "backToOverview": "Back to Overview",
   "resourcesHeading": "Resources & Further Reading",
-  "authorSlogan": "Happy Coding on the Edge!",
-  "newsletter": {
-    "title": "Stay Updated",
-    "description": "Get the latest EdgeKits news directly to your inbox.",
-    "placeholder": "Enter your email",
-    "button": "Subscribe",
-    "success": "Thanks for subscribing!",
-    "validation": {
-      "invalidEmail": "Please enter a valid email address."
-    }
-  }
+  "authorSlogan": "Happy Coding on the Edge!"
 } as const;
 
 export const FALLBACK_LANDING = {
@@ -60,11 +50,6 @@ export const FALLBACK_LANDING = {
     "readBuildNotes": "Read the build notes",
     "backToHome": "Back to home"
   },
-  "buttons": {
-    "joinEarlyBirds": "Join Early Birds",
-    "joinNow": "Join Now",
-    "savePreferences": "Save preferences"
-  },
   "hero": {
     "urgency": "Early access closes when first kits ship",
     "heading": "Edge-native starter kits for <span class='text-brand-astro'>Astro</span> & <span class='text-primary'>Cloudflare</span> builders.",
@@ -72,19 +57,7 @@ export const FALLBACK_LANDING = {
       "start": "Production-ready foundations for",
       "mid": "launch faster with a proven baseline.",
       "end": "ownership-first and cost-efficient to scale."
-    },
-    "cta": "Leave your email to get launch discount • No spam ever",
-    "subscribed": {
-      "title": "You're in.",
-      "description": "Early access, launch updates, and release notes will be sent to your inbox."
-    },
-    "segment": {
-      "title": "Optional - help us tailor updates for you"
     }
-  },
-  "subscribed": {
-    "title": "You’re on the Early Birds list.",
-    "description": "We'll email you when the first kits are ready."
   },
   "earlyBirdsBenefits": {
     "access": "Private Repo Access",
@@ -202,7 +175,6 @@ export const FALLBACK_LANDING = {
   },
   "finalCta": {
     "title": "Get Early Bird Access",
-    "buttonText": "Join Now",
     "description": "Private GitHub Access • Early-bird Pricing • Release Notes"
   },
   "footer": {
@@ -240,6 +212,37 @@ export const FALLBACK_MESSAGES = {
     }
   },
   "common": {
+    "PENDING": "Please wait",
     "SUBSCRIPTION_SUCCEED": "Thanks for your subscription!"
+  }
+} as const;
+
+export const FALLBACK_NEWSLETTER = {
+  "step": {
+    "subscribe": {
+      "title": "Leave your email to get launch discount • No spam ever"
+    },
+    "segment": {
+      "title": "Optional - help us tailor updates for you",
+      "fields": {
+        "interests": "What are you interested in at first?",
+        "billingProvider": "Preferred billing provider for your projects",
+        "otherBillingProvider": "Other billing provider",
+        "whatAreUBuilding": "What are you building?"
+      }
+    },
+    "done": {
+      "title": "You're in.",
+      "description": "Early access, launch updates, and release notes will be sent to your inbox."
+    }
+  },
+  "subscribed": {
+    "title": "You’re on the Early Birds list.",
+    "description": "We'll email you when the first kits are ready."
+  },
+  "buttons": {
+    "joinEarlyBirds": "Join Early Birds",
+    "joinNow": "Join Now",
+    "savePreferences": "Save preferences"
   }
 } as const;
