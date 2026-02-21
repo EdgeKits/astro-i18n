@@ -1,7 +1,8 @@
 import { PROJECT } from '@/config'
 import { TRANSLATIONS_VERSION } from './runtime-constants'
-import type { Locale, Namespace, PickSchema } from './schema.ts'
+import type { Locale, Namespace, PickSchema } from './schema'
 import { deepMerge } from '@/utils/shared/deep-merge'
+import { parseBooleanFlag } from '@/utils/shared/parse-boolean'
 
 // Optional fallbacks (auto-loaded if generated)
 let FALLBACKS: Record<string, any> | null = null
@@ -201,27 +202,6 @@ function buildFallbackOnly<N extends Namespace>(
   }
 
   return empty as PickSchema<N>
-}
-
-/**
- * Parse a boolean flag from Wrangler-env string.
- *
- * Accepts:
- *   "1", "true", "on"   → true
- *   "0", "false", "off" → false
- *   undefined           → defaultValue
- */
-function parseBooleanFlag(
-  value: string | undefined,
-  defaultValue: boolean,
-): boolean {
-  if (value === undefined) return defaultValue
-
-  const v = value.toLowerCase()
-  if (v === '1' || v === 'true' || v === 'on') return true
-  if (v === '0' || v === 'false' || v === 'off') return false
-
-  return defaultValue
 }
 
 /**

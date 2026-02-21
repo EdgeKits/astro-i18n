@@ -33,26 +33,37 @@ function applySecurityHeaders(response: Response): Response {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('X-XSS-Protection', '1; mode=block')
 
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     // Разрешаем скрипты аналитики
+  //     `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; ` +
+  //     // Разрешаем отправку данных (beacons) в Google
+  //     `connect-src 'self' https://www.google-analytics.com; ` +
+  //     // Разрешаем картинки с нашего CDN, data/blob и пиксели Google
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
+  //     `font-src 'self' data:; ` +
+  //     // Allowing audio/video downloads from CDN
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
-      `script-src 'self' 'unsafe-inline'; ` +
       `style-src 'self' 'unsafe-inline'; ` +
-      // Allow images from our domain, CDN, and data/blob for flexibility
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl}; ` +
+      // Added data: for ClientRouter
+      `script-src 'self' 'unsafe-inline' data: https://www.googletagmanager.com https://www.google-analytics.com; ` +
+      `connect-src 'self' https://www.google-analytics.com; ` +
+      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
       `font-src 'self' data:; ` +
-      // Allowing audio/video downloads from CDN
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
       `frame-ancestors 'self'; ` +
       `object-src 'none';`,
   )
 
-  if (import.meta.env.PROD) {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload',
-    )
-  }
   return response
 }
 
