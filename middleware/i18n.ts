@@ -100,16 +100,60 @@ function resolveFallbackLocale(context: I18nMiddlewareContext): Locale {
 }
 
 export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
+  // const url = new URL(context.request.url)
+  // const pathname = url.pathname
+
+  // // 0. Skip static / system paths
+  // if (shouldBypassI18n(pathname)) {
+  //   return next()
+  // }
+
+  // const segments = pathname.split('/').filter(Boolean) // "/es/about/" -> ["es", "about"]
+  // const firstSegment = segments[0] ?? null
+
   const url = new URL(context.request.url)
   const pathname = url.pathname
 
-  // 0. Skip static / system paths
-  if (shouldBypassI18n(pathname)) {
-    return next()
-  }
-
+  // 1. Split the URL early to access its segments
   const segments = pathname.split('/').filter(Boolean) // "/es/about/" -> ["es", "about"]
   const firstSegment = segments[0] ?? null
+
+  // 2. SAFETY NET (For static file 404 pages)
+  // Attempt to infer the locale from the URL, or fallback to the default.
+  let safeLocale = DEFAULT_LOCALE
+  if (firstSegment) {
+    const parsed = LocaleSchema.safeParse(firstSegment)
+    if (parsed.success) {
+      safeLocale = parsed.data
+    }
+  }
+
+  // Inject the locale into the context BEFORE the bypass check!
+  context.locals.uiLocale = safeLocale
+  context.locals.translationLocale = resolveLocaleForTranslations(safeLocale)
+
+  // 3. Bypass static files and system paths (with Soft 404 protection)
+  if (shouldBypassI18n(pathname)) {
+    const response = await next()
+
+    const contentType = response.headers.get('content-type') || ''
+    const isHtml = contentType.includes('text/html')
+    const isRedirect = response.status >= 300 && response.status < 400
+
+    // If Astro attempts to return HTML for a static/API request (and it's not a redirect),
+    // it means the file wasn't found and Astro rendered a fallback page (404.astro or catch-all).
+    // We strictly intercept this and return a lightweight text-based 404 instead.
+    // Why? To mitigate Directory Bruteforcing / Fuzzing attacks and save resources.
+    if (isHtml && !isRedirect) {
+      // Aggressively save Worker CPU cycles for missing static files
+      return new Response('Not found', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
+    }
+
+    return response
+  }
 
   const fallbackLocale = resolveFallbackLocale(context)
 
