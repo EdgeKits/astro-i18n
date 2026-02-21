@@ -151,7 +151,7 @@ function buildCacheKey<N extends Namespace>(
 }
 
 /**
- * Read translations from KV and merge with optional FALLBACK_* dictionaries.
+ * Read bulk translations from KV and merge with optional FALLBACK_* dictionaries.
  * This is the main "happy-path" loader.
  */
 async function loadTranslationsFromKV<N extends Namespace>(

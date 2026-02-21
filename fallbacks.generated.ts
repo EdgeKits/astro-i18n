@@ -17,10 +17,6 @@ export const FALLBACK_BLOG = {
 } as const;
 
 export const FALLBACK_LANDING = {
-  "seo": {
-    "title": "Edge-native starter kits for Astro & Cloudflare builders",
-    "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
-  },
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
     "description": "Upon successful payment, you will receive an automated email with an invitation to the private GitHub repository. Access is granted instantly via GitHub Teams."
@@ -245,4 +241,9 @@ export const FALLBACK_NEWSLETTER = {
     "joinNow": "Join Now",
     "savePreferences": "Save preferences"
   }
+} as const;
+
+export const FALLBACK_SEO = {
+  "title": "Edge-native starter kits for Astro & Cloudflare builders",
+  "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
 } as const;
