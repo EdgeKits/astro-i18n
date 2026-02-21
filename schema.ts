@@ -17,10 +17,17 @@ export const NamespaceSchema = hasNamespaces
   : z.string()
 
 export type Locale = z.infer<typeof LocaleSchema>
-export type Namespace = z.infer<typeof NamespaceSchema>
 
 type GlobalSchema = I18n.Schema
 
+// Strictly bind the type to the keys of I18n.Schema.
+// If the interface is empty (e.g., on a fresh project clone), fall back to string.
+export type Namespace = keyof GlobalSchema extends never
+  ? string
+  : keyof GlobalSchema
+
+// Added intersection N & keyof GlobalSchema so the compiler
+// doesn't throw an error inside Pick when Namespace falls back to string.
 export type PickSchema<N extends Namespace> = [N] extends [keyof GlobalSchema]
-  ? Pick<GlobalSchema, N>
+  ? Pick<GlobalSchema, N & keyof GlobalSchema>
   : any

@@ -16,6 +16,11 @@ export const FALLBACK_BLOG = {
   "authorSlogan": "Happy Coding on the Edge!"
 } as const;
 
+export const FALLBACK_COMMON = {
+  "title": "Edge-native starter kits for Astro & Cloudflare builders",
+  "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
+} as const;
+
 export const FALLBACK_LANDING = {
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
@@ -241,9 +246,4 @@ export const FALLBACK_NEWSLETTER = {
     "joinNow": "Join Now",
     "savePreferences": "Save preferences"
   }
-} as const;
-
-export const FALLBACK_SEO = {
-  "title": "Edge-native starter kits for Astro & Cloudflare builders",
-  "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
 } as const;
