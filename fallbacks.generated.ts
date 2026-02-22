@@ -17,8 +17,15 @@ export const FALLBACK_BLOG = {
 } as const;
 
 export const FALLBACK_COMMON = {
-  "title": "Edge-native starter kits for Astro & Cloudflare builders",
-  "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
+  "seo": {
+    "title": "Edge-native starter kits for Astro & Cloudflare builders",
+    "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
+  },
+  "backToHome": "Back to home",
+  "notFound": {
+    "title": "404 - Page not found",
+    "message": "The page you are looking for does not exist or has been moved."
+  }
 } as const;
 
 export const FALLBACK_LANDING = {
@@ -48,8 +55,7 @@ export const FALLBACK_LANDING = {
     "email": "Email",
     "contact": "Contact",
     "viewCoreRepo": "View EdgeKits Core Repo",
-    "readBuildNotes": "Read the build notes",
-    "backToHome": "Back to home"
+    "readBuildNotes": "Read the build notes"
   },
   "hero": {
     "urgency": "Early access closes when first kits ship",
@@ -182,10 +188,6 @@ export const FALLBACK_LANDING = {
     "supportNotice": "If you don’t receive the email within 10 minutes, contact support at",
     "needGithub": "You may need a GitHub account to accept the invitation.",
     "copyright": "All rights reserved."
-  },
-  "notFound": {
-    "title": "404 - Page not found",
-    "message": "The page you are looking for does not exist or has been moved."
   }
 } as const;
 
