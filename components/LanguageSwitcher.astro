@@ -18,6 +18,7 @@ const { uiLocale: currentLang } = Astro.locals
       class='rounded-full'
       aria-haspopup='true'
       aria-expanded='false'
+      aria-label='Switch language'
     >
       <GlobeIcon className='size-5 text-foreground' />
     </button>
@@ -43,7 +44,6 @@ const { uiLocale: currentLang } = Astro.locals
               )}
               data-lang={locale}
               role='menuitem'
-              aria-label='Switch language'
               disabled={isActive}
             >
               <span class='flex items-center gap-3 pointer-events-none'>
