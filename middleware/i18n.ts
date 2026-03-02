@@ -89,13 +89,28 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
-  // Zaraz v2
+  // // Zaraz v2
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     `script-src 'self' 'unsafe-inline' data:; ` +
+  //     // Добавили https://www.google.com для ga-audiences
+  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+  //     `font-src 'self' data:; ` +
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
+  // Zaraz v3
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
       `style-src 'self' 'unsafe-inline'; ` +
-      `script-src 'self' 'unsafe-inline' data:; ` +
-      // Добавили https://www.google.com для ga-audiences
+      // Добавили 'unsafe-eval' для корректной работы Zaraz
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
       `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `font-src 'self' data:; ` +
