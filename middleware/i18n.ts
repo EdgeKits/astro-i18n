@@ -72,16 +72,32 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
+  // // Zaraz v1
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     // Убрали GTM и GA. Zaraz работает через 'self', нужен 'unsafe-inline' для inline-скриптов
+  //     `script-src 'self' 'unsafe-inline' data:; ` +
+  //     // Разрешаем региональные эндпоинты GA4 и DoubleClick (для аудиторий)
+  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
+  //     // Аналогично для пикселей, если они используются как fallback
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
+  //     `font-src 'self' data:; ` +
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
+  // Zaraz v2
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
       `style-src 'self' 'unsafe-inline'; ` +
-      // Убрали GTM и GA. Zaraz работает через 'self', нужен 'unsafe-inline' для inline-скриптов
       `script-src 'self' 'unsafe-inline' data:; ` +
-      // Разрешаем региональные эндпоинты GA4 и DoubleClick (для аудиторий)
-      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
-      // Аналогично для пикселей, если они используются как fallback
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
+      // Добавили https://www.google.com для ga-audiences
+      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `font-src 'self' data:; ` +
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
       `frame-ancestors 'self'; ` +
