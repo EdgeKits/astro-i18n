@@ -58,14 +58,30 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     // Added data: for ClientRouter
+  //     `script-src 'self' 'unsafe-inline' data: https://www.googletagmanager.com https://www.google-analytics.com; ` +
+  //     `connect-src 'self' https://www.google-analytics.com; ` +
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
+  //     `font-src 'self' data:; ` +
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
       `style-src 'self' 'unsafe-inline'; ` +
-      // Added data: for ClientRouter
-      `script-src 'self' 'unsafe-inline' data: https://www.googletagmanager.com https://www.google-analytics.com; ` +
-      `connect-src 'self' https://www.google-analytics.com; ` +
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
+      // Убрали GTM и GA. Zaraz работает через 'self', нужен 'unsafe-inline' для inline-скриптов
+      `script-src 'self' 'unsafe-inline' data:; ` +
+      // Разрешаем региональные эндпоинты GA4 и DoubleClick (для аудиторий)
+      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
+      // Аналогично для пикселей, если они используются как fallback
+      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
       `font-src 'self' data:; ` +
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
       `frame-ancestors 'self'; ` +
