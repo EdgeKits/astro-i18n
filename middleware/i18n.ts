@@ -58,62 +58,17 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Added data: for ClientRouter
-  //     `script-src 'self' 'unsafe-inline' data: https://www.googletagmanager.com https://www.google-analytics.com; ` +
-  //     `connect-src 'self' https://www.google-analytics.com; ` +
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // // Zaraz v1
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Убрали GTM и GA. Zaraz работает через 'self', нужен 'unsafe-inline' для inline-скриптов
-  //     `script-src 'self' 'unsafe-inline' data:; ` +
-  //     // Разрешаем региональные эндпоинты GA4 и DoubleClick (для аудиторий)
-  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
-  //     // Аналогично для пикселей, если они используются как fallback
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net; ` +
-  //     `font-src 'self' data:; ` +
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // // Zaraz v2
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     `script-src 'self' 'unsafe-inline' data:; ` +
-  //     // Добавили https://www.google.com для ga-audiences
-  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
   // Zaraz v3
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
       `style-src 'self' 'unsafe-inline'; ` +
-      // Добавили 'unsafe-eval' для корректной работы Zaraz
+      // Add 'unsafe-eval' for correct work of Zaraz
       `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
       `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `font-src 'self' data:; ` +
+      // Allow media from our CDN
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
       `frame-ancestors 'self'; ` +
       `object-src 'none';`,
