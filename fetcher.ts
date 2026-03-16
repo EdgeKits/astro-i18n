@@ -144,7 +144,7 @@ function buildCacheKey<N extends Namespace>(
   const cacheId = `${PROJECT.id}:i18n:v${TRANSLATIONS_VERSION}:${lang}:${namespaces.join(',')}`
 
   const cacheRequest = new Request(
-    `https://i18n-cache/${encodeURIComponent(cacheId)}`,
+    `https://${PROJECT.id}/${encodeURIComponent(cacheId)}`,
   )
 
   return { cacheId, cacheRequest }
