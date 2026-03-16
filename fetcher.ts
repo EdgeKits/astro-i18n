@@ -13,7 +13,7 @@ try {
   FALLBACKS = null
 }
 
-const KV_JSON_OPTIONS = { type: 'json' as const, cacheTtl: 3600 }
+const KV_JSON_OPTIONS = { type: 'json' as const }
 
 /**
  * Runtime object provided by Astro via Astro.locals.runtime.
