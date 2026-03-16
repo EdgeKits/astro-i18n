@@ -11,4 +11,4 @@ export const FULLY_TRANSLATED_LOCALES = ['de', 'en', 'es', 'ja'] as const;
  * Monotonic translation bundle version.
  * Updated on every `npm run i18n:bundle` run.
  */
-export const TRANSLATIONS_VERSION = '5c4e020d0a29'
+export const TRANSLATIONS_VERSION = '695ad4c81515'

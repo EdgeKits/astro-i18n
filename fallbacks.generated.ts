@@ -18,7 +18,7 @@ export const FALLBACK_BLOG = {
 
 export const FALLBACK_COMMON = {
   "seo": {
-    "title": "Edge-native starter kits for Astro & Cloudflare builders",
+    "title": "Edge-native starter kits for Astro & Cloudflare Workers",
     "description": "Production-ready foundations for SaaS and Telegram Mini Apps"
   },
   "backToHome": "Back to home",
@@ -59,7 +59,7 @@ export const FALLBACK_LANDING = {
   },
   "hero": {
     "urgency": "Early access closes when first kits ship",
-    "heading": "Edge-native starter kits for <span class='text-brand-astro'>Astro</span> & <span class='text-primary'>Cloudflare</span> builders.",
+    "heading": "Edge-native starter kits for <span class='text-brand-astro'>Astro</span> & <span class='text-primary'>Cloudflare</span> Workers.",
     "subHeading": {
       "start": "Production-ready foundations for",
       "mid": "launch faster with a proven baseline.",
