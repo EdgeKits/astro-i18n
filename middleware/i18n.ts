@@ -170,7 +170,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
       // Apply headers to the redirect response
-      return applySecurityHeaders(context.redirect(target, 302))
+      return applySecurityHeaders(context.redirect(target, 301))
     }
     return applySecurityHeaders(await next())
   }
@@ -191,7 +191,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     // Normalize trailing slash and structure
     const normalized = buildLocalizedPath(urlLocale, segments.slice(1))
     if (pathname !== normalized) {
-      return applySecurityHeaders(context.redirect(normalized, 302))
+      return applySecurityHeaders(context.redirect(normalized, 301))
     }
 
     return applySecurityHeaders(await next())
@@ -201,7 +201,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    return applySecurityHeaders(context.redirect(target, 302))
+    return applySecurityHeaders(context.redirect(target, 301))
   }
 
   return applySecurityHeaders(await next())
