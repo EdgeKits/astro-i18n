@@ -41,24 +41,7 @@ function applySecurityHeaders(response: Response): Response {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('X-XSS-Protection', '1; mode=block')
 
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Разрешаем скрипты аналитики
-  //     `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; ` +
-  //     // Разрешаем отправку данных (beacons) в Google
-  //     `connect-src 'self' https://www.google-analytics.com; ` +
-  //     // Разрешаем картинки с нашего CDN, data/blob и пиксели Google
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     // Allowing audio/video downloads from CDN
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // Zaraz v3
+  // Zaraz
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
@@ -107,7 +90,7 @@ function resolveFallbackLocale(context: I18nMiddlewareContext): Locale {
   } else {
     // 3) Cloudflare Geo-IP Strategy
     // cf is undefined in local dev unless simulated
-    const country = context.locals.runtime?.cf?.country
+    const country = context.request?.cf?.country
     const geoLocale = mapCountryToLocale(country)
     let parsed = LocaleSchema.safeParse(geoLocale)
     if (parsed.success) return parsed.data

@@ -20,7 +20,7 @@ export function fmt(
   values?: TemplateValues,
 ): string {
   if (template == null) {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.PROD !== true) {
       console.warn('[i18n] fmt() called with null/undefined template')
     }
     return ''
@@ -79,11 +79,12 @@ export function pluralIcu(
 ): string {
   const rules = new Intl.PluralRules(locale)
   const cat = rules.select(count) as PluralCategory
+  const isProd = import.meta.env.PROD === true
 
   const template =
     patterns[cat] ??
     patterns.other ??
-    (import.meta.env.PROD
+    (isProd
       ? ''
       : (console.warn('[i18n] pluralIcu(): missing "other" pattern'), ''))
 
