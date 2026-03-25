@@ -59,32 +59,16 @@ function applySecurityHeaders(response: Response): Response {
   // )
 
   // Zaraz v3
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Add 'unsafe-eval' for correct work of Zaraz
-  //     `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
-  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     // Allow media from our CDN
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // Zaraz v5
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
-      // Allow downloading CSS files from Google Fonts
-      `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ` +
+      `style-src 'self' 'unsafe-inline'; ` +
+      // Add 'unsafe-eval' for correct work of Zaraz
       `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
       `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-      // Allow downloading of font files from Google servers.
-      `font-src 'self' data: https://fonts.gstatic.com; ` +
+      `font-src 'self' data:; ` +
+      // Allow media from our CDN
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
       `frame-ancestors 'self'; ` +
       `object-src 'none';`,
