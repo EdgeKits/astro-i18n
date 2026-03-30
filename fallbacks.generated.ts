@@ -28,6 +28,12 @@ export const FALLBACK_COMMON = {
   }
 } as const;
 
+export const FALLBACK_CONSENT = {
+  "bannerText": "We use cookies to analyze site traffic and improve your experience. By clicking \"Accept All\", you consent to our use of analytical tracking.",
+  "acceptAll": "Accept All",
+  "decline": "Decline"
+} as const;
+
 export const FALLBACK_LANDING = {
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
