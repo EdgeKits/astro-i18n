@@ -62,7 +62,7 @@ function applySecurityHeaders(response: Response): Response {
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
-      `style-src 'self' 'unsafe-inline'; https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; ` +
+      `style-src 'self' 'unsafe-inline'; https://static.cloudflareinsights.com; ` +
       // Add 'unsafe-eval' for correct work of Zaraz
       `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
       `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
