@@ -64,7 +64,6 @@ const { uiLocale: currentLang } = Astro.locals
 
 <script>
   import { type Locale } from '@/domain/i18n/schema'
-  import { replaceLocaleInPath, getLangFromUrl } from '@/domain/i18n/format'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
@@ -78,33 +77,42 @@ const { uiLocale: currentLang } = Astro.locals
 
       this.trigger.addEventListener('click', this.onToggle)
       this.dropdown.addEventListener('click', this.onSelect)
-
-      document.addEventListener('click', this.onDocumentClick)
-      document.addEventListener('keydown', this.onKeyDown)
     }
 
     disconnectedCallback() {
       this.trigger?.removeEventListener('click', this.onToggle)
       this.dropdown?.removeEventListener('click', this.onSelect)
-      document.removeEventListener('click', this.onDocumentClick)
-      document.removeEventListener('keydown', this.onKeyDown)
+      // Гарантируем очистку, если компонент размонтирован в открытом состоянии
+      this.removeGlobalListeners()
     }
 
     private open() {
       if (!this.dropdown || !this.trigger) return
       this.dropdown.classList.remove('hidden')
       this.trigger.setAttribute('aria-expanded', 'true')
+
+      // Подключаем отслеживание кликов вне области и Esc только когда меню открыто
+      document.addEventListener('click', this.onDocumentClick)
+      document.addEventListener('keydown', this.onKeyDown)
     }
 
     private close() {
       if (!this.dropdown || !this.trigger) return
       this.dropdown.classList.add('hidden')
       this.trigger.setAttribute('aria-expanded', 'false')
+
+      this.removeGlobalListeners()
+    }
+
+    private removeGlobalListeners() {
+      document.removeEventListener('click', this.onDocumentClick)
+      document.removeEventListener('keydown', this.onKeyDown)
     }
 
     private onToggle = (e: MouseEvent) => {
       e.stopPropagation()
       if (!this.dropdown) return
+
       const isHidden = this.dropdown.classList.contains('hidden')
       isHidden ? this.open() : this.close()
     }
@@ -117,12 +125,15 @@ const { uiLocale: currentLang } = Astro.locals
       const lang = button.dataset.lang as Locale | undefined
       if (!lang) return
 
+      // Загружаем логику парсинга и форматирования URL только в момент смены языка
+      const { replaceLocaleInPath, getLangFromUrl } =
+        await import('@/domain/i18n/format')
+
       const { pathname } = window.location
       const currentLang = getLangFromUrl(pathname)
       if (!currentLang) return
 
-      const newPath = replaceLocaleInPath(pathname, currentLang, lang)
-      window.location.href = newPath
+      window.location.href = replaceLocaleInPath(pathname, currentLang, lang)
     }
 
     private onDocumentClick = (event: MouseEvent) => {
