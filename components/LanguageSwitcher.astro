@@ -82,7 +82,7 @@ const { uiLocale: currentLang } = Astro.locals
     disconnectedCallback() {
       this.trigger?.removeEventListener('click', this.onToggle)
       this.dropdown?.removeEventListener('click', this.onSelect)
-      // Гарантируем очистку, если компонент размонтирован в открытом состоянии
+      // Ensure cleanup if the component is unmounted in an open state
       this.removeGlobalListeners()
     }
 
@@ -91,7 +91,7 @@ const { uiLocale: currentLang } = Astro.locals
       this.dropdown.classList.remove('hidden')
       this.trigger.setAttribute('aria-expanded', 'true')
 
-      // Подключаем отслеживание кликов вне области и Esc только когда меню открыто
+      // Enable tracking of clicks outside the area and Esc only when the menu is open
       document.addEventListener('click', this.onDocumentClick)
       document.addEventListener('keydown', this.onKeyDown)
     }
@@ -125,7 +125,7 @@ const { uiLocale: currentLang } = Astro.locals
       const lang = button.dataset.lang as Locale | undefined
       if (!lang) return
 
-      // Загружаем логику парсинга и форматирования URL только в момент смены языка
+      // Load the URL parsing and formatting logic only when the language is changed
       const { replaceLocaleInPath, getLangFromUrl } =
         await import('@/domain/i18n/format')
 
