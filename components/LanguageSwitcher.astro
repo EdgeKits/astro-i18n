@@ -63,7 +63,7 @@ const { uiLocale: currentLang } = Astro.locals
 </language-switcher>
 
 <script>
-  import { type Locale } from '@/domain/i18n/schema'
+  import type { Locale } from '@/domain/i18n/schema'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
@@ -82,7 +82,6 @@ const { uiLocale: currentLang } = Astro.locals
     disconnectedCallback() {
       this.trigger?.removeEventListener('click', this.onToggle)
       this.dropdown?.removeEventListener('click', this.onSelect)
-      // Ensure cleanup if the component is unmounted in an open state
       this.removeGlobalListeners()
     }
 
@@ -91,7 +90,6 @@ const { uiLocale: currentLang } = Astro.locals
       this.dropdown.classList.remove('hidden')
       this.trigger.setAttribute('aria-expanded', 'true')
 
-      // Enable tracking of clicks outside the area and Esc only when the menu is open
       document.addEventListener('click', this.onDocumentClick)
       document.addEventListener('keydown', this.onKeyDown)
     }
@@ -117,7 +115,26 @@ const { uiLocale: currentLang } = Astro.locals
       isHidden ? this.open() : this.close()
     }
 
-    private onSelect = async (event: Event) => {
+    // Isolated logic for getting language from URL
+    private getLangFromUrl(pathname: string): string | undefined {
+      const segments = pathname.split('/')
+      return segments[1] || undefined
+    }
+
+    // Isolated logic for substituting language in URLs
+    private replaceLocaleInPath(
+      pathname: string,
+      currentLang: string,
+      targetLang: string
+    ): string {
+      const segments = pathname.split('/')
+      if (segments[1] === currentLang) {
+        segments[1] = targetLang
+      }
+      return segments.join('/')
+    }
+
+    private onSelect = (event: Event) => {
       const target = event.target as HTMLElement
       const button = target.closest<HTMLButtonElement>('.ls-selector')
       if (!button) return
@@ -125,15 +142,16 @@ const { uiLocale: currentLang } = Astro.locals
       const lang = button.dataset.lang as Locale | undefined
       if (!lang) return
 
-      // Load the URL parsing and formatting logic only when the language is changed
-      const { replaceLocaleInPath, getLangFromUrl } =
-        await import('@/domain/i18n/format')
+      const pathname = window.location.pathname
+      const currentLang = this.getLangFromUrl(pathname)
 
-      const { pathname } = window.location
-      const currentLang = getLangFromUrl(pathname)
       if (!currentLang) return
 
-      window.location.href = replaceLocaleInPath(pathname, currentLang, lang)
+      window.location.href = this.replaceLocaleInPath(
+        pathname,
+        currentLang,
+        lang
+      )
     }
 
     private onDocumentClick = (event: MouseEvent) => {
