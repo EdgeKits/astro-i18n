@@ -58,14 +58,30 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
-  // Zaraz v3
+  // // Zaraz v2
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     // Add 'unsafe-eval' for correct work of Zaraz
+  //     `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
+  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+  //     `font-src 'self' data:; ` +
+  //     // Allow media from our CDN
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
+  // Zaraz v2 with CF Analytics
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
-      `style-src 'self' 'unsafe-inline'; https://static.cloudflareinsights.com; ` +
+      `style-src 'self' 'unsafe-inline'; ` +
       // Add 'unsafe-eval' for correct work of Zaraz
-      `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
-      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' data: https://static.cloudflareinsights.com; ` +
+      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com https://cloudflareinsights.com; ` +
       `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
       `font-src 'self' data:; ` +
       // Allow media from our CDN
