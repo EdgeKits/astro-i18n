@@ -1,6 +1,9 @@
-import { PROJECT } from '@/config'
-import { TRANSLATIONS_VERSION } from './runtime-constants'
-import type { Locale, Namespace, PickSchema } from './schema'
+import type { Locale } from '@/domain/i18n/constants'
+import type { Namespace, PickSchema } from './schema'
+import {
+  buildTranslationKvKey,
+  buildTranslationCacheRequest,
+} from './translations-keys'
 import { deepMerge } from '@/utils/shared/deep-merge'
 import { parseBooleanFlag } from '@/utils/shared/parse-boolean'
 
@@ -18,7 +21,7 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
 /**
  * Runtime object provided by Astro via Astro.locals.runtime.
  *
- * It is intentionally kept loosely typed (unknown for cf/caches/ctx) to avoid
+ * Intentionally loosely typed (unknown for cf/caches/ctx) to avoid
  * hard coupling to Cloudflare Workers or DOM types in this shared module.
  * We narrow the shape locally only where we need Cache API or waitUntil.
  */
@@ -32,89 +35,252 @@ export interface Runtime {
 /**
  * Fetch translations from KV for a given locale and list of namespaces.
  *
- * Responsibilities:
- * - Build KV keys using PROJECT_ID, namespace and locale
- * - Optionally use edge cache (controlled by env flag I18N_CACHE)
- * - On cache miss, read from KV and merge with optional FALLBACK_* dictionaries
- * - Persist the merged payload back to the edge cache
- * - If KV is unavailable, fall back to static FALLBACK_* dictionaries only
+ * Cache strategy — per-namespace static cache keys:
+ *
+ * Each namespace is cached individually under a static (non-versioned) URL:
+ *   https://<project.id>/<encodeURIComponent(<project.id>:i18n:<locale>:<ns>)>
+ *
+ * Cache invalidation is handled explicitly by the Cloudflare Purge API
+ * in bundle-translations.ts — only namespaces whose content actually changed
+ * are purged, leaving untouched namespaces warm in the cache.
+ *
+ * Hot path (all namespaces cached):
+ *   Parallel cache.match() for each namespace → all HIT → return immediately.
+ *   Zero KV reads.
+ *
+ * Partial or full cache miss:
+ *   Missing namespaces collected → single KV getAll() batch →
+ *   merge with FALLBACK_* → individual cache.put() per namespace → return.
+ *
+ * KV unavailable:
+ *   Falls back to FALLBACK_* compiled dictionaries (always available).
+ *   If FALLBACKS is null, returns empty objects per namespace — no crash.
  */
 export async function fetchTranslations<N extends Namespace>(
   runtime: Runtime,
-  lang: Locale,
+  locale: Locale,
   namespaces: readonly N[],
 ): Promise<PickSchema<N>> {
   const { env } = runtime
   const useCache = isCacheEnabled(env)
 
   if (!useCache) {
-    debug(env, 'i18n cache DISABLED, using KV only', { lang, namespaces })
+    debug(env, 'i18n cache DISABLED, using KV only', { locale, namespaces })
+    return fetchAllFromKV(env, locale, namespaces)
   }
 
-  const { cache, waitUntil } = useCache
-    ? getEdgeCache(runtime)
-    : { cache: null, waitUntil: null }
+  const { cache, waitUntil } = getEdgeCache(runtime)
 
-  const keys = namespaces.map((ns) => `${PROJECT.id}:${ns}:${lang}`)
-
-  const { cacheRequest } = buildCacheKey(lang, namespaces)
-
-  // 1. Try to serve from edge cache if available and enabled
-  if (useCache && cache) {
-    try {
-      const cached = await cache.match(cacheRequest)
-
-      if (cached) {
-        const json = (await cached.json()) as PickSchema<N>
-        debug(env, 'i18n cache HIT', { lang, namespaces })
-        return json
-      }
-      debug(env, 'i18n cache MISS (no entry)', { lang, namespaces })
-    } catch (error) {
-      debug(env, 'i18n cache READ error, falling back to KV', error)
-    }
+  if (!cache) {
+    // Cache API unavailable (e.g. Astro dev server without Miniflare)
+    debug(env, 'i18n Cache API unavailable, using KV only', {
+      locale,
+      namespaces,
+    })
+    return fetchAllFromKV(env, locale, namespaces)
   }
 
-  // 2. Cache is missing, disabled, or unavailable → read from KV
-  try {
-    const data = await loadTranslationsFromKV(env, keys, namespaces)
-    debug(env, 'i18n KV OK', { lang, namespaces })
+  // ---------------------------------------------------------------------------
+  // 1. Check Cache API in parallel for each namespace individually
+  // ---------------------------------------------------------------------------
 
-    // 3. Store the resulting payload in the edge cache asynchronously (if enabled)
-    if (useCache && cache && waitUntil) {
+  const cacheResults = await Promise.all(
+    namespaces.map(async (ns) => {
+      const cacheRequest = buildTranslationCacheRequest(locale, ns)
       try {
-        const response = new Response(JSON.stringify(data), {
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control':
-              'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-        })
-
-        const putPromise = cache.put(cacheRequest, response.clone())
-
-        // In real Workers: schedule as a background task.
-        // In dev / non-Workers: just await so cache is actually written.
-        if (waitUntil) {
-          waitUntil(putPromise)
-        } else {
-          await putPromise
+        const cached = await cache.match(cacheRequest)
+        if (cached) {
+          return { ns, data: await cached.json(), hit: true }
         }
-
-        debug(env, 'i18n cache PUT completed', { lang, namespaces })
       } catch (error) {
-        debug(env, 'i18n cache WRITE error', error)
+        debug(env, `i18n cache READ error for ${ns}`, error)
       }
+      return { ns, data: null, hit: false }
+    }),
+  )
+
+  // ---------------------------------------------------------------------------
+  // 2. Separate hits from misses
+  // ---------------------------------------------------------------------------
+
+  const finalData: Partial<PickSchema<N>> = {}
+  const missingNamespaces: N[] = []
+
+  for (const { ns, data, hit } of cacheResults) {
+    if (hit) {
+      finalData[ns] = data as PickSchema<N>[typeof ns]
+    } else {
+      missingNamespaces.push(ns)
+    }
+  }
+
+  // All namespaces were in cache — return immediately, zero KV reads
+  if (missingNamespaces.length === 0) {
+    debug(env, 'i18n cache FULL HIT', { locale, namespaces })
+    return finalData as PickSchema<N>
+  }
+
+  debug(env, 'i18n cache PARTIAL/FULL MISS', {
+    locale,
+    hit: namespaces.length - missingNamespaces.length,
+    miss: missingNamespaces.length,
+  })
+
+  // ---------------------------------------------------------------------------
+  // 3. Batch KV read for missing namespaces only
+  // ---------------------------------------------------------------------------
+
+  const missingKvKeys = missingNamespaces.map((ns) =>
+    buildTranslationKvKey(locale, ns),
+  )
+
+  let kvResults = new Map<string, unknown | null>()
+  let kvFailed = false
+
+  try {
+    kvResults = (await env.TRANSLATIONS.get(
+      missingKvKeys,
+      KV_JSON_OPTIONS,
+    )) as Map<string, unknown | null>
+
+    debug(env, 'i18n KV batch OK', { locale, missingNamespaces })
+  } catch (error) {
+    kvFailed = true
+    debug(env, 'i18n KV ERROR, using FALLBACK_* for missing namespaces', error)
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Assemble missing namespaces + schedule individual cache writes
+  // ---------------------------------------------------------------------------
+
+  const putPromises: Promise<void>[] = []
+
+  for (let i = 0; i < missingNamespaces.length; i++) {
+    const ns = missingNamespaces[i] as N
+    const kvKey = missingKvKeys[i] as string
+
+    // Use KV value if available, otherwise empty object (fallback will fill it)
+    const kvValue = kvFailed ? {} : ((kvResults.get(kvKey) as object) ?? {})
+
+    // Merge with FALLBACK_* compiled dictionary if present
+    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
+    const fallback = FALLBACKS?.[fallbackConstName]
+
+    const nsData = fallback ? deepMerge(fallback, kvValue) : kvValue
+
+    if (kvFailed && !fallback) {
+      debug(
+        env,
+        `i18n namespace "${ns}" unavailable: KV failed and no fallback`,
+      )
     }
 
-    return data
-  } catch (error) {
-    debug(env, 'i18n KV ERROR, using FALLBACK_* only', error)
+    finalData[ns] = nsData as PickSchema<N>[typeof ns]
 
-    // 4. Hard fallback to static FALLBACK_* constants if KV is unavailable
+    // Cache the resolved namespace individually with a long TTL.
+    // Invalidation is handled explicitly via Cloudflare Purge API —
+    // no TTL-based expiry needed here.
+    const cacheRequest = buildTranslationCacheRequest(locale, ns)
+    const response = new Response(JSON.stringify(nsData), {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=31536000, immutable',
+      },
+    })
+
+    putPromises.push(
+      cache.put(cacheRequest, response.clone()).catch((error: unknown) => {
+        const errorMsg = error instanceof Error ? error.message : String(error)
+        debug(env, `i18n cache WRITE error for ${ns}`, errorMsg)
+      }),
+    )
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Schedule cache writes as background tasks
+  // ---------------------------------------------------------------------------
+
+  if (putPromises.length > 0) {
+    const allPuts = Promise.all(putPromises)
+
+    if (waitUntil) {
+      // Real Workers: schedule as a non-blocking background task
+      waitUntil(allPuts)
+    } else {
+      // Dev / non-Workers: await directly so cache is actually written
+      await allPuts
+    }
+
+    debug(env, 'i18n cache PUT scheduled', { locale, missingNamespaces })
+  }
+
+  return finalData as PickSchema<N>
+}
+
+// ---------------------------------------------------------------------------
+// KV helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch all requested namespaces directly from KV, bypassing the cache.
+ * Used when caching is disabled or the Cache API is unavailable.
+ */
+async function fetchAllFromKV<N extends Namespace>(
+  env: Env,
+  locale: Locale,
+  namespaces: readonly N[],
+): Promise<PickSchema<N>> {
+  const keys = namespaces.map((ns) => buildTranslationKvKey(locale, ns))
+
+  let kvResults = new Map<string, unknown | null>()
+  let kvFailed = false
+
+  try {
+    kvResults = (await env.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<
+      string,
+      unknown | null
+    >
+  } catch (error) {
+    kvFailed = true
+  }
+
+  if (kvFailed) {
     return buildFallbackOnly(namespaces)
   }
+
+  const data: Partial<PickSchema<N>> = {}
+
+  for (let i = 0; i < namespaces.length; i++) {
+    const ns = namespaces[i]
+    const kvValue = (kvResults.get(keys[i] as string) as object) ?? {}
+    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
+    const fallback = FALLBACKS?.[fallbackConstName]
+    ;(data as any)[ns] = fallback ? deepMerge(fallback, kvValue) : kvValue
+  }
+
+  return data as PickSchema<N>
 }
+
+/**
+ * Build a payload using only FALLBACK_* compiled dictionaries.
+ * Used when KV is completely unavailable.
+ */
+function buildFallbackOnly<N extends Namespace>(
+  namespaces: readonly N[],
+): PickSchema<N> {
+  const data: Partial<PickSchema<N>> = {}
+
+  for (const ns of namespaces) {
+    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
+    ;(data as any)[ns] = FALLBACKS?.[fallbackConstName] ?? {}
+  }
+
+  return data as PickSchema<N>
+}
+
+// ---------------------------------------------------------------------------
+// Runtime helpers
+// ---------------------------------------------------------------------------
 
 /**
  * Narrow runtime.caches and runtime.ctx to the minimal shape needed
@@ -134,77 +300,6 @@ function getEdgeCache(runtime: Runtime): {
 }
 
 /**
- * Build a stable cache key and synthetic Request object used with the
- * Cache API. The URL origin is irrelevant; only the string identity matters.
- */
-function buildCacheKey<N extends Namespace>(
-  lang: Locale,
-  namespaces: readonly N[],
-): { cacheId: string; cacheRequest: Request } {
-  const cacheId = `${PROJECT.id}:i18n:v${TRANSLATIONS_VERSION}:${lang}:${namespaces.join(',')}`
-
-  const cacheRequest = new Request(
-    `https://${PROJECT.id}/${encodeURIComponent(cacheId)}`,
-  )
-
-  return { cacheId, cacheRequest }
-}
-
-/**
- * Read bulk translations from KV and merge with optional FALLBACK_* dictionaries.
- * This is the main "happy-path" loader.
- */
-async function loadTranslationsFromKV<N extends Namespace>(
-  env: Env,
-  keys: string[],
-  namespaces: readonly N[],
-): Promise<PickSchema<N>> {
-  const resultMap = (await env.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<
-    string,
-    unknown | null
-  >
-
-  const data: Partial<PickSchema<N>> = {}
-
-  for (let i = 0; i < namespaces.length; i++) {
-    const ns = namespaces[i]
-    const key = keys[i]
-    const value = resultMap.get(key as string) ?? {}
-
-    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
-    const fallback = FALLBACKS?.[fallbackConstName]
-
-    if (fallback) {
-      ;(data as any)[ns] = deepMerge(fallback, value as object)
-    } else {
-      ;(data as any)[ns] = value
-    }
-  }
-
-  return data as PickSchema<N>
-}
-
-/**
- * Build a payload using only FALLBACK_* dictionaries.
- * Used when KV is unavailable or throws unexpectedly.
- */
-function buildFallbackOnly<N extends Namespace>(
-  namespaces: readonly N[],
-): PickSchema<N> {
-  const empty: Partial<PickSchema<N>> = {}
-
-  for (let i = 0; i < namespaces.length; i++) {
-    const ns = namespaces[i]
-    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
-    const fallback = FALLBACKS?.[fallbackConstName]
-
-    ;(empty as any)[ns] = fallback ?? {}
-  }
-
-  return empty as PickSchema<N>
-}
-
-/**
  * Determine whether edge caching is enabled.
  *
  * Wrangler var:
@@ -215,7 +310,6 @@ function buildFallbackOnly<N extends Namespace>(
  *   - Run: npm run typegen
  */
 function isCacheEnabled(env: Env): boolean {
-  // env.I18N_CACHE is generated by `wrangler types`
   return parseBooleanFlag(env.I18N_CACHE, /* defaultValue */ true)
 }
 
@@ -229,7 +323,7 @@ function isCacheEnabled(env: Env): boolean {
  *   - Update wrangler.jsonc / wrangler.toml or .dev.vars
  *   - Run: npm run typegen
  */
-function debug(env: Env, ...args: unknown[]) {
+function debug(env: Env, ...args: unknown[]): void {
   const enabled = parseBooleanFlag(env.DEBUG_I18N, /* defaultValue */ false)
   if (!enabled) return
 

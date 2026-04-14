@@ -1,5 +1,19 @@
+export type Language = { countryCode: string; name: string }
+
+// The only source of truth - add new languages here
+export const LANGUAGES = {
+  en: { countryCode: 'us', name: 'English (US)' },
+  de: { countryCode: 'de', name: 'Deutsch' },
+  es: { countryCode: 'es', name: 'Español' },
+  ja: { countryCode: 'jp', name: '日本語' },
+} as const
+
+export type Locale = keyof typeof LANGUAGES
+
 // Locales Configuration
-export const SUPPORTED_LOCALES = ['en', 'ja', 'de', 'es'] as const
+export const SUPPORTED_LOCALES = Object.keys(LANGUAGES) as [Locale, ...Locale[]]
+
+// export const SUPPORTED_LOCALES = ['en', 'de', 'es', 'pt-br', 'ja'] as const
 export type SupportedLocales = (typeof SUPPORTED_LOCALES)[number]
 
 // Default locale
@@ -7,14 +21,6 @@ export const DEFAULT_LOCALE: SupportedLocales = 'en'
 
 // Missing translation banner flag
 export const ENABLE_MISSING_TRANSLATION_BANNER = true
-
-// UI Labels
-export const LANGUAGES: Record<SupportedLocales, string> = {
-  en: 'English',
-  ja: '日本語',
-  de: 'Deutsch',
-  es: 'Español',
-}
 
 // Cookie name
 export const LANG_COOKIE_NAME = 'lang'

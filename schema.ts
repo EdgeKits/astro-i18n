@@ -16,8 +16,6 @@ export const NamespaceSchema = hasNamespaces
   ? z.enum(NAMESPACE_KEYS as [string, ...string[]])
   : z.string()
 
-export type Locale = z.infer<typeof LocaleSchema>
-
 type GlobalSchema = I18n.Schema
 
 // Strictly bind the type to the keys of I18n.Schema.

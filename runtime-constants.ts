@@ -6,9 +6,3 @@ export const NAMESPACE_KEYS = ['blog', 'common', 'consent', 'landing', 'legal', 
 export const LOCALES_WITH_TRANSLATIONS = ['de', 'en', 'es', 'ja'] as const;
 
 export const FULLY_TRANSLATED_LOCALES = ['de', 'en', 'es', 'ja'] as const;
-
-/**
- * Monotonic translation bundle version.
- * Updated on every `npm run i18n:bundle` run.
- */
-export const TRANSLATIONS_VERSION = 'dfccd99b4fd6'

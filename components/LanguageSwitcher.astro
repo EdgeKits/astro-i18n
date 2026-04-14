@@ -1,10 +1,9 @@
 ---
 import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
-
 import { cn } from '@/shadcn/utils'
+
 import { SUPPORTED_LOCALES, LANGUAGES } from '@/domain/i18n/constants'
-import { localeToFlagCode } from '@/domain/i18n/flags'
-import { type Locale } from '@/domain/i18n/schema'
+import type { Locale } from '@/domain/i18n/constants'
 import Flag from '@/components/icons/Flag.astro'
 
 const { uiLocale: currentLang } = Astro.locals
@@ -33,7 +32,7 @@ const { uiLocale: currentLang } = Astro.locals
           const locale = lang as Locale
           const isActive = locale === currentLang
           const label = LANGUAGES[locale]
-          const flagCode = localeToFlagCode(locale)
+          const flagCode = label.countryCode
 
           return (
             <button
@@ -63,7 +62,7 @@ const { uiLocale: currentLang } = Astro.locals
 </language-switcher>
 
 <script>
-  import type { Locale } from '@/domain/i18n/schema'
+  import type { Locale } from '@/domain/i18n/constants'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
