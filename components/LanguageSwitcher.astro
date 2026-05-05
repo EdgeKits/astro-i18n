@@ -46,10 +46,7 @@ const { uiLocale: currentLang } = Astro.locals
               disabled={isActive}
             >
               <span class='flex items-center gap-3 pointer-events-none'>
-                <Flag
-                  code={flagCode}
-                  size={16}
-                />
+                <Flag code={flagCode} size={16} />
                 {label.name}
               </span>
               {isActive && <DotIcon className='size-6' />}
@@ -121,11 +118,7 @@ const { uiLocale: currentLang } = Astro.locals
     }
 
     // Isolated logic for substituting language in URLs
-    private replaceLocaleInPath(
-      pathname: string,
-      currentLang: string,
-      targetLang: string
-    ): string {
+    private replaceLocaleInPath(pathname: string, currentLang: string, targetLang: string): string {
       const segments = pathname.split('/')
       if (segments[1] === currentLang) {
         segments[1] = targetLang
@@ -146,11 +139,7 @@ const { uiLocale: currentLang } = Astro.locals
 
       if (!currentLang) return
 
-      window.location.href = this.replaceLocaleInPath(
-        pathname,
-        currentLang,
-        lang
-      )
+      window.location.href = this.replaceLocaleInPath(pathname, currentLang, lang)
     }
 
     private onDocumentClick = (event: MouseEvent) => {
