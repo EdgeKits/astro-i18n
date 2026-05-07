@@ -12,6 +12,8 @@ export const FALLBACK_BLOG = {
   "subHeading": "Build in public",
   "readMore": "Read more",
   "backToOverview": "Back to Overview",
+  "tocHeading": "Table of Contents",
+  "faqHeading": "Frequently Asked Questions",
   "resourcesHeading": "Resources & Further Reading",
   "authorSlogan": "Happy Coding on the Edge!"
 } as const;
