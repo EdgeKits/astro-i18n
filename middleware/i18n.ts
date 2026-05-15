@@ -8,19 +8,11 @@ import { PROJECT } from '@/config'
 
 // Regex to identify public static assets (images, fonts, scripts, etc.)
 // These files should bypass i18n routing and locale detection.
-const PUBLIC_FILE_REGEX =
-  /\.(ico|png|jpg|jpeg|svg|webp|gif|css|js|map|txt|xml|json|woff2?|avif)$/i
+const PUBLIC_FILE_REGEX = /\.(ico|png|jpg|jpeg|svg|webp|gif|css|js|map|txt|xml|json|woff2?|avif|md)$/i
 
 // List of URL prefixes that should be ignored by the i18n middleware.
 // Includes API endpoints, internal Astro paths, and standard static routes.
-const IGNORED_PREFIXES = [
-  '/api',
-  '/assets',
-  '/_astro',
-  '/_image',
-  '/_actions',
-  '/favicon',
-]
+const IGNORED_PREFIXES = ['/api', '/assets', '/_astro', '/_image', '/_actions', '/favicon']
 
 // Extracts the context type from Astro's MiddlewareHandler for cleaner function signatures.
 type I18nMiddlewareContext = Parameters<MiddlewareHandler>[0]
@@ -30,6 +22,8 @@ type I18nMiddlewareContext = Parameters<MiddlewareHandler>[0]
 function shouldBypassI18n(pathname: string): boolean {
   if (PUBLIC_FILE_REGEX.test(pathname)) return true
   if (IGNORED_PREFIXES.some((p) => pathname.startsWith(p))) return true
+  // Markdown endpoints: /en/blog/slug.md/ (with or without trailing slash)
+  if (/\.md\/?$/.test(pathname)) return true
   return false
 }
 
@@ -158,6 +152,20 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
 
   // 3. Bypass static files and system paths (with Soft 404 protection)
   if (shouldBypassI18n(pathname)) {
+    // Strip trailing slash from .md URLs BEFORE rendering — 301 redirect immediately
+    if (/\.md\/?$/.test(pathname)) {
+      // 1. Strip trailing slash
+      if (pathname.endsWith('/')) {
+        return applySecurityHeaders(context.redirect(pathname.slice(0, -1), 301))
+      }
+
+      // 2. Redirect non-english locales to /en/
+      if (firstSegment && firstSegment !== 'en') {
+        const withoutLocale = segments.slice(1).join('/')
+        return applySecurityHeaders(context.redirect(`/en/${withoutLocale}`, 301))
+      }
+    }
+
     const response = await next()
 
     const contentType = response.headers.get('content-type') || ''
