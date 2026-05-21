@@ -1,5 +1,5 @@
 ---
-// import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
+import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
 import { cn } from '@/shadcn/utils'
 
 import { SUPPORTED_LOCALES, LANGUAGES } from '@/domain/i18n/constants'
@@ -19,8 +19,7 @@ const { uiLocale: currentLang } = Astro.locals
       aria-expanded='false'
       aria-label='Switch language'
     >
-      <!-- <GlobeIcon className='text-foreground size-5' /> -->
-       G
+      <GlobeIcon className='text-foreground size-5' />
     </button>
 
     <div
@@ -53,7 +52,7 @@ const { uiLocale: currentLang } = Astro.locals
                 />
                 {label.name}
               </span>
-              {/* {isActive && <DotIcon className='size-6' />} */}
+              {isActive && <DotIcon className='size-6' />}
             </button>
           )
         })
