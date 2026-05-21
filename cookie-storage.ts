@@ -1,6 +1,7 @@
 import { type AstroCookies } from 'astro'
 
-import { type Locale, LocaleSchema } from './schema'
+import { LocaleSchema } from './schema'
+import type { Locale } from './constants'
 import { setCookie, getCookieWithSchema } from '@/utils/server/cookies'
 import { LANG_COOKIE_NAME } from './constants'
 

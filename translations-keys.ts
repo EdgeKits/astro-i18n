@@ -28,10 +28,7 @@ export function buildTranslationKvKey(locale: Locale, ns: Namespace): string {
  *
  * Format: https://<project.id>/<encodeURIComponent(<project.id>:i18n:<locale>:<namespace>)>
  */
-export function buildTranslationCacheUrl(
-  locale: Locale,
-  ns: Namespace,
-): string {
+export function buildTranslationCacheUrl(locale: Locale, ns: Namespace): string {
   const cacheId = `i18n:${locale}:${ns}`
   return `https://${PROJECT.id}/${encodeURIComponent(cacheId)}`
 }
@@ -40,9 +37,6 @@ export function buildTranslationCacheUrl(
  * Build a Cache API Request object from a translation cache URL.
  * The Cache API requires a Request object, not a plain string.
  */
-export function buildTranslationCacheRequest(
-  locale: Locale,
-  ns: Namespace,
-): Request {
+export function buildTranslationCacheRequest(locale: Locale, ns: Namespace): Request {
   return new Request(buildTranslationCacheUrl(locale, ns))
 }

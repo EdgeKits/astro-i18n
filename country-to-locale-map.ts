@@ -1,4 +1,4 @@
-import type { Locale } from './schema.ts'
+import type { Locale } from './constants'
 
 // Key: ISO 3166-1 Alpha-2 Country Code (from request.cf.country)
 // Value: The optimal language to serve

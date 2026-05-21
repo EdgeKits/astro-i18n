@@ -15,10 +15,7 @@ type TemplateValues = Record<string, string | number>
  * - If `template` is undefined/null, returns an empty string (and logs in dev).
  * - If `values` is undefined, returns the template unchanged.
  */
-export function fmt(
-  template: string | null | undefined,
-  values?: TemplateValues,
-): string {
+export function fmt(template: string | null | undefined, values?: TemplateValues): string {
   if (template == null) {
     if (!import.meta.env.PROD) {
       console.warn('[i18n] fmt() called with null/undefined template')
@@ -43,11 +40,7 @@ export function fmt(
  * Simple two-form plural helper.
  * Good for English-like languages where "1" vs "other" is enough.
  */
-export function plural(
-  count: number,
-  singular: string,
-  plural: string,
-): string {
+export function plural(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : fmt(plural, { count })
 }
 
@@ -72,30 +65,20 @@ export type PluralPatterns = Partial<Record<PluralCategory, string>>
  *     other: '{count} items'
  *   })
  */
-export function pluralIcu(
-  count: number,
-  locale: string,
-  patterns: PluralPatterns,
-): string {
+export function pluralIcu(count: number, locale: string, patterns: PluralPatterns): string {
   const rules = new Intl.PluralRules(locale)
   const cat = rules.select(count) as PluralCategory
 
   const template =
     patterns[cat] ??
     patterns.other ??
-    (import.meta.env.PROD
-      ? ''
-      : (console.warn('[i18n] pluralIcu(): missing "other" pattern'), ''))
+    (import.meta.env.PROD ? '' : (console.warn('[i18n] pluralIcu(): missing "other" pattern'), ''))
 
   return fmt(template, { count })
 }
 
 // Used in the LanguageSwitcher and SeoHreflangs components
-export function replaceLocaleInPath(
-  currentPath: string,
-  currentLocale: string,
-  newLocale: string,
-): string {
+export function replaceLocaleInPath(currentPath: string, currentLocale: string, newLocale: string): string {
   const prefixRegex = new RegExp(`^/${currentLocale}/`)
   return currentPath.replace(prefixRegex, `/${newLocale}/`)
 }

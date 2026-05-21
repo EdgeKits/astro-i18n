@@ -117,7 +117,7 @@ function resolveFallbackLocale(context: I18nMiddlewareContext): Locale {
   } else {
     // 3) Cloudflare Geo-IP Strategy
     // cf is undefined in local dev unless simulated
-    const country = context.locals.runtime?.cf?.country
+    const country = context.request?.cf?.country
     const geoLocale = mapCountryToLocale(country)
     let parsed = LocaleSchema.safeParse(geoLocale)
     if (parsed.success) return parsed.data

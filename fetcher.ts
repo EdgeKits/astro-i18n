@@ -1,11 +1,10 @@
-import type { Locale } from '@/domain/i18n/constants'
-import type { Namespace, PickSchema } from './schema'
-import {
-  buildTranslationKvKey,
-  buildTranslationCacheRequest,
-} from './translations-keys'
+import { env } from 'cloudflare:workers'
+
+import { buildTranslationKvKey, buildTranslationCacheRequest } from './translations-keys'
 import { deepMerge } from '@/utils/shared/deep-merge'
 import { parseBooleanFlag } from '@/utils/shared/parse-boolean'
+import type { Locale } from '@/domain/i18n/constants'
+import type { Namespace, PickSchema } from './schema'
 
 // Optional fallbacks (auto-loaded if generated)
 let FALLBACKS: Record<string, any> | null = null
@@ -17,20 +16,6 @@ try {
 }
 
 const KV_JSON_OPTIONS = { type: 'json' as const }
-
-/**
- * Runtime object provided by Astro via Astro.locals.runtime.
- *
- * Intentionally loosely typed (unknown for cf/caches/ctx) to avoid
- * hard coupling to Cloudflare Workers or DOM types in this shared module.
- * We narrow the shape locally only where we need Cache API or waitUntil.
- */
-export interface Runtime {
-  env: Env
-  cf: unknown
-  caches: unknown
-  ctx: unknown
-}
 
 /**
  * Fetch translations from KV for a given locale and list of namespaces.
@@ -57,27 +42,26 @@ export interface Runtime {
  *   If FALLBACKS is null, returns empty objects per namespace — no crash.
  */
 export async function fetchTranslations<N extends Namespace>(
-  runtime: Runtime,
+  cfContext: ExecutionContext,
   locale: Locale,
   namespaces: readonly N[],
 ): Promise<PickSchema<N>> {
-  const { env } = runtime
-  const useCache = isCacheEnabled(env)
+  const useCache = isCacheEnabled()
 
   if (!useCache) {
-    debug(env, 'i18n cache DISABLED, using KV only', { locale, namespaces })
-    return fetchAllFromKV(env, locale, namespaces)
+    debug('i18n cache DISABLED, using KV only', { locale, namespaces })
+    return fetchAllFromKV(locale, namespaces)
   }
 
-  const { cache, waitUntil } = getEdgeCache(runtime)
+  const { cache, waitUntil } = getEdgeCache(cfContext)
 
   if (!cache) {
     // Cache API unavailable (e.g. Astro dev server without Miniflare)
-    debug(env, 'i18n Cache API unavailable, using KV only', {
+    debug('i18n Cache API unavailable, using KV only', {
       locale,
       namespaces,
     })
-    return fetchAllFromKV(env, locale, namespaces)
+    return fetchAllFromKV(locale, namespaces)
   }
 
   // ---------------------------------------------------------------------------
@@ -93,7 +77,7 @@ export async function fetchTranslations<N extends Namespace>(
           return { ns, data: await cached.json(), hit: true }
         }
       } catch (error) {
-        debug(env, `i18n cache READ error for ${ns}`, error)
+        debug(`i18n cache READ error for ${ns}`, error)
       }
       return { ns, data: null, hit: false }
     }),
@@ -116,11 +100,11 @@ export async function fetchTranslations<N extends Namespace>(
 
   // All namespaces were in cache — return immediately, zero KV reads
   if (missingNamespaces.length === 0) {
-    debug(env, 'i18n cache FULL HIT', { locale, namespaces })
+    debug('i18n cache FULL HIT', { locale, namespaces })
     return finalData as PickSchema<N>
   }
 
-  debug(env, 'i18n cache PARTIAL/FULL MISS', {
+  debug('i18n cache PARTIAL/FULL MISS', {
     locale,
     hit: namespaces.length - missingNamespaces.length,
     miss: missingNamespaces.length,
@@ -130,23 +114,18 @@ export async function fetchTranslations<N extends Namespace>(
   // 3. Batch KV read for missing namespaces only
   // ---------------------------------------------------------------------------
 
-  const missingKvKeys = missingNamespaces.map((ns) =>
-    buildTranslationKvKey(locale, ns),
-  )
+  const missingKvKeys = missingNamespaces.map((ns) => buildTranslationKvKey(locale, ns))
 
   let kvResults = new Map<string, unknown | null>()
   let kvFailed = false
 
   try {
-    kvResults = (await env.TRANSLATIONS.get(
-      missingKvKeys,
-      KV_JSON_OPTIONS,
-    )) as Map<string, unknown | null>
+    kvResults = (await env.TRANSLATIONS.get(missingKvKeys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
 
-    debug(env, 'i18n KV batch OK', { locale, missingNamespaces })
+    debug('i18n KV batch OK', { locale, missingNamespaces })
   } catch (error) {
     kvFailed = true
-    debug(env, 'i18n KV ERROR, using FALLBACK_* for missing namespaces', error)
+    debug('i18n KV ERROR, using FALLBACK_* for missing namespaces', error)
   }
 
   // ---------------------------------------------------------------------------
@@ -169,10 +148,7 @@ export async function fetchTranslations<N extends Namespace>(
     const nsData = fallback ? deepMerge(fallback, kvValue) : kvValue
 
     if (kvFailed && !fallback) {
-      debug(
-        env,
-        `i18n namespace "${ns}" unavailable: KV failed and no fallback`,
-      )
+      debug(`i18n namespace "${ns}" unavailable: KV failed and no fallback`)
     }
 
     finalData[ns] = nsData as PickSchema<N>[typeof ns]
@@ -191,7 +167,7 @@ export async function fetchTranslations<N extends Namespace>(
     putPromises.push(
       cache.put(cacheRequest, response.clone()).catch((error: unknown) => {
         const errorMsg = error instanceof Error ? error.message : String(error)
-        debug(env, `i18n cache WRITE error for ${ns}`, errorMsg)
+        debug(`i18n cache WRITE error for ${ns}`, errorMsg)
       }),
     )
   }
@@ -211,7 +187,7 @@ export async function fetchTranslations<N extends Namespace>(
       await allPuts
     }
 
-    debug(env, 'i18n cache PUT scheduled', { locale, missingNamespaces })
+    debug('i18n cache PUT scheduled', { locale, missingNamespaces })
   }
 
   return finalData as PickSchema<N>
@@ -225,21 +201,14 @@ export async function fetchTranslations<N extends Namespace>(
  * Fetch all requested namespaces directly from KV, bypassing the cache.
  * Used when caching is disabled or the Cache API is unavailable.
  */
-async function fetchAllFromKV<N extends Namespace>(
-  env: Env,
-  locale: Locale,
-  namespaces: readonly N[],
-): Promise<PickSchema<N>> {
+async function fetchAllFromKV<N extends Namespace>(locale: Locale, namespaces: readonly N[]): Promise<PickSchema<N>> {
   const keys = namespaces.map((ns) => buildTranslationKvKey(locale, ns))
 
   let kvResults = new Map<string, unknown | null>()
   let kvFailed = false
 
   try {
-    kvResults = (await env.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<
-      string,
-      unknown | null
-    >
+    kvResults = (await env.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
   } catch (error) {
     kvFailed = true
   }
@@ -265,9 +234,7 @@ async function fetchAllFromKV<N extends Namespace>(
  * Build a payload using only FALLBACK_* compiled dictionaries.
  * Used when KV is completely unavailable.
  */
-function buildFallbackOnly<N extends Namespace>(
-  namespaces: readonly N[],
-): PickSchema<N> {
+function buildFallbackOnly<N extends Namespace>(namespaces: readonly N[]): PickSchema<N> {
   const data: Partial<PickSchema<N>> = {}
 
   for (const ns of namespaces) {
@@ -286,12 +253,11 @@ function buildFallbackOnly<N extends Namespace>(
  * Narrow runtime.caches and runtime.ctx to the minimal shape needed
  * for using the Cache API and waitUntil in this module.
  */
-function getEdgeCache(runtime: Runtime): {
+function getEdgeCache(ctx: ExecutionContext): {
   cache: { match: any; put: any } | null
   waitUntil: ((p: Promise<unknown>) => void) | null
 } {
-  const cacheStorage = runtime.caches as { default?: { match: any; put: any } }
-  const ctx = runtime.ctx as { waitUntil?: (p: Promise<unknown>) => void }
+  const cacheStorage = caches as { default?: { match: any; put: any } }
 
   return {
     cache: cacheStorage?.default ?? null,
@@ -309,7 +275,7 @@ function getEdgeCache(runtime: Runtime): {
  *   - Update wrangler.jsonc / wrangler.toml or .dev.vars
  *   - Run: npm run typegen
  */
-function isCacheEnabled(env: Env): boolean {
+function isCacheEnabled(): boolean {
   return parseBooleanFlag(env.I18N_CACHE, /* defaultValue */ true)
 }
 
@@ -323,7 +289,7 @@ function isCacheEnabled(env: Env): boolean {
  *   - Update wrangler.jsonc / wrangler.toml or .dev.vars
  *   - Run: npm run typegen
  */
-function debug(env: Env, ...args: unknown[]): void {
+function debug(...args: unknown[]): void {
   const enabled = parseBooleanFlag(env.DEBUG_I18N, /* defaultValue */ false)
   if (!enabled) return
 

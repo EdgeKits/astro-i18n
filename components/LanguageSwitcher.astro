@@ -1,5 +1,5 @@
 ---
-import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
+// import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
 import { cn } from '@/shadcn/utils'
 
 import { SUPPORTED_LOCALES, LANGUAGES } from '@/domain/i18n/constants'
@@ -19,12 +19,13 @@ const { uiLocale: currentLang } = Astro.locals
       aria-expanded='false'
       aria-label='Switch language'
     >
-      <GlobeIcon className='size-5 text-foreground' />
+      <!-- <GlobeIcon className='text-foreground size-5' /> -->
+       G
     </button>
 
     <div
       data-ls-dropdown
-      class='absolute z-50 right-8 -mt-8 w-44 bg-card shadow-lg rounded-lg border overflow-hidden hidden animate-in fade-in slide-in-from-top-8 duration-300'
+      class='bg-card animate-in fade-in slide-in-from-top-8 absolute right-8 z-50 -mt-8 hidden w-44 overflow-hidden rounded-lg border shadow-lg duration-300'
       role='menu'
     >
       {
@@ -38,18 +39,21 @@ const { uiLocale: currentLang } = Astro.locals
             <button
               type='button'
               class={cn(
-                'ls-selector flex w-44 items-center justify-between px-4 py-2 text-sm hover:bg-muted',
+                'ls-selector hover:bg-muted flex w-44 items-center justify-between px-4 py-2 text-sm',
                 isActive && 'bg-background cursor-default'
               )}
               data-lang={locale}
               role='menuitem'
               disabled={isActive}
             >
-              <span class='flex items-center gap-3 pointer-events-none'>
-                <Flag code={flagCode} size={16} />
+              <span class='pointer-events-none flex items-center gap-3'>
+                <Flag
+                  code={flagCode}
+                  size={16}
+                />
                 {label.name}
               </span>
-              {isActive && <DotIcon className='size-6' />}
+              {/* {isActive && <DotIcon className='size-6' />} */}
             </button>
           )
         })
