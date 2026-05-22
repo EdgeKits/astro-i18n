@@ -102,7 +102,7 @@ function applySecurityHeaders(response: Response): Response {
 // adapter/router or the edge cache instead). Output appears in the `astro preview`
 // / `wrangler dev` terminal. Flip LOG_REDIRECTS to false (or delete this block plus
 // the logRedirect() calls) once the bug is diagnosed.
-const LOG_REDIRECTS = true
+const LOG_REDIRECTS = false
 function logRedirect(from: string, to: string, status: number, reason: string): void {
   if (!LOG_REDIRECTS) return
   console.log(`[i18n-redirect] ${status} (${reason}) ${from} -> ${to}`)
