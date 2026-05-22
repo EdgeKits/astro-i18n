@@ -17,6 +17,13 @@ const IGNORED_PREFIXES = ['/api', '/assets', '/_astro', '/_image', '/_actions', 
 // Extracts the context type from Astro's MiddlewareHandler for cleaner function signatures.
 type I18nMiddlewareContext = Parameters<MiddlewareHandler>[0]
 
+// Redirect status code: 302 (temporary) on the local dev server so nothing gets
+// cached while testing, 301 (permanent) in production for correct SEO. Every
+// redirect below uses this. NEVER ship 302 to prod — permanent redirects are what
+// consolidate canonical signals in Google. `import.meta.env.DEV` is true only under
+// `astro dev`; any production build (incl. `astro preview` / `wrangler dev`) -> 301.
+const REDIRECT_STATUS = import.meta.env.DEV ? 302 : 301
+
 // Determines if the current request path matches static assets or ignored prefixes.
 // Returns true to skip i18n processing for this request.
 function shouldBypassI18n(pathname: string): boolean {
@@ -87,6 +94,21 @@ function applySecurityHeaders(response: Response): Response {
   return response
 }
 
+// --- TEMPORARY DIAGNOSTIC ---------------------------------------------------
+// Logs every redirect this middleware emits, so we can see whether a *valid*
+// deep URL (e.g. /en/blog/slug/) is ever bounced — and from exactly which branch.
+// If you reproduce the "homepage on first hit" bug and NO line is logged for the
+// requested URL, the redirect is NOT coming from this middleware (look at the
+// adapter/router or the edge cache instead). Output appears in the `astro preview`
+// / `wrangler dev` terminal. Flip LOG_REDIRECTS to false (or delete this block plus
+// the logRedirect() calls) once the bug is diagnosed.
+const LOG_REDIRECTS = true
+function logRedirect(from: string, to: string, status: number, reason: string): void {
+  if (!LOG_REDIRECTS) return
+  console.log(`[i18n-redirect] ${status} (${reason}) ${from} -> ${to}`)
+}
+// ---------------------------------------------------------------------------
+
 // Constructs a standardized localized URL path ensuring a trailing slash.
 // Example: buildLocalizedPath('en', ['about', 'team']) -> '/en/about/team/'
 function buildLocalizedPath(locale: Locale, rest: string[]): string {
@@ -152,17 +174,25 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
 
   // 3. Bypass static files and system paths (with Soft 404 protection)
   if (shouldBypassI18n(pathname)) {
-    // Strip trailing slash from .md URLs BEFORE rendering — 301 redirect immediately
+    // Normalize .md endpoints in ONE pass: English-only, no trailing slash.
+    // We build the canonical target and redirect once if it differs.
+    //
+    // Why the rewrite: the old code assumed segments[0] was always a locale and
+    // stripped it on `firstSegment !== 'en'` without validating it. That broke any
+    // .md whose first segment is NOT a locale — e.g. `/foo.md` collapsed to `/en/`
+    // (the homepage!) and `/blog/x.md` lost the `blog` segment. It also fired two
+    // chained redirects for `/de/blog/x.md/` (strip slash, then force locale).
     if (/\.md\/?$/.test(pathname)) {
-      // 1. Strip trailing slash
-      if (pathname.endsWith('/')) {
-        return applySecurityHeaders(context.redirect(pathname.slice(0, -1), 301))
-      }
+      // Only strip the first segment when it is a REAL locale; otherwise keep the
+      // whole path and just prefix /en/. `segments` already excludes the trailing
+      // slash (filter(Boolean)), so this also normalizes trailing slashes for free.
+      const localeParsed = LocaleSchema.safeParse(firstSegment)
+      const contentSegments = localeParsed.success ? segments.slice(1) : segments
+      const target = `/en/${contentSegments.join('/')}`
 
-      // 2. Redirect non-english locales to /en/
-      if (firstSegment && firstSegment !== 'en') {
-        const withoutLocale = segments.slice(1).join('/')
-        return applySecurityHeaders(context.redirect(`/en/${withoutLocale}`, 301))
+      if (pathname !== target) {
+        logRedirect(pathname, target, REDIRECT_STATUS, 'md:normalize')
+        return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
       }
     }
 
@@ -194,7 +224,8 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
       // Apply headers to the redirect response
-      return applySecurityHeaders(context.redirect(target, 301))
+      logRedirect(pathname, target, REDIRECT_STATUS, 'no-locale:root')
+      return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
     }
     return applySecurityHeaders(await next())
   }
@@ -215,7 +246,8 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     // Normalize trailing slash and structure
     const normalized = buildLocalizedPath(urlLocale, segments.slice(1))
     if (pathname !== normalized) {
-      return applySecurityHeaders(context.redirect(normalized, 301))
+      logRedirect(pathname, normalized, REDIRECT_STATUS, 'locale-valid:normalize')
+      return applySecurityHeaders(context.redirect(normalized, REDIRECT_STATUS))
     }
 
     return applySecurityHeaders(await next())
@@ -225,7 +257,8 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    return applySecurityHeaders(context.redirect(target, 301))
+    logRedirect(pathname, target, REDIRECT_STATUS, 'invalid-locale:prefix-fallback')
+    return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
   }
 
   return applySecurityHeaders(await next())
