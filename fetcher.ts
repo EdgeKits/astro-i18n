@@ -53,7 +53,7 @@ export async function fetchTranslations<N extends Namespace>(
     return fetchAllFromKV(locale, namespaces)
   }
 
-  const { cache, waitUntil } = getEdgeCache(cfContext)
+  const { cache } = getEdgeCache(cfContext) // , waitUntil
 
   if (!cache) {
     // Cache API unavailable (e.g. Astro dev server without Miniflare)
@@ -179,13 +179,19 @@ export async function fetchTranslations<N extends Namespace>(
   if (putPromises.length > 0) {
     const allPuts = Promise.all(putPromises)
 
-    if (waitUntil) {
-      // Real Workers: schedule as a non-blocking background task
-      waitUntil(allPuts)
+    if (cfContext?.waitUntil) {
+      cfContext.waitUntil(allPuts)
     } else {
-      // Dev / non-Workers: await directly so cache is actually written
       await allPuts
     }
+
+    // if (waitUntil) {
+    //   // Real Workers: schedule as a non-blocking background task
+    //   waitUntil(allPuts)
+    // } else {
+    //   // Dev / non-Workers: await directly so cache is actually written
+    //   await allPuts
+    // }
 
     debug('i18n cache PUT scheduled', { locale, missingNamespaces })
   }
@@ -255,13 +261,13 @@ function buildFallbackOnly<N extends Namespace>(namespaces: readonly N[]): PickS
  */
 function getEdgeCache(ctx: ExecutionContext): {
   cache: { match: any; put: any } | null
-  waitUntil: ((p: Promise<unknown>) => void) | null
+  // waitUntil: ((p: Promise<unknown>) => void) | null
 } {
   const cacheStorage = caches as { default?: { match: any; put: any } }
 
   return {
     cache: cacheStorage?.default ?? null,
-    waitUntil: ctx?.waitUntil ?? null,
+    // waitUntil: ctx?.waitUntil ?? null,
   }
 }
 
