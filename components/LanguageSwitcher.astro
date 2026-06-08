@@ -1,5 +1,6 @@
 ---
-import { GlobeIcon, DotIcon } from '@phosphor-icons/react'
+import WorldIcon from '@tabler/icons/outline/world.svg'
+import PointIcon from '@tabler/icons/filled/point.svg'
 import { cn } from '@/utils/cn'
 
 import { SUPPORTED_LOCALES, LANGUAGES } from '@/domain/i18n/constants'
@@ -19,7 +20,7 @@ const { uiLocale: currentLang } = Astro.locals
       aria-expanded='false'
       aria-label='Switch language'
     >
-      <GlobeIcon className='text-foreground size-5' />
+      <WorldIcon class='text-foreground size-5' />
     </button>
 
     <div
@@ -52,7 +53,7 @@ const { uiLocale: currentLang } = Astro.locals
                 />
                 {label.name}
               </span>
-              {isActive && <DotIcon className='size-6' />}
+              {isActive && <PointIcon class='size-6' />}
             </button>
           )
         })
