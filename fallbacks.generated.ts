@@ -15,7 +15,13 @@ export const FALLBACK_BLOG = {
   "tocHeading": "Table of Contents",
   "faqHeading": "Frequently Asked Questions",
   "resourcesHeading": "Resources & Further Reading",
-  "authorSlogan": "Happy Coding on the Edge!"
+  "authorSlogan": "Happy Coding on the Edge!",
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "pageLabel": "Page {n}",
+    "ariaLabel": "Blog pagination"
+  }
 } as const;
 
 export const FALLBACK_COMMON = {
