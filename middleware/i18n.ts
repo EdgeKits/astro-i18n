@@ -59,30 +59,14 @@ function applySecurityHeaders(response: Response): Response {
   //     `object-src 'none';`,
   // )
 
-  // Zaraz v2
-  response.headers.set(
-    'Content-Security-Policy',
-    `default-src 'self'; ` +
-      `style-src 'self' 'unsafe-inline'; ` +
-      // Add 'unsafe-eval' for correct work of Zaraz
-      `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
-      `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-      `font-src 'self' data:; ` +
-      // Allow media from our CDN
-      `media-src 'self' ${PROJECT.cdnUrl}; ` +
-      `frame-ancestors 'self'; ` +
-      `object-src 'none';`,
-  )
-
-  // // Zaraz v2 with CF Analytics
+  // // Zaraz v2
   // response.headers.set(
   //   'Content-Security-Policy',
   //   `default-src 'self'; ` +
   //     `style-src 'self' 'unsafe-inline'; ` +
   //     // Add 'unsafe-eval' for correct work of Zaraz
-  //     `script-src 'self' 'unsafe-inline' 'unsafe-eval' data: https://static.cloudflareinsights.com; ` +
-  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com https://cloudflareinsights.com; ` +
+  //     `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
+  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
   //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
   //     `font-src 'self' data:; ` +
   //     // Allow media from our CDN
@@ -90,6 +74,31 @@ function applySecurityHeaders(response: Response): Response {
   //     `frame-ancestors 'self'; ` +
   //     `object-src 'none';`,
   // )
+
+  // Zaraz v4 — fully same-origin.
+  // Zaraz GA4 runs server-side: the browser only talks to /cdn-cgi/zaraz/* on our
+  // own origin (verified in DevTools 2026-06-10: zero requests to google-analytics/
+  // doubleclick/google.com after disabling "Google Analytics Audiences" in the GA4
+  // tool). Google origins removed from connect-src/img-src accordingly.
+  // 'unsafe-eval' and data: dropped from script-src: Zaraz removed its eval
+  // dependency in 2024 (changelog 2024-07-23 "CSP Compliance: Remove eval
+  // dependency"), and data: URIs in script-src are an XSS vector.
+  // NOTE: smoke-test after deploy: (1) newsletter subscribe -> segmentation step,
+  // (2) zaraz events in /cdn-cgi/zaraz/t, (3) mermaid diagrams on the three blog
+  // posts that use them. If mermaid breaks, re-add 'unsafe-eval' ONLY.
+  response.headers.set(
+    'Content-Security-Policy',
+    `default-src 'self'; ` +
+      `style-src 'self' 'unsafe-inline'; ` +
+      `script-src 'self' 'unsafe-inline'; ` +
+      `connect-src 'self'; ` +
+      `img-src 'self' data: blob: ${PROJECT.cdnUrl}; ` +
+      `font-src 'self' data:; ` +
+      // Allow media from our CDN
+      `media-src 'self' ${PROJECT.cdnUrl}; ` +
+      `frame-ancestors 'self'; ` +
+      `object-src 'none';`,
+  )
 
   return response
 }
