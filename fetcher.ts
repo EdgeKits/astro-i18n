@@ -258,8 +258,10 @@ function buildFallbackOnly<N extends Namespace>(namespaces: readonly N[]): PickS
 /**
  * Narrow runtime.caches and runtime.ctx to the minimal shape needed
  * for using the Cache API and waitUntil in this module.
+ * `_ctx` is unused until the waitUntil variant (commented below) is enabled;
+ * the underscore keeps ts(6133) quiet without changing the call sites.
  */
-function getEdgeCache(ctx: ExecutionContext): {
+function getEdgeCache(_ctx: ExecutionContext): {
   cache: { match: any; put: any } | null
   // waitUntil: ((p: Promise<unknown>) => void) | null
 } {
@@ -267,7 +269,7 @@ function getEdgeCache(ctx: ExecutionContext): {
 
   return {
     cache: cacheStorage?.default ?? null,
-    // waitUntil: ctx?.waitUntil ?? null,
+    // waitUntil: _ctx?.waitUntil ?? null,
   }
 }
 

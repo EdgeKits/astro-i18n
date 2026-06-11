@@ -241,6 +241,7 @@ export const FALLBACK_NEWSLETTER = {
     },
     "segment": {
       "title": "Optional - help us tailor updates for you",
+      "placeholder": "Select starter or tool...",
       "fields": {
         "interests": "What are you interested in at first?",
         "billingProvider": "Preferred billing provider for your projects",
