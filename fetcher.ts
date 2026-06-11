@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env, waitUntil } from 'cloudflare:workers'
 
 import { buildTranslationKvKey, buildTranslationCacheRequest } from './translations-keys'
 import { deepMerge } from '@/utils/shared/deep-merge'
@@ -42,7 +42,6 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
  *   If FALLBACKS is null, returns empty objects per namespace — no crash.
  */
 export async function fetchTranslations<N extends Namespace>(
-  cfContext: ExecutionContext,
   locale: Locale,
   namespaces: readonly N[],
 ): Promise<PickSchema<N>> {
@@ -53,7 +52,7 @@ export async function fetchTranslations<N extends Namespace>(
     return fetchAllFromKV(locale, namespaces)
   }
 
-  const { cache } = getEdgeCache(cfContext) // , waitUntil
+  const { cache } = getEdgeCache()
 
   if (!cache) {
     // Cache API unavailable (e.g. Astro dev server without Miniflare)
@@ -177,21 +176,11 @@ export async function fetchTranslations<N extends Namespace>(
   // ---------------------------------------------------------------------------
 
   if (putPromises.length > 0) {
-    const allPuts = Promise.all(putPromises)
-
-    if (cfContext?.waitUntil) {
-      cfContext.waitUntil(allPuts)
-    } else {
-      await allPuts
-    }
-
-    // if (waitUntil) {
-    //   // Real Workers: schedule as a non-blocking background task
-    //   waitUntil(allPuts)
-    // } else {
-    //   // Dev / non-Workers: await directly so cache is actually written
-    //   await allPuts
-    // }
+    // Top-level waitUntil (cloudflare:workers): same semantics as
+    // ctx.waitUntil, no need to plumb an ExecutionContext through callers.
+    // putPromises only exist when the Cache API is available, so this never
+    // runs in plain `astro dev`.
+    waitUntil(Promise.all(putPromises))
 
     debug('i18n cache PUT scheduled', { locale, missingNamespaces })
   }
@@ -256,20 +245,16 @@ function buildFallbackOnly<N extends Namespace>(namespaces: readonly N[]): PickS
 // ---------------------------------------------------------------------------
 
 /**
- * Narrow runtime.caches and runtime.ctx to the minimal shape needed
- * for using the Cache API and waitUntil in this module.
- * `_ctx` is unused until the waitUntil variant (commented below) is enabled;
- * the underscore keeps ts(6133) quiet without changing the call sites.
+ * Narrow the global `caches` to the minimal shape this module needs.
+ * (waitUntil comes straight from 'cloudflare:workers' — no ctx plumbing.)
  */
-function getEdgeCache(_ctx: ExecutionContext): {
+function getEdgeCache(): {
   cache: { match: any; put: any } | null
-  // waitUntil: ((p: Promise<unknown>) => void) | null
 } {
   const cacheStorage = caches as { default?: { match: any; put: any } }
 
   return {
     cache: cacheStorage?.default ?? null,
-    // waitUntil: _ctx?.waitUntil ?? null,
   }
 }
 

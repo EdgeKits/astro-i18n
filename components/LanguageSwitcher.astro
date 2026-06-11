@@ -20,7 +20,10 @@ const { uiLocale: currentLang } = Astro.locals
       aria-expanded='false'
       aria-label='Switch language'
     >
-      <WorldIcon class='text-foreground size-5' stroke-width='1' />
+      <WorldIcon
+        class='text-foreground size-5'
+        stroke-width='1'
+      />
     </button>
 
     <div
@@ -63,7 +66,7 @@ const { uiLocale: currentLang } = Astro.locals
 </language-switcher>
 
 <script>
-  import type { Locale } from '@/domain/i18n/constants'
+  import { LANG_COOKIE_NAME, type Locale } from '@/domain/i18n/constants'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
@@ -142,6 +145,13 @@ const { uiLocale: currentLang } = Astro.locals
       const currentLang = this.getLangFromUrl(pathname)
 
       if (!currentLang) return
+
+      // Persist the EXPLICIT language choice client-side. The i18n middleware
+      // no longer creates the cookie on plain page views (a cookie-less request
+      // must stay free of Set-Cookie so the HTML edge cache can serve it), so
+      // the switcher is the place where the preference is born. Not httpOnly —
+      // the server only ever reads it (schema-validated), never trusts it.
+      document.cookie = `${LANG_COOKIE_NAME}=${lang}; path=/; max-age=31536000; SameSite=Lax; Secure`
 
       window.location.href = this.replaceLocaleInPath(pathname, currentLang, lang)
     }

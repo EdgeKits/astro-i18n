@@ -12,7 +12,24 @@ const PUBLIC_FILE_REGEX = /\.(ico|png|jpg|jpeg|svg|webp|gif|css|js|map|txt|xml|j
 
 // List of URL prefixes that should be ignored by the i18n middleware.
 // Includes API endpoints, internal Astro paths, and standard static routes.
-const IGNORED_PREFIXES = ['/api', '/assets', '/_astro', '/_image', '/_actions', '/favicon']
+// The Vite dev-server prefixes (/@vite, /@id, /@fs, /src, /node_modules) make
+// dev survive `run_worker_first: ["/*"]` being left on: without them every
+// dev-module request fell through to the locale logic, got redirected to
+// /<locale>/@vite/... and rendered a full 404 page (with its translation
+// fetches) per module. Harmless in prod — no real route starts with these.
+const IGNORED_PREFIXES = [
+  '/api',
+  '/assets',
+  '/_astro',
+  '/_image',
+  '/_actions',
+  '/favicon',
+  '/@vite',
+  '/@id',
+  '/@fs',
+  '/src',
+  '/node_modules',
+]
 
 // Extracts the context type from Astro's MiddlewareHandler for cleaner function signatures.
 type I18nMiddlewareContext = Parameters<MiddlewareHandler>[0]
@@ -244,8 +261,21 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   const urlLocale: Locale | null = parsed.success ? parsed.data : null
 
   if (urlLocale) {
-    // Keep cookie in sync with URL locale
-    setCookieLang(context.cookies, urlLocale)
+    // Keep the lang cookie in sync with the URL locale — but ONLY update an
+    // EXISTING cookie that differs. Rationale (HTML edge cache, P1/P2):
+    //   - The old unconditional set emitted `Set-Cookie` on EVERY localized
+    //     response, which made every response uncacheable (the edge cache
+    //     refuses anything carrying Set-Cookie).
+    //   - Cookie-less requests (first visits, crawlers, every PSI/GTmetrix run)
+    //     must produce NO Set-Cookie at all, otherwise lab tests never hit the
+    //     cache and the TTFB jitter (P2) stays. So a missing cookie is NOT
+    //     created here — the explicit language choice is persisted client-side
+    //     by the LanguageSwitcher, and an existing cookie is re-synced below
+    //     when the user lands on a different locale by any other means.
+    const cookieLocale = getCookieLang(context.cookies)
+    if (cookieLocale && cookieLocale !== urlLocale) {
+      setCookieLang(context.cookies, urlLocale)
+    }
     // Set uiLocale to Astro locals
     context.locals.uiLocale = urlLocale
     // Define and set translationLocale to Astro locals

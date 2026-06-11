@@ -2,14 +2,14 @@
 import { checkMissingTranslation } from '@/domain/i18n/resolve-locale'
 import { fetchTranslations } from '@/domain/i18n/fetcher'
 
-const { uiLocale, translationLocale, isMissingContent, cfContext } = Astro.locals
+const { uiLocale, translationLocale, isMissingContent } = Astro.locals
 
 const missingType = checkMissingTranslation(uiLocale, isMissingContent)
 
 let bannerText: string | null = null
 
 if (missingType) {
-  const { messages } = await fetchTranslations(cfContext, translationLocale, ['messages'])
+  const { messages } = await fetchTranslations(translationLocale, ['messages'])
 
   bannerText =
     missingType === 'content'
