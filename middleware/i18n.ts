@@ -84,8 +84,8 @@ function applySecurityHeaders(response: Response): Response {
   // dependency in 2024 (changelog 2024-07-23 "CSP Compliance: Remove eval
   // dependency"), and data: URIs in script-src are an XSS vector.
   // NOTE: smoke-test after deploy: (1) newsletter subscribe -> segmentation step,
-  // (2) zaraz events in /cdn-cgi/zaraz/t, (3) mermaid diagrams on the three blog
-  // posts that use them. If mermaid breaks, re-add 'unsafe-eval' ONLY.
+  // (2) zaraz events in /cdn-cgi/zaraz/t. (Mermaid client rendering removed
+  // 2026-06-10 — diagrams are static infographics now, no eval anywhere.)
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
