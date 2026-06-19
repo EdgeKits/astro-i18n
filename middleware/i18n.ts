@@ -123,12 +123,12 @@ function applySecurityHeaders(response: Response): Response {
     'Content-Security-Policy',
     `default-src 'self'; ` +
       `style-src 'self' 'unsafe-inline' https://*.paddle.com; ` +
-      `script-src 'self' 'unsafe-inline' https://*.paddle.com; ` +
-      `connect-src 'self' https://*.paddle.com; ` +
+      `script-src 'self' 'unsafe-inline' https://*.paddle.com https://*.profitwell.com; ` +
+      `connect-src 'self' https://*.paddle.com https://*.profitwell.com; ` +
       `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.paddle.com; ` +
       `font-src 'self' data:; ` +
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
-      `frame-src 'self' https://*.paddle.com; ` + // NEW — чекаут открывается в iframe Paddle
+      `frame-src 'self' https://*.paddle.com; ` +
       `frame-ancestors 'self'; ` +
       `object-src 'none';`,
   )
