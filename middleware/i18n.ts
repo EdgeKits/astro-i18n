@@ -103,16 +103,32 @@ function applySecurityHeaders(response: Response): Response {
   // NOTE: smoke-test after deploy: (1) newsletter subscribe -> segmentation step,
   // (2) zaraz events in /cdn-cgi/zaraz/t. (Mermaid client rendering removed
   // 2026-06-10 — diagrams are static infographics now, no eval anywhere.)
+  // !! Return this back after Paddle test !!
+  // response.headers.set(
+  //   'Content-Security-Policy',
+  //   `default-src 'self'; ` +
+  //     `style-src 'self' 'unsafe-inline'; ` +
+  //     `script-src 'self' 'unsafe-inline'; ` +
+  //     `connect-src 'self'; ` +
+  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl}; ` +
+  //     `font-src 'self' data:; ` +
+  //     // Allow media from our CDN
+  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
+  //     `frame-ancestors 'self'; ` +
+  //     `object-src 'none';`,
+  // )
+
+  // TEMP: Paddle checkout test
   response.headers.set(
     'Content-Security-Policy',
     `default-src 'self'; ` +
-      `style-src 'self' 'unsafe-inline'; ` +
-      `script-src 'self' 'unsafe-inline'; ` +
-      `connect-src 'self'; ` +
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl}; ` +
+      `style-src 'self' 'unsafe-inline' https://*.paddle.com; ` +
+      `script-src 'self' 'unsafe-inline' https://*.paddle.com; ` +
+      `connect-src 'self' https://*.paddle.com; ` +
+      `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.paddle.com; ` +
       `font-src 'self' data:; ` +
-      // Allow media from our CDN
       `media-src 'self' ${PROJECT.cdnUrl}; ` +
+      `frame-src 'self' https://*.paddle.com; ` + // NEW — чекаут открывается в iframe Paddle
       `frame-ancestors 'self'; ` +
       `object-src 'none';`,
   )
