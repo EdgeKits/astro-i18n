@@ -136,21 +136,6 @@ function applySecurityHeaders(response: Response): Response {
   return response
 }
 
-// --- TEMPORARY DIAGNOSTIC ---------------------------------------------------
-// Logs every redirect this middleware emits, so we can see whether a *valid*
-// deep URL (e.g. /en/blog/slug/) is ever bounced — and from exactly which branch.
-// If you reproduce the "homepage on first hit" bug and NO line is logged for the
-// requested URL, the redirect is NOT coming from this middleware (look at the
-// adapter/router or the edge cache instead). Output appears in the `astro preview`
-// / `wrangler dev` terminal. Flip LOG_REDIRECTS to false (or delete this block plus
-// the logRedirect() calls) once the bug is diagnosed.
-const LOG_REDIRECTS = false
-function logRedirect(from: string, to: string, status: number, reason: string): void {
-  if (!LOG_REDIRECTS) return
-  console.log(`[i18n-redirect] ${status} (${reason}) ${from} -> ${to}`)
-}
-// ---------------------------------------------------------------------------
-
 // Constructs a standardized localized URL path ensuring a trailing slash.
 // Example: buildLocalizedPath('en', ['about', 'team']) -> '/en/about/team/'
 function buildLocalizedPath(locale: Locale, rest: string[]): string {
@@ -233,7 +218,6 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
       const target = `/en/${contentSegments.join('/')}`
 
       if (pathname !== target) {
-        logRedirect(pathname, target, REDIRECT_STATUS, 'md:normalize')
         return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
       }
     }
@@ -266,7 +250,6 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
       // Apply headers to the redirect response
-      logRedirect(pathname, target, REDIRECT_STATUS, 'no-locale:root')
       return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
     }
     return applySecurityHeaders(await next())
@@ -301,7 +284,6 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     // Normalize trailing slash and structure
     const normalized = buildLocalizedPath(urlLocale, segments.slice(1))
     if (pathname !== normalized) {
-      logRedirect(pathname, normalized, REDIRECT_STATUS, 'locale-valid:normalize')
       return applySecurityHeaders(context.redirect(normalized, REDIRECT_STATUS))
     }
 
@@ -312,7 +294,6 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    logRedirect(pathname, target, REDIRECT_STATUS, 'invalid-locale:prefix-fallback')
     return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
   }
 
