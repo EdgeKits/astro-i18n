@@ -42,6 +42,47 @@ export const FALLBACK_CONSENT = {
   "decline": "Decline"
 } as const;
 
+export const FALLBACK_DELIVERY = {
+  "seo": {
+    "title": "Your order",
+    "description": "Your EdgeKits delivery status."
+  },
+  "noOrder": {
+    "heading": "No active order",
+    "body": "We couldn’t find an order in your session. If you just purchased, open the link in your confirmation email to continue."
+  },
+  "status": {
+    "pending": {
+      "heading": "Setting up your access…",
+      "body": "This usually takes under a minute. This page refreshes automatically."
+    },
+    "granted": {
+      "heading": "Access is set up",
+      "body": "Check your email for the GitHub invitation and accept it to reach your repositories."
+    },
+    "failed": {
+      "heading": "Something went wrong",
+      "body": "We couldn’t finish setting up your access. Please contact support."
+    },
+    "timeout": {
+      "heading": "Still setting up",
+      "body": "This is taking longer than usual. Check your email for the invitation, or refresh this page in a moment."
+    }
+  },
+  "cta": {
+    "refresh": "Refresh"
+  },
+  "members": {
+    "seo": {
+      "title": "Members",
+      "description": "Your EdgeKits member area."
+    },
+    "heading": "Members area",
+    "body": "Your access is active.",
+    "teamsLabel": "Your teams:"
+  }
+} as const;
+
 export const FALLBACK_LANDING = {
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
