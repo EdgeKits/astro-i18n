@@ -11,25 +11,22 @@ const { uiLocale: currentLang } = Astro.locals
 ---
 
 <language-switcher data-current-lang={currentLang}>
-  <div class='relative'>
+  <div class="relative">
     <button
-      type='button'
+      type="button"
       data-ls-trigger
-      class='rounded-full'
-      aria-haspopup='true'
-      aria-expanded='false'
-      aria-label='Switch language'
+      class="rounded-full"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-label="Switch language"
     >
-      <WorldIcon
-        class='text-foreground size-5'
-        stroke-width='1'
-      />
+      <WorldIcon class="text-foreground size-5" stroke-width="1" />
     </button>
 
     <div
       data-ls-dropdown
-      class='bg-card animate-in fade-in slide-in-from-top-8 absolute right-8 z-50 -mt-8 hidden w-44 overflow-hidden rounded-lg border shadow-lg duration-300'
-      role='menu'
+      class="bg-card animate-in fade-in slide-in-from-top-8 absolute right-8 z-50 -mt-8 hidden w-44 overflow-hidden rounded-lg border shadow-lg duration-300"
+      role="menu"
     >
       {
         SUPPORTED_LOCALES.map((lang) => {
@@ -40,23 +37,20 @@ const { uiLocale: currentLang } = Astro.locals
 
           return (
             <button
-              type='button'
+              type="button"
               class={cn(
                 'ls-selector hover:bg-muted flex w-44 items-center justify-between px-4 py-2 text-sm',
-                isActive && 'bg-background cursor-default'
+                isActive && 'bg-background cursor-default',
               )}
               data-lang={locale}
-              role='menuitem'
+              role="menuitem"
               disabled={isActive}
             >
-              <span class='pointer-events-none flex items-center gap-3'>
-                <Flag
-                  code={flagCode}
-                  size={16}
-                />
+              <span class="pointer-events-none flex items-center gap-3">
+                <Flag code={flagCode} size={16} />
                 {label.name}
               </span>
-              {isActive && <PointIcon class='size-6' />}
+              {isActive && <PointIcon class="size-6" />}
             </button>
           )
         })
