@@ -80,6 +80,11 @@ export const FALLBACK_DELIVERY = {
     "invalid": "That doesn’t look like a valid GitHub username. Use 1–39 letters, numbers, or single hyphens.",
     "lastResort": "Still stuck? Double-check your GitHub username and try again:"
   },
+  "recover": {
+    "busy": "One moment — we’re finishing up. Trying again…",
+    "stateChanged": "Your status changed — let’s re-check it.",
+    "serverError": "Something went wrong. Please try again in a moment."
+  },
   "paymentNotConfirmed": {
     "heading": "Payment not confirmed",
     "body": "We couldn’t confirm your payment. If you were charged, contact support and we’ll sort it out — otherwise nothing was completed and you can try again."
