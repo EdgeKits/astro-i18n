@@ -73,6 +73,7 @@ export const FALLBACK_DELIVERY = {
       "body": "This is taking longer than usual. Check your email for the invitation, or refresh this page in a moment."
     }
   },
+  "inviteHint": "Your GitHub invitation email will arrive shortly — check spam if you don’t see it.",
   "reenter": {
     "label": "GitHub username",
     "help": "Your GitHub account username — the one you sign in with, not your email.",
