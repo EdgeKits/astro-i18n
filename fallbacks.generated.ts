@@ -42,68 +42,6 @@ export const FALLBACK_CONSENT = {
   "decline": "Decline"
 } as const;
 
-export const FALLBACK_DELIVERY = {
-  "seo": {
-    "title": "Your order",
-    "description": "Your EdgeKits delivery status."
-  },
-  "noOrder": {
-    "heading": "No active order",
-    "body": "We couldn’t find an order in your session. If you just purchased, open the link in your confirmation email to continue."
-  },
-  "status": {
-    "pending": {
-      "heading": "Setting up your access…",
-      "body": "This usually takes under a minute. This page refreshes automatically."
-    },
-    "granted": {
-      "heading": "Access is set up",
-      "body": "Check your email for the GitHub invitation and accept it to reach your repositories."
-    },
-    "failed": {
-      "heading": "Something went wrong",
-      "body": "We couldn’t finish setting up your access. Please contact support and we’ll get you sorted."
-    },
-    "needs_handle": {
-      "heading": "Check your GitHub username",
-      "body": "We couldn’t set up access with the GitHub username from checkout. Re-enter it below and we’ll finish setting up your access."
-    },
-    "timeout": {
-      "heading": "Still setting up",
-      "body": "This is taking longer than usual. Check your email for the invitation, or refresh this page in a moment."
-    }
-  },
-  "inviteHint": "Your GitHub invitation email will arrive shortly — check spam if you don’t see it.",
-  "reenter": {
-    "label": "GitHub username",
-    "help": "Your GitHub account username — the one you sign in with, not your email.",
-    "submit": "Update and continue",
-    "invalid": "That doesn’t look like a valid GitHub username. Use 1–39 letters, numbers, or single hyphens.",
-    "lastResort": "Still stuck? Double-check your GitHub username and try again:"
-  },
-  "recover": {
-    "busy": "One moment — we’re finishing up. Trying again…",
-    "stateChanged": "Your status changed — let’s re-check it.",
-    "serverError": "Something went wrong. Please try again in a moment."
-  },
-  "paymentNotConfirmed": {
-    "heading": "Payment not confirmed",
-    "body": "We couldn’t confirm your payment. If you were charged, contact support and we’ll sort it out — otherwise nothing was completed and you can try again."
-  },
-  "cta": {
-    "refresh": "Refresh"
-  },
-  "members": {
-    "seo": {
-      "title": "Members",
-      "description": "Your EdgeKits member area."
-    },
-    "heading": "Members area",
-    "body": "Your access is active.",
-    "teamsLabel": "Your teams:"
-  }
-} as const;
-
 export const FALLBACK_LANDING = {
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
