@@ -1,7 +1,7 @@
 import { env, waitUntil } from 'cloudflare:workers'
 
+import { assembleNamespace } from './assemble'
 import { buildTranslationKvKey, buildTranslationCacheRequest } from './translations-keys'
-import { deepMerge } from '@/utils/shared/deep-merge'
 import { parseBooleanFlag } from '@/utils/shared/parse-boolean'
 import type { Locale } from '@/domain/i18n/constants'
 import type { Namespace, PickSchema } from './schema'
@@ -30,12 +30,18 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
  * are purged, leaving untouched namespaces warm in the cache.
  *
  * Hot path (all namespaces cached):
- *   Parallel cache.match() for each namespace → all HIT → return immediately.
- *   Zero KV reads.
+ *   Parallel cache.match() for each namespace → all HIT → merge each with
+ *   FALLBACK_* → return immediately. Zero KV reads.
  *
  * Partial or full cache miss:
  *   Missing namespaces collected → single KV getAll() batch →
  *   merge with FALLBACK_* → individual cache.put() per namespace → return.
+ *
+ * Every namespace — cached or freshly read — is assembled through
+ * assembleNamespace(), so a cache HIT is merged with FALLBACK_* exactly like a
+ * miss. An entry cached before a schema addition therefore degrades to
+ * default-locale text for the keys it predates instead of yielding `undefined`
+ * (ADR-0014).
  *
  * KV unavailable:
  *   Falls back to FALLBACK_* compiled dictionaries (always available).
@@ -91,7 +97,10 @@ export async function fetchTranslations<N extends Namespace>(
 
   for (const { ns, data, hit } of cacheResults) {
     if (hit) {
-      finalData[ns] = data as PickSchema<N>[typeof ns]
+      // Cached entries are merged with FALLBACK_* too. A namespace cached before
+      // a schema addition is missing the newer keys; without this merge it would
+      // reach pages as-is and any read of a new key would throw (ADR-0014).
+      finalData[ns] = assembleNamespace(data, getFallback(ns)) as PickSchema<N>[typeof ns]
     } else {
       missingNamespaces.push(ns)
     }
@@ -141,10 +150,9 @@ export async function fetchTranslations<N extends Namespace>(
     const kvValue = kvFailed ? {} : ((kvResults.get(kvKey) as object) ?? {})
 
     // Merge with FALLBACK_* compiled dictionary if present
-    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
-    const fallback = FALLBACKS?.[fallbackConstName]
+    const fallback = getFallback(ns)
 
-    const nsData = fallback ? deepMerge(fallback, kvValue) : kvValue
+    const nsData = assembleNamespace(kvValue, fallback)
 
     if (kvFailed && !fallback) {
       debug(`i18n namespace "${ns}" unavailable: KV failed and no fallback`)
@@ -216,13 +224,18 @@ async function fetchAllFromKV<N extends Namespace>(locale: Locale, namespaces: r
 
   for (let i = 0; i < namespaces.length; i++) {
     const ns = namespaces[i]
-    const kvValue = (kvResults.get(keys[i] as string) as object) ?? {}
-    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
-    const fallback = FALLBACKS?.[fallbackConstName]
-    ;(data as any)[ns] = fallback ? deepMerge(fallback, kvValue) : kvValue
+    const kvValue = kvResults.get(keys[i] as string) as object | null
+    ;(data as any)[ns] = assembleNamespace(kvValue, getFallback(ns as N))
   }
 
   return data as PickSchema<N>
+}
+
+/**
+ * Look up the compiled FALLBACK_* dictionary for a namespace, if one was generated.
+ */
+function getFallback(ns: Namespace): unknown {
+  return FALLBACKS?.[`FALLBACK_${String(ns).toUpperCase()}`]
 }
 
 /**
@@ -233,8 +246,7 @@ function buildFallbackOnly<N extends Namespace>(namespaces: readonly N[]): PickS
   const data: Partial<PickSchema<N>> = {}
 
   for (const ns of namespaces) {
-    const fallbackConstName = `FALLBACK_${String(ns).toUpperCase()}`
-    ;(data as any)[ns] = FALLBACKS?.[fallbackConstName] ?? {}
+    ;(data as any)[ns] = getFallback(ns) ?? {}
   }
 
   return data as PickSchema<N>
