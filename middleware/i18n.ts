@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE, type Locale } from '../constants'
 import { getCookieLang, setCookieLang } from '../cookie-storage'
 import { mapCountryToLocale } from '../country-to-locale-map'
 import { resolveLocaleForTranslations } from '../resolve-locale'
-import { PROJECT } from '@/config'
+import { buildContentSecurityPolicy } from '@/domain/security/checkout-surface'
 
 // Regex to identify public static assets (images, fonts, scripts, etc.)
 // These files should bypass i18n routing and locale detection.
@@ -53,7 +53,9 @@ function shouldBypassI18n(pathname: string): boolean {
 
 // Applies strict Content Security Policy (CSP) and other security headers to the response.
 // Wrap outgoing responses with this function to ensure consistent security posture.
-function applySecurityHeaders(response: Response): Response {
+// `pathname` selects the policy: every route gets the base one, the checkout surface
+// gets the Paddle variant (src/domain/security/checkout-surface.ts).
+function applySecurityHeaders(response: Response, pathname: string): Response {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -103,19 +105,12 @@ function applySecurityHeaders(response: Response): Response {
   // NOTE: smoke-test after deploy: (1) newsletter subscribe -> segmentation step,
   // (2) zaraz events in /cdn-cgi/zaraz/t. (Mermaid client rendering removed
   // 2026-06-10 — diagrams are static infographics now, no eval anywhere.)
-  response.headers.set(
-    'Content-Security-Policy',
-    `default-src 'self'; ` +
-      `style-src 'self' 'unsafe-inline'; ` +
-      `script-src 'self' 'unsafe-inline'; ` +
-      `connect-src 'self'; ` +
-      `img-src 'self' data: blob: ${PROJECT.cdnUrl}; ` +
-      `font-src 'self' data:; ` +
-      // Allow media from our CDN
-      `media-src 'self' ${PROJECT.cdnUrl}; ` +
-      `frame-ancestors 'self'; ` +
-      `object-src 'none';`,
-  )
+  //
+  // The string itself now lives in src/domain/security/checkout-surface.ts, which
+  // serializes the SAME base policy byte-for-byte (pinned by test) and, on the
+  // checkout surface only, adds https://*.paddle.com to script-src/connect-src/
+  // img-src plus a frame-src for the cross-origin Paddle checkout iframe.
+  response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(pathname))
 
   return response
 }
@@ -202,7 +197,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
       const target = `/en/${contentSegments.join('/')}`
 
       if (pathname !== target) {
-        return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
+        return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
       }
     }
 
@@ -234,9 +229,9 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
       // Apply headers to the redirect response
-      return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
+      return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
     }
-    return applySecurityHeaders(await next())
+    return applySecurityHeaders(await next(), pathname)
   }
 
   // 2. URL has first segment — validate as locale
@@ -268,18 +263,18 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     // Normalize trailing slash and structure
     const normalized = buildLocalizedPath(urlLocale, segments.slice(1))
     if (pathname !== normalized) {
-      return applySecurityHeaders(context.redirect(normalized, REDIRECT_STATUS))
+      return applySecurityHeaders(context.redirect(normalized, REDIRECT_STATUS), pathname)
     }
 
-    return applySecurityHeaders(await next())
+    return applySecurityHeaders(await next(), pathname)
   }
 
   // 3. Invalid locale in URL -> treat the whole path as content missing the locale prefix.
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS))
+    return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
   }
 
-  return applySecurityHeaders(await next())
+  return applySecurityHeaders(await next(), pathname)
 }
