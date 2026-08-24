@@ -24,6 +24,43 @@ export const FALLBACK_BLOG = {
   }
 } as const;
 
+export const FALLBACK_CHECKOUT = {
+  "seo": {
+    "title": "Checkout",
+    "description": "Buy RepoAccess and get instant access to the private repository on GitHub."
+  },
+  "product": {
+    "repoaccess-pro": {
+      "description": "Self-hosted GitHub access delivery for your own storefront. One Cloudflare Worker, your payment provider, invitations sent the moment a payment settles."
+    }
+  },
+  "form": {
+    "heading": "Where should we send the invitation?",
+    "label": "Your GitHub username",
+    "placeholder": "octocat",
+    "hint": "The account that will receive the repository invitation.",
+    "submit": "Continue"
+  },
+  "confirm": {
+    "question": "Is this your GitHub account?",
+    "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names — a real account belonging to someone else looks exactly the same to us.",
+    "openProfile": "Open {handle} on GitHub",
+    "confirm": "Yes, that's my account",
+    "back": "No, change the username"
+  },
+  "payment": {
+    "loading": "Opening secure checkout…",
+    "completed": "Payment complete. Transaction {transactionId}."
+  },
+  "errors": {
+    "invalid_format": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+    "not_found": "GitHub has no account with that username. Check the spelling and try again.",
+    "unknown": "We could not verify that username right now — this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
+    "transient": "We could not reach the verification service. Try again in a moment.",
+    "payment_unavailable": "The payment window could not be opened. Reload the page and try again."
+  }
+} as const;
+
 export const FALLBACK_COMMON = {
   "seo": {
     "title": "Edge-native starter kits for Astro & Cloudflare Workers",
