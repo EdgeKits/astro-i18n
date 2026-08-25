@@ -79,6 +79,66 @@ export const FALLBACK_CONSENT = {
   "decline": "Decline"
 } as const;
 
+export const FALLBACK_DELIVERY = {
+  "seo": {
+    "title": "Your access",
+    "description": "Delivery status for your RepoAccess purchase."
+  },
+  "states": {
+    "pending": {
+      "heading": "Setting up your access…",
+      "body": "This usually takes well under a minute. The page updates on its own — there is nothing to refresh."
+    },
+    "granted": {
+      "heading": "Your access is set up",
+      "body": "Check your email for the GitHub invitation and accept it. GitHub sends it, not us, so look in spam if it has not arrived within a few minutes."
+    },
+    "failed": {
+      "heading": "We could not finish setting up your access",
+      "body": "Your payment went through and nothing is lost — this one needs a person to look at it.",
+      "support": "Write to hello@edgekits.dev and we will sort it out."
+    },
+    "exhausted": {
+      "heading": "This is taking longer than usual",
+      "body": "Your purchase is safe and the delivery is still running. Check back shortly — this page picks up where it left off — or write to hello@edgekits.dev."
+    },
+    "transient": "We could not reach the delivery service just now. Trying again in a moment.",
+    "noPurchase": {
+      "heading": "No purchase in this browser session",
+      "body": "This page shows the delivery status of a purchase made in this browser. If you paid in a different browser or on another device, write to hello@edgekits.dev and we will find your order.",
+      "home": "Back to the homepage"
+    }
+  },
+  "claim": {
+    "heading": "We need your GitHub username again",
+    "intro": "The username from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe — enter the username again and we will finish the delivery.",
+    "label": "Your GitHub username",
+    "placeholder": "Enter your GitHub username",
+    "hint": "The account that will receive the repository invitation.",
+    "submit": "Continue",
+    "confirm": {
+      "question": "Is this your GitHub account?",
+      "openProfile": "Open {handle} on GitHub",
+      "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names — a real account belonging to someone else looks exactly the same to us.",
+      "confirm": "Yes, that's my account",
+      "back": "No, change the username"
+    },
+    "status": {
+      "submitted": "Thank you — finishing the delivery now…",
+      "busy": "Still working on the previous attempt. Trying again in a moment…",
+      "invalid_handle": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+      "not_found": "Checking your delivery…",
+      "error": "Something went wrong on our side. Write to hello@edgekits.dev and we will finish this by hand."
+    }
+  },
+  "errors": {
+    "invalid_format": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+    "not_found": "GitHub has no account with that username. Check the spelling and try again.",
+    "unknown": "We could not verify that username right now — this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
+    "transient": "We could not reach the verification service. Try again in a moment."
+  }
+} as const;
+
 export const FALLBACK_LANDING = {
   "deliveryPolicyBanner": {
     "title": "Digital delivery (instant)",
