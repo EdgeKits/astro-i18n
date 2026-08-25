@@ -112,6 +112,7 @@ export const FALLBACK_DELIVERY = {
   "claim": {
     "heading": "We need your GitHub username again",
     "intro": "The username from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe — enter the username again and we will finish the delivery.",
+    "introWithHandle": "The username {handle} from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe — enter the username again and we will finish the delivery.",
     "label": "Your GitHub username",
     "placeholder": "Enter your GitHub username",
     "hint": "The account that will receive the repository invitation.",
