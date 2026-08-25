@@ -37,7 +37,7 @@ export const FALLBACK_CHECKOUT = {
   "form": {
     "heading": "Where should we send the invitation?",
     "label": "Your GitHub username",
-    "placeholder": "octocat",
+    "placeholder": "Enter your GitHub username",
     "hint": "The account that will receive the repository invitation.",
     "submit": "Continue"
   },
