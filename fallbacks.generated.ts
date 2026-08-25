@@ -66,11 +66,6 @@ export const FALLBACK_CHECKOUT = {
     "unknown": "We could not verify that username right now — this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
     "transient": "We could not reach the verification service. Try again in a moment.",
     "payment_unavailable": "The payment window could not be opened. Reload the page and try again."
-  },
-  "stars": {
-    "heading": "Pay with Telegram Stars",
-    "explainer": "Our Telegram bot takes it from here. It asks for your GitHub username, checks the account exists and reads it back to you before anything is charged — then payment is in Telegram Stars, and the repository invitation follows straight away.",
-    "button": "Open the bot in Telegram"
   }
 } as const;
 
