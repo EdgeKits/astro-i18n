@@ -31,9 +31,10 @@ export const FALLBACK_CHECKOUT = {
   },
   "product": {
     "repoaccess-pro": {
-      "description": "Self-hosted GitHub access delivery for your own storefront. One Cloudflare Worker, your payment provider, invitations sent the moment a payment settles."
+      "description": "Self-hosted GitHub access delivery for your own storefront. One Cloudflare Worker, your payment provider, invitations sent the moment a payment settles. Six adapters, a Telegram bot storefront, and your brand on every page the buyer sees."
     }
   },
+  "priceTax": "+ tax if applicable",
   "method": {
     "heading": "How would you like to pay?",
     "card": "Pay by card",
