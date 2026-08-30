@@ -371,3 +371,133 @@ export const FALLBACK_NEWSLETTER = {
     "savePreferences": "Save preferences"
   }
 } as const;
+
+export const FALLBACK_REPOACCESS = {
+  "seo": {
+    "title": "RepoAccess — sell private GitHub repo access from your own worker",
+    "description": "Sell access to a private GitHub repo on your own infrastructure, with the payment provider you already use. Open-source core, one Cloudflare Worker, no per-sale cut."
+  },
+  "hero": {
+    "eyebrow": "Open core · AGPL-3.0",
+    "title": "RepoAccess",
+    "lead": "Sell access to a private GitHub repo on your own infrastructure, with the payment provider you already use.",
+    "body": "A buyer pays and is automatically invited to the GitHub team that carries your private repo. A refund or chargeback revokes it. It runs as a single Cloudflare Worker on the free tier: no server, no SaaS subscription, no per-sale cut.",
+    "ctaPrimary": "Get Pro",
+    "ctaSecondary": "npm install repoaccess-core",
+    "ctaSecondaryNote": "Core is free and open source. Start there and pay nothing.",
+    "githubLabel": "View the core on GitHub"
+  },
+  "how": {
+    "title": "How your buyer experiences it",
+    "lead": "Three steps, from the point of view of the person buying from you.",
+    "steps": {
+      "s1": {
+        "title": "They pay through your provider",
+        "body": "Checkout happens wherever you already sell. Nothing about your payment setup has to move."
+      },
+      "s2": {
+        "title": "They name their GitHub account",
+        "body": "Where the provider supports a custom field they enter their username at checkout and are granted directly. Otherwise they get a one-time claim link and confirm the handle there."
+      },
+      "s3": {
+        "title": "They are invited to the repo",
+        "body": "An invitation to the GitHub team that carries your private repo. A refund or chargeback revokes the access automatically — no manual list to keep."
+      }
+    }
+  },
+  "core": {
+    "title": "The open core",
+    "lead": "RepoAccess Core is free and open source under AGPL-3.0, published on npm as repoaccess-core. It is the whole engine, not a teaser.",
+    "items": {
+      "i1": "Self-host a Cloudflare Worker, with the Stripe adapter included.",
+      "i2": "The full grant and revoke engine — pay grants access, refund and chargeback take it away.",
+      "i3": "The claim page, for providers that cannot carry a custom field.",
+      "i4": "The embeddable RPC service pattern, for running the flow inside your own site."
+    },
+    "audience": "For developers selling through Stripe who are happy to self-host, and anyone who wants to build on the engine."
+  },
+  "compare": {
+    "title": "Core or Pro?",
+    "lead": "The split is about which one you need, not about which one is the real product.",
+    "coreTitle": "RepoAccess Core — free, open source (AGPL-3.0)",
+    "coreItems": {
+      "i1": "Stripe adapter included.",
+      "i2": "The full grant + revoke engine, the claim page, and the embeddable RPC service pattern.",
+      "i3": "Self-hosted on your own Cloudflare account."
+    },
+    "proTitle": "RepoAccess Pro",
+    "proItems": {
+      "i1": "Every other payment provider: Paddle, Lemon Squeezy, Gumroad, Razorpay, Telegram Stars.",
+      "i2": "Merchant-of-Record options (Paddle, Lemon Squeezy) for sellers who want tax and compliance handled.",
+      "i3": "Premium claim-page templates.",
+      "i4": "Maintained and supported: provider changes tracked and patched."
+    },
+    "cue": "Stripe + self-host → Core. Any other provider, or Merchant-of-Record, or you want it maintained with support → Pro."
+  },
+  "why": {
+    "title": "What Pro is actually for",
+    "pillars": {
+      "p1": {
+        "title": "The payment provider you already use",
+        "body": "Stripe is free in Core. Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars are Pro — including Merchant-of-Record options for sellers who want tax and compliance handled."
+      },
+      "p2": {
+        "title": "You do not chase webhook changes",
+        "body": "Providers change their APIs and signatures. Pro tracks them and patches, so your funnel keeps working and there is a responsible party when something goes wrong."
+      },
+      "p3": {
+        "title": "The expensive live-testing is already done",
+        "body": "Verifying a pay-to-access flow against a real provider — webhook signatures, refund and dispute events, the GitHub grant and revoke chain — is a days-long slog, and the live test rather than the code is the time-sink. Each adapter ships verified against live providers plus a synthetic end-to-end check, so you skip that."
+      }
+    }
+  },
+  "delivery": {
+    "title": "Delivery, updates and renewal",
+    "lead": "How you receive Pro, and what happens afterwards.",
+    "items": {
+      "i1": {
+        "title": "Self-hosted on your Cloudflare account",
+        "body": "We ship the code; you deploy it. Nobody pushes to your infrastructure — you own it."
+      },
+      "i2": {
+        "title": "Delivered as private repo access",
+        "body": "The same way RepoAccess delivers your own products. You pay, you are invited to the Pro repo, you clone it, add your config and secrets, and deploy."
+      },
+      "i3": {
+        "title": "One-time payment, 12 months of updates and support",
+        "body": "Applying an update is a git pull and a redeploy on your account; your own config and secrets are yours and are not touched. Most updates are transparent provider fixes."
+      },
+      "i4": {
+        "title": "If you do not renew, nothing breaks",
+        "body": "The version you have keeps working forever — your clone and your deployed worker are untouched. You simply stop receiving new updates until you renew, which resumes them any time."
+      }
+    }
+  },
+  "faqTitle": "Questions buyers ask",
+  "faq": {
+    "f1": {
+      "q": "How do you know the buyer's GitHub username is really theirs?",
+      "a": "Every invitation is paid for. An invite cannot exist without a completed purchase, so nobody can farm access. What remains is a buyer making an honest typing mistake, once, at their own cost — a question of input accuracy, and one account, one purchase, revocable by you. The default claim mode has the buyer type the handle on your own page and confirm it before anything is granted."
+    },
+    "f2": {
+      "q": "What happens on a refund or a chargeback?",
+      "a": "Access is revoked automatically. The grant and revoke chain is the engine's whole job, so there is no manual list to keep in step with your payment provider."
+    },
+    "f3": {
+      "q": "Do buyers have to log in with GitHub?",
+      "a": "No. Delivery is a GitHub team invitation to the handle they give, and buyers accept it by email. There is no OAuth app for you to run, and no authorisation prompt at the most expensive moment in the funnel — the moment they have just paid."
+    },
+    "f4": {
+      "q": "What happens after 12 months?",
+      "a": "About a week before your 12 months end you can renew to keep updates and support flowing. If you do not, the version you have keeps working forever — your clone and your deployed worker are untouched. You simply stop receiving new updates until you renew."
+    }
+  },
+  "buy": {
+    "title": "Get RepoAccess Pro",
+    "lead": "One-time payment. Includes 12 months of updates and support.",
+    "cta": "Buy RepoAccess Pro",
+    "stars": "You can also pay with Telegram Stars.",
+    "tax": "Price excludes tax where applicable.",
+    "priceSuffix": "one-time"
+  }
+} as const;
