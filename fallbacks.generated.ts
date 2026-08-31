@@ -482,6 +482,18 @@ export const FALLBACK_REPOACCESS = {
       }
     }
   },
+  "branding": {
+    "title": "Your brand on every page the buyer sees",
+    "lead": "The worker renders the whole post-payment chain itself: the claim page where the buyer types their handle, the setting-up page while the grant runs, access granted, the failure page, your legal pages, and the Paddle checkout. None of it is somebody else's screen with somebody else's logo on it.",
+    "body": "Pro ships a registry of designed presets. Each one carries a light and a dark palette, contrast-checked to WCAG AA, and is built on system font stacks, so those pages load no webfont and appear instantly anywhere. You pick a preset in a single file and override any token you like. There is no mode to set: the buyer's own browser decides light or dark.",
+    "caption": "Four of the shipped presets. Screens shown: the claim page and the granted page.",
+    "alts": {
+      "a1": "Claim page, Terminal preset, dark.",
+      "a2": "Claim page, Minimal preset, light.",
+      "a3": "Claim page with a logo, Brandful preset, dark.",
+      "a4": "Access granted page, Neutral preset, light."
+    }
+  },
   "delivery": {
     "title": "How you get it, and what happens after",
     "lead": "Pro is delivered by RepoAccess. I sell it the way you are about to.",
@@ -503,6 +515,33 @@ export const FALLBACK_REPOACCESS = {
         "body": "If you do not renew, the version you have keeps working. Your clone and your deployed worker are untouched, and your product does not go down because a renewal did. You stop receiving new updates until you renew, and renewing resumes them."
       }
     }
+  },
+  "docs": {
+    "title": "You are not left alone with the code",
+    "lead": "What ships beside the code, because the code is the easy half.",
+    "items": {
+      "i1": {
+        "title": "One setup guide per provider",
+        "body": "All six of them. Each one walks its provider's dashboard click by click, in the order that causes the least back-and-forth, and ends with a live test purchase you make yourself."
+      },
+      "i2": {
+        "title": "Reference notes on what each provider actually does",
+        "body": "What it signs, byte for byte. Which of its events mean paid, refunded and charged back. The field that survives from the order through to the refund. And where the provider's own documentation is wrong. They exist because every one of these providers surprised me at least once, and most of those surprises only appear when real money moves. Each note records the date it was last checked."
+      },
+      "i3": {
+        "title": "Driving access from your own site, without webhooks",
+        "body": "Your own worker can grant, revoke and claim access by calling a function on the RepoAccess worker: no webhook URL, no public endpoint, no signature to verify. On Cloudflare a service binding between two of your own workers is itself the authorization. The site you are reading is wired to its own RepoAccess worker over exactly that binding."
+      },
+      "i4": {
+        "title": "Making the buyer's pages yours",
+        "body": "The preset registry, the tokens each preset derives, how far an override reaches before you are writing CSS of your own, and where your logo and favicon go."
+      },
+      "i5": {
+        "title": "Adding a provider I have never heard of",
+        "body": "If yours is an obscure regional processor, or your company's own internal billing system, AGENTS.md is the recipe: the contract an adapter has to satisfy, three worked examples, and the per-provider notes behind them. It is written so that a coding agent can follow it unaided."
+      }
+    },
+    "note": "The setup wizard has its own document explaining exactly what it does on your behalf, and every release lands in a CHANGELOG that says whether the update touches anything you set."
   },
   "faqTitle": "Questions buyers ask before they pay",
   "faq": {
