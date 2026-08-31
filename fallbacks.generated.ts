@@ -435,7 +435,7 @@ export const FALLBACK_REPOACCESS = {
       "i1": "Self-host a single Cloudflare Worker, Stripe adapter included.",
       "i2": "The full grant and revoke chain: a payment grants access, a refund or chargeback removes it.",
       "i3": "The claim page, for providers that cannot carry a custom field at checkout.",
-      "i4": "The embeddable RPC service pattern, for running the whole flow inside your own site."
+      "i4": "Configuration as typed code: one config object your editor checks, not escaped JSON crammed into environment variables."
     },
     "audience": "If you sell through Stripe, self-host happily, and want to read every line before you trust it with your buyers, take Core and stop here."
   },
@@ -445,7 +445,7 @@ export const FALLBACK_REPOACCESS = {
     "coreTitle": "RepoAccess Core, free and open source (AGPL-3.0)",
     "coreItems": {
       "i1": "Stripe adapter included.",
-      "i2": "The full grant and revoke engine, the claim page, and the embeddable RPC service pattern.",
+      "i2": "The full grant and revoke engine, and the claim page.",
       "i3": "Self-hosted on your own Cloudflare account."
     },
     "proTitle": "RepoAccess Pro",
@@ -479,13 +479,17 @@ export const FALLBACK_REPOACCESS = {
       "p5": {
         "title": "The expensive testing is already done",
         "body": "Verifying a pay-to-access flow against a real provider takes days: webhook signatures, refund and dispute events, and the GitHub grant and revoke chain behind them. The live test is the time-sink, not the code. Each adapter ships verified against live providers plus a synthetic end-to-end check, so those days are not yours to spend."
+      },
+      "p6": {
+        "title": "An embeddable service, documented until an agent can build it",
+        "body": "Another Worker on your own Cloudflare account calls grant, revoke and claim directly over a service binding: no public URL, no signature, no HTTP hop, because the binding itself is the authorization. The RPC guide is written to be handed to your coding agent, which wires it into your site for you. The proof is the page you are on. Everything a buyer gets after paying here, the handle check, the claim form and the status they watch while access is granted, runs over exactly that binding, and that integration was built from the guide by a coding agent."
       }
     }
   },
   "branding": {
     "title": "Your brand on every page the buyer sees",
     "lead": "The worker renders the whole post-payment chain itself: the claim page where the buyer types their handle, the setting-up page while the grant runs, access granted, the failure page, your legal pages, and the Paddle checkout. None of it is somebody else's screen with somebody else's logo on it.",
-    "body": "Pro ships a registry of designed presets. Each one carries a light and a dark palette, contrast-checked to WCAG AA, and is built on system font stacks, so those pages load no webfont and appear instantly anywhere. You pick a preset in a single file and override any token you like. There is no mode to set: the buyer's own browser decides light or dark.",
+    "body": "Pro ships a registry of designed presets. Each one carries a light and a dark palette, contrast-checked to WCAG AA, and is built on system font stacks, so those pages load no webfont and appear instantly anywhere. You pick a preset in a single file and override any token you like. It follows the buyer's browser by default, and one config value pins it to light or dark if you would rather decide.",
     "caption": "Four of the shipped presets. Screens shown: the claim page and the granted page.",
     "alts": {
       "a1": "Claim page, Terminal preset, dark.",
@@ -529,8 +533,8 @@ export const FALLBACK_REPOACCESS = {
         "body": "What it signs, byte for byte. Which of its events mean paid, refunded and charged back. The field that survives from the order through to the refund. And where the provider's own documentation is wrong. They exist because every one of these providers surprised me at least once, and most of those surprises only appear when real money moves. Each note records the date it was last checked."
       },
       "i3": {
-        "title": "Driving access from your own site, without webhooks",
-        "body": "Your own worker can grant, revoke and claim access by calling a function on the RepoAccess worker: no webhook URL, no public endpoint, no signature to verify. On Cloudflare a service binding between two of your own workers is itself the authorization. The site you are reading is wired to its own RepoAccess worker over exactly that binding."
+        "title": "The RPC guide, if you want your own site to drive it",
+        "body": "The binding, the six methods it exposes, two end-to-end flows written out, and the claim page you host yourself. It is provider-independent: the RPC surface does not know which payment provider took the money, so it reads the same whichever one you sell through."
       },
       "i4": {
         "title": "Making the buyer's pages yours",
@@ -559,7 +563,7 @@ export const FALLBACK_REPOACCESS = {
     },
     "f4": {
       "q": "What happens after twelve months?",
-      "a": "About a week before your twelve months end you can renew to keep updates and support running. If you do not, the version you have keeps working, your clone and your deployed worker are untouched, and you simply stop receiving new updates until you renew."
+      "a": "About a week before your twelve months end you can renew to keep updates and support running. If you do not, the version you have keeps working, your clone and your deployed worker are untouched, and you simply stop receiving new updates until you renew. Renewing costs a fraction of what you paid the first time: it is a maintenance fee, not a second purchase."
     },
     "f5": {
       "q": "Can't I just build this myself in an evening?",
