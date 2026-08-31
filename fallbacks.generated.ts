@@ -576,6 +576,10 @@ export const FALLBACK_REPOACCESS = {
     "f7": {
       "q": "What does it cost to run?",
       "a": "A one-time payment for the licence and no cut of any sale. The only running cost is Cloudflare's, and it is spent at the moment somebody pays you. On the free plan that works out at roughly 600 sales a day when the handle arrives with the payment, or 250 a day when the buyer enters it on a claim page. Past that, the Workers Paid plan is $5 a month and carries tens of thousands of sales a month before usage adds anything to it. You pay Cloudflare, never me."
+    },
+    "f8": {
+      "q": "What if I buy it and it does not work out?",
+      "a": "Write to me at hello@edgekits.dev within 7 days of your purchase with a short reason, and I will look at it case by case. A refund can be declined where access has already been granted and extensively used, or where the request is abusive or fraudulent. Worth saying out loud: a refund also revokes the repo access automatically, because enforcing refunds is literally what this product does. You are not being asked to trust a promise I would otherwise have to keep by hand."
     }
   },
   "buy": {
@@ -584,6 +588,18 @@ export const FALLBACK_REPOACCESS = {
     "cta": "Buy RepoAccess Pro",
     "stars": "You can also pay with Telegram Stars.",
     "tax": "Price excludes tax where applicable.",
-    "priceSuffix": "one-time"
-  }
+    "priceSuffix": "one-time",
+    "needsTitle": "What you need before you buy",
+    "needsLead": "So nothing surprises you after paying.",
+    "needs": {
+      "i1": "A Cloudflare account. The free plan is enough to start.",
+      "i2": "A GitHub organization that owns the repos you sell. Personal accounts have no teams, so an org is required, and a free one is fine.",
+      "i3": "Node and git on your machine.",
+      "i4": "An account with at least one supported payment provider."
+    },
+    "refund": "Refunds are handled by me personally, case by case, within 7 days of purchase.",
+    "refundLink": "Read the refund policy",
+    "contact": "Questions before you buy? Write to me at"
+  },
+  "authorSlogan": "I sell my own repos with the same worker you are buying."
 } as const;
