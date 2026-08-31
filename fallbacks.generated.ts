@@ -381,11 +381,10 @@ export const FALLBACK_REPOACCESS = {
     "eyebrow": "Open core · AGPL-3.0",
     "title": "RepoAccess",
     "lead": "Sell access to a private GitHub repo on your own infrastructure, with the payment provider you already use.",
-    "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback takes that access away again. No collaborator to add by hand after every sale, no list to reconcile after every refund. It runs as a single Cloudflare Worker on the free tier: no server, no SaaS subscription, no per-sale cut.",
-    "ctaPrimary": "Get Pro",
+    "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback takes that access away again. No collaborator to add by hand after every sale, no list to reconcile after every refund. It runs as a single Cloudflare Worker on the free tier: no server, no SaaS subscription, no per-sale or chargeback cut, and no \"Login with GitHub\" in front of a buyer who has just paid you. GitHub's own invitation is the identity check.",
+    "ctaPrimary": "See your options",
     "ctaSecondary": "npm install repoaccess-core",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe and are happy to self-host, you never have to pay me anything.",
-    "githubLabel": "Read the core on GitHub"
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe and are happy to self-host, you never have to pay me anything."
   },
   "how": {
     "title": "What your buyer actually goes through",
@@ -403,6 +402,30 @@ export const FALLBACK_REPOACCESS = {
         "title": "They are invited to the repo",
         "body": "An invitation to the GitHub team holding your private repo, accepted from their email. If the payment is later refunded or charged back, the access goes with it, whether or not you were watching."
       }
+    }
+  },
+  "options": {
+    "title": "Two ways to run it",
+    "lead": "Pick the one that matches how you already take money. Everything below the two cards applies to both.",
+    "core": {
+      "title": "RepoAccess Core",
+      "body": "Free and open source under AGPL-3.0: the Stripe adapter, the full grant and revoke chain, and the claim page, self-hosted on your own Cloudflare account.",
+      "action": "Get the core from GitHub"
+    },
+    "pro": {
+      "title": "RepoAccess Pro",
+      "body": "Every other provider, the Merchant of Record options, the Telegram bot storefront, the worker-hosted Paddle checkout, and support while the providers keep moving.",
+      "action": "What Pro adds"
+    },
+    "cue": "Both are the same engine. The split is which one fits how you already sell.",
+    "wizard": {
+      "title": "A setup wizard your coding agent runs for you",
+      "lead": "Run /repoaccess-setup in Claude Code, OpenCode or any coding agent (the repo carries an AGENTS.md for the ones that need telling) and the wizard walks you to a deployed worker one verified step at a time: your GitHub org and the team settings that keep your repos private, your provider's product and webhook, the secrets, the deploy, and a live end-to-end test purchase at the end.",
+      "securityTitle": "Your coding agent sets this up without ever seeing your secrets",
+      "securityBody": "The rules that enforce that are committed in the repo, so you can check them before you start. The wizard is a program rather than a set of instructions the agent improvises from: the agent runs one command, renders what the program prints, and hands your answer back, while every file that holds a secret is written inside a child process it never reads. The agent's reads of those files are denied by name, and a committed test plants fake secrets and asserts they never reach the agent.",
+      "budget": "Budget about an hour from absolute scratch, counting the Cloudflare account, the GitHub org and the throwaway account that plays your test buyer. Much less when those already exist. The wizard is a convenience and not a requirement: a written guide walks the same road by hand.",
+      "alt": "A terminal running the RepoAccess setup wizard inside a coding agent, printing one setup step and waiting for an answer.",
+      "caption": "The wizard driving a live setup: one step, one answer, then the next."
     }
   },
   "core": {
@@ -427,9 +450,9 @@ export const FALLBACK_REPOACCESS = {
     },
     "proTitle": "RepoAccess Pro",
     "proItems": {
-      "i1": "Every other payment provider: Paddle, Lemon Squeezy, Gumroad, Razorpay, Telegram Stars.",
+      "i1": "Every other payment provider: Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars, with Core's Stripe adapter still in the box.",
       "i2": "Merchant of Record options (Paddle, Lemon Squeezy) if you would rather not own sales tax and compliance.",
-      "i3": "Premium claim-page templates.",
+      "i3": "Customizable claim-page templates.",
       "i4": "Provider changes tracked and patched, and a responsible party when something breaks."
     },
     "cue": "Stripe + self-host → Core. Any other provider, or Merchant of Record, or you want it maintained with support → Pro."
@@ -442,10 +465,18 @@ export const FALLBACK_REPOACCESS = {
         "body": "Stripe is free in Core. Pro is how you sell GitHub repo access with Paddle, Lemon Squeezy, Gumroad, Razorpay or Telegram Stars, including the Merchant of Record options that take sales tax and compliance off your desk. If Stripe does not reach your country, this is the part that matters."
       },
       "p2": {
-        "title": "Somebody else tracks the provider changes",
-        "body": "Payment providers change their APIs and their webhook signatures on their own schedule, not yours. Pro follows those changes and patches them, so the first you hear about one is not a buyer telling you they paid and got nothing."
+        "title": "The Telegram bot is a storefront, not an adapter",
+        "body": "It lists your products, asks the buyer for their GitHub handle and checks the account exists before it charges anybody, issues the Stars invoice, and grants access on payment. You get a refund button only you can see in your own chat, sales and Stars-balance statistics, and a two-way support relay that carries a buyer's message to you and your reply back to them. Your personal account never appears to the buyer."
       },
       "p3": {
+        "title": "A Paddle checkout page your own worker serves",
+        "body": "Sell through a Merchant of Record without owning a website at all. That page exists because Paddle needs an approved domain before it will take your money, and its own hosted checkout has no field a buyer can type a GitHub handle into. Your worker answers both problems on your own domain."
+      },
+      "p4": {
+        "title": "Somebody else tracks the provider changes",
+        "body": "Payment providers change their APIs and their webhook payloads on their own schedule, not yours. Paddle reports a full refund as partial. Lemon Squeezy emits dispute events it does not document. Razorpay serializes an empty field as an array where its docs promise an object. Stripe rotates signing secrets and sends two at once. Every one of those was found with real money on the line, and Pro is where the next one gets patched before a buyer tells you they paid and got nothing."
+      },
+      "p5": {
         "title": "The expensive testing is already done",
         "body": "Verifying a pay-to-access flow against a real provider takes days: webhook signatures, refund and dispute events, and the GitHub grant and revoke chain behind them. The live test is the time-sink, not the code. Each adapter ships verified against live providers plus a synthetic end-to-end check, so those days are not yours to spend."
       }
@@ -494,6 +525,14 @@ export const FALLBACK_REPOACCESS = {
     "f5": {
       "q": "Can't I just build this myself in an evening?",
       "a": "Yes, and for one provider you probably can. A single webhook adapter against Stripe is an evening of work, which is exactly why Core is free and open source: nobody should pay me for that evening. What Pro sells is what the evening does not buy. The edge cases verified against live providers, refunds, disputes, replayed webhooks and signature changes. Every provider beyond Stripe, including the Merchant of Record options. And somebody tracking provider changes for twelve months so the first sign of one is not a buyer who paid and got nothing. The evening is cheap. Keeping it working for a year is the part that costs, and buying that is cheaper than maintaining it."
+    },
+    "f6": {
+      "q": "What exactly does a refund take away?",
+      "a": "The product that was refunded, not the buyer. The worker removes them from the teams mapped to that product and cancels any invitation still in flight, then reconciles their organisation membership against live GitHub state rather than against its own records. So a buyer who owns A, buys B and refunds B loses B and keeps A. One thing worth knowing before your inbox finds out: a buyer left in no team at all also gets GitHub's organisation-removal email, which reads like a ban and is not one. A buyer who still holds another purchase stays in that purchase's team and never receives it."
+    },
+    "f7": {
+      "q": "What does it cost to run?",
+      "a": "A one-time payment for the licence and no cut of any sale. The only running cost is Cloudflare's, and it is spent at the moment somebody pays you. On the free plan that works out at roughly 600 sales a day when the handle arrives with the payment, or 250 a day when the buyer enters it on a claim page. Past that, the Workers Paid plan is $5 a month and carries tens of thousands of sales a month before usage adds anything to it. You pay Cloudflare, never me."
     }
   },
   "buy": {
