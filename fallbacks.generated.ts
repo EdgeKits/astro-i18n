@@ -224,16 +224,16 @@ export const FALLBACK_LANDING = {
     },
     "repoAccess": {
       "description": "Automated private repo delivery. No SaaS lock-in.",
-      "badge": "Available soon",
+      "badge": "Available now",
       "bullets": {
         "b1": "Self-hosted Cloudflare Worker",
         "b2": "Any payment provider with webhook support",
         "b3": "Payment webhooks → GitHub Teams access",
         "b4": "Automated email invitations",
         "b5": "Internal tool for EdgeKits",
-        "b6": "Available standalone later"
+        "b6": "Available standalone"
       },
-      "buttonText": "Join waitlist"
+      "buttonText": "Learn More"
     }
   },
   "builtWith": "Built with industry standards",
