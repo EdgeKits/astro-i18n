@@ -296,8 +296,8 @@ export const FALLBACK_LANDING = {
         "a": "Yes. EdgeKits are built on Cloudflare Workers and related services, so a free Cloudflare account is a must-have minimum. Some advanced features like Queues or Realtime require the $5/month Workers tier."
       },
       "f8": {
-        "q": "Is the RepoAccess Worker a SaaS?",
-        "a": "No. RepoAccess Worker is a self-hosted Cloudflare Worker you run in your own account."
+        "q": "Is RepoAccess a SaaS?",
+        "a": "No. RepoAccess Core is a free open-source npm package, and RepoAccess Pro is code you deploy to your own Cloudflare account. Nothing runs on our servers, and there is no subscription."
       }
     }
   },
