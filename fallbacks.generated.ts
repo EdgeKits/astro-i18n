@@ -35,6 +35,7 @@ export const FALLBACK_CHECKOUT = {
     }
   },
   "priceTax": "+ tax if applicable",
+  "oneTime": "One-time payment",
   "method": {
     "heading": "How would you like to pay?",
     "card": "Pay by card",
@@ -52,7 +53,7 @@ export const FALLBACK_CHECKOUT = {
   },
   "confirm": {
     "question": "Is this your GitHub account?",
-    "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names — a real account belonging to someone else looks exactly the same to us.",
+    "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names - a real account belonging to someone else looks exactly the same to us.",
     "openProfile": "Open {handle} on GitHub",
     "confirm": "Yes, that's my account",
     "back": "No, change the username"
@@ -64,7 +65,7 @@ export const FALLBACK_CHECKOUT = {
   "errors": {
     "invalid_format": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
     "not_found": "GitHub has no account with that username. Check the spelling and try again.",
-    "unknown": "We could not verify that username right now — this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
+    "unknown": "We could not verify that username right now - this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
     "transient": "We could not reach the verification service. Try again in a moment.",
     "payment_unavailable": "The payment window could not be opened. Reload the page and try again."
   }
