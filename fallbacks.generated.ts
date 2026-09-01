@@ -437,7 +437,7 @@ export const FALLBACK_REPOACCESS = {
       "i3": "The claim page, for providers that cannot carry a custom field at checkout.",
       "i4": "Configuration as typed code: one config object your editor checks, not escaped JSON crammed into environment variables."
     },
-    "audience": "If you sell through Stripe, self-host happily, and want to read every line before you trust it with your buyers, take Core and stop here."
+    "audience": "If you sell through Stripe, are happy to maintain it yourself, and want to read every line before you trust it with your buyers, take Core and stop here."
   },
   "compare": {
     "title": "Which one do you need?",
@@ -455,7 +455,7 @@ export const FALLBACK_REPOACCESS = {
       "i3": "Customizable claim-page templates.",
       "i4": "Provider changes tracked and patched, and a responsible party when something breaks."
     },
-    "cue": "Stripe + self-host → Core. Any other provider, or Merchant of Record, or you want it maintained with support → Pro."
+    "cue": "Stripe + maintain it yourself → Core. Any other provider, or Merchant of Record, or you want it maintained with support → Pro."
   },
   "why": {
     "title": "What you are paying for in Pro",
@@ -588,7 +588,6 @@ export const FALLBACK_REPOACCESS = {
     "cta": "Buy RepoAccess Pro",
     "stars": "You can also pay with Telegram Stars.",
     "tax": "Price excludes tax where applicable.",
-    "priceSuffix": "one-time",
     "needsTitle": "What you need before you buy",
     "needsLead": "So nothing surprises you after paying.",
     "needs": {
