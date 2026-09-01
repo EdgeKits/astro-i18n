@@ -384,7 +384,7 @@ export const FALLBACK_REPOACCESS = {
     "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback takes that access away again. No collaborator to add by hand after every sale, no list to reconcile after every refund. It runs as a single Cloudflare Worker on the free tier: no server, no SaaS subscription, no per-sale or chargeback cut, and no \"Login with GitHub\" in front of a buyer who has just paid you. GitHub's own invitation is the identity check.",
     "ctaPrimary": "See your options",
     "ctaSecondary": "npm install repoaccess-core",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe and are happy to self-host, you never have to pay me anything."
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe, you never have to pay me anything."
   },
   "how": {
     "title": "What your buyer actually goes through",
@@ -490,12 +490,12 @@ export const FALLBACK_REPOACCESS = {
     "title": "Your brand on every page the buyer sees",
     "lead": "The worker renders the whole post-payment chain itself: the claim page where the buyer types their handle, the setting-up page while the grant runs, access granted, the failure page, your legal pages, and the Paddle checkout. None of it is somebody else's screen with somebody else's logo on it.",
     "body": "Pro ships a registry of designed presets. Each one carries a light and a dark palette, contrast-checked to WCAG AA, and is built on system font stacks, so those pages load no webfont and appear instantly anywhere. You pick a preset in a single file and override any token you like. It follows the buyer's browser by default, and one config value pins it to light or dark if you would rather decide.",
-    "caption": "Four of the shipped presets. Screens shown: the claim page and the granted page.",
+    "caption": "A selection of the shipped presets, in light and dark. Screens shown: the claim page and the granted page.",
     "alts": {
       "a1": "Claim page, Terminal preset, dark.",
       "a2": "Claim page, Minimal preset, light.",
       "a3": "Claim page with a logo, Brandful preset, dark.",
-      "a4": "Access granted page, Neutral preset, light."
+      "a4": "Access granted page, Minimal preset, dark."
     }
   },
   "delivery": {
