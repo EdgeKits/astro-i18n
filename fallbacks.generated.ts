@@ -63,7 +63,7 @@ export const FALLBACK_CHECKOUT = {
     "completed": "Payment complete. Transaction {transactionId}."
   },
   "errors": {
-    "invalid_format": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+    "invalid_format": "That is not a valid GitHub username. Usernames are 1-39 characters, letters, digits and single hyphens.",
     "not_found": "GitHub has no account with that username. Check the spelling and try again.",
     "unknown": "We could not verify that username right now - this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
     "transient": "We could not reach the verification service. Try again in a moment.",
@@ -97,7 +97,7 @@ export const FALLBACK_DELIVERY = {
   "states": {
     "pending": {
       "heading": "Setting up your access…",
-      "body": "This usually takes well under a minute. The page updates on its own — there is nothing to refresh."
+      "body": "This usually takes well under a minute. The page updates on its own - there is nothing to refresh."
     },
     "granted": {
       "heading": "Your access is set up",
@@ -105,12 +105,12 @@ export const FALLBACK_DELIVERY = {
     },
     "failed": {
       "heading": "We could not finish setting up your access",
-      "body": "Your payment went through and nothing is lost — this one needs a person to look at it.",
+      "body": "Your payment went through and nothing is lost - this one needs a person to look at it.",
       "support": "Write to hello@edgekits.dev and we will sort it out."
     },
     "exhausted": {
       "heading": "This is taking longer than usual",
-      "body": "Your purchase is safe and the delivery is still running. Check back shortly — this page picks up where it left off — or write to hello@edgekits.dev."
+      "body": "Your purchase is safe and the delivery is still running. Check back shortly - this page picks up where it left off - or write to hello@edgekits.dev."
     },
     "transient": "We could not reach the delivery service just now. Trying again in a moment.",
     "noPurchase": {
@@ -121,8 +121,8 @@ export const FALLBACK_DELIVERY = {
   },
   "claim": {
     "heading": "We need your GitHub username again",
-    "intro": "The username from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe — enter the username again and we will finish the delivery.",
-    "introWithHandle": "The username {handle} from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe — enter the username again and we will finish the delivery.",
+    "intro": "The username from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe - enter the username again and we will finish the delivery.",
+    "introWithHandle": "The username {handle} from checkout does not reach a GitHub account, so the invitation could not be sent. Your purchase is safe - enter the username again and we will finish the delivery.",
     "label": "Your GitHub username",
     "placeholder": "Enter your GitHub username",
     "hint": "The account that will receive the repository invitation.",
@@ -130,22 +130,22 @@ export const FALLBACK_DELIVERY = {
     "confirm": {
       "question": "Is this your GitHub account?",
       "openProfile": "Open {handle} on GitHub",
-      "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names — a real account belonging to someone else looks exactly the same to us.",
+      "openHint": "Open the profile and check whose account it is. We send the invitation to whoever this handle names - a real account belonging to someone else looks exactly the same to us.",
       "confirm": "Yes, that's my account",
       "back": "No, change the username"
     },
     "status": {
-      "submitted": "Thank you — finishing the delivery now…",
+      "submitted": "Thank you - finishing the delivery now…",
       "busy": "Still working on the previous attempt. Trying again in a moment…",
-      "invalid_handle": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+      "invalid_handle": "That is not a valid GitHub username. Usernames are 1-39 characters, letters, digits and single hyphens.",
       "not_found": "Checking your delivery…",
       "error": "Something went wrong on our side. Write to hello@edgekits.dev and we will finish this by hand."
     }
   },
   "errors": {
-    "invalid_format": "That is not a valid GitHub username. Usernames are 1–39 characters, letters, digits and single hyphens.",
+    "invalid_format": "That is not a valid GitHub username. Usernames are 1-39 characters, letters, digits and single hyphens.",
     "not_found": "GitHub has no account with that username. Check the spelling and try again.",
-    "unknown": "We could not verify that username right now — this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
+    "unknown": "We could not verify that username right now - this is not a rejection. Try again in a moment, or continue if you are sure it is correct.",
     "transient": "We could not reach the verification service. Try again in a moment."
   }
 } as const;
