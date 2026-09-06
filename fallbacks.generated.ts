@@ -381,8 +381,10 @@ export const FALLBACK_REPOACCESS = {
   "hero": {
     "eyebrow": "Open core · AGPL-3.0",
     "title": "RepoAccess",
-    "lead": "Sell access to a private GitHub repo on your own infrastructure, with the payment provider you already use.",
-    "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback takes that access away again. No collaborator to add by hand after every sale, no list to reconcile after every refund. It runs as a single Cloudflare Worker on the free tier: no server, no SaaS subscription, no per-sale or chargeback cut, and no \"Login with GitHub\" in front of a buyer who has just paid you. GitHub's own invitation is the identity check.",
+    "lead": "Sell access to a private GitHub repo and keep everything that matters yours: your payment provider, your GitHub organization, your infrastructure.",
+    "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback removes them. No collaborator to add by hand after every sale, no list to reconcile after every refund, and no \"Login with GitHub\" in front of a buyer who has just paid you: GitHub's own invitation is the identity check. The whole thing runs as a single Cloudflare Worker on your own account, on the free tier, with no per-sale or chargeback cut - no RepoAccess server ever sits between you and your buyers.",
+    "price": "{price} one-time · or free",
+    "priceNote": "Pro with every provider and the setup wizard, or the open-source Core with Stripe. Same engine either way.",
     "ctaPrimary": "See your options",
     "ctaSecondary": "npm install repoaccess-core",
     "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe, you never have to pay me anything."
@@ -422,9 +424,10 @@ export const FALLBACK_REPOACCESS = {
     "wizard": {
       "title": "A setup wizard your coding agent runs for you",
       "lead": "Run /repoaccess-setup in Claude Code, OpenCode or any coding agent (the repo carries an AGENTS.md for the ones that need telling) and the wizard walks you to a deployed worker one verified step at a time: your GitHub org and the team settings that keep your repos private, your provider's product and webhook, the secrets, the deploy, and a live end-to-end test purchase at the end.",
+      "proof": "The wizard was built by running each provider's real setup flow dozens of times, including dashboards seen for the first time.",
       "securityTitle": "Your coding agent sets this up without ever seeing your secrets",
       "securityBody": "The rules that enforce that are committed in the repo, so you can check them before you start. The wizard is a program rather than a set of instructions the agent improvises from: the agent runs one command, renders what the program prints, and hands your answer back, while every file that holds a secret is written inside a child process it never reads. The agent's reads of those files are denied by name, and a committed test plants fake secrets and asserts they never reach the agent.",
-      "budget": "Budget about an hour from absolute scratch, counting the Cloudflare account, the GitHub org and the throwaway account that plays your test buyer. Much less when those already exist. The wizard is a convenience and not a requirement: a written guide walks the same road by hand.",
+      "budget": "Budget about an hour with your accounts in place - the pre-requisites each setup guide lists. Starting from absolutely nothing, accounts included, budget a few hours rather than a day. The wizard is a convenience and not a requirement: a written guide walks the same road by hand.",
       "alt": "A terminal running the RepoAccess setup wizard inside a coding agent, printing one setup step and waiting for an answer.",
       "caption": "The wizard driving a live setup: one step, one answer, then the next."
     }
@@ -458,8 +461,18 @@ export const FALLBACK_REPOACCESS = {
     },
     "cue": "Stripe + maintain it yourself → Core. Any other provider, or Merchant of Record, or you want it maintained with support → Pro."
   },
+  "portability": {
+    "title": "One payment provider is enough - until it isn't",
+    "p1": "Your payment provider is part of your revenue infrastructure. Fees change, terms change, accounts get reviewed, and platforms get folded into other platforms -",
+    "p1Link": "Lemon Squeezy's move to Stripe Managed Payments",
+    "p1After": "is happening right now.",
+    "p2": "With Pro, the connection between your revenue and your product is not welded to any one provider. Six adapters are implemented, live-verified and maintained. Switching providers is configuration, not a rebuild.",
+    "p3": "That holds even in the emergency case: your provider stops working for you and you do not yet have an account at the next one. The wizard takes you from nothing to a live replacement in a few hours, accounts included.",
+    "closer": "This is not a convenience feature. It is a fallback plan for your revenue infrastructure."
+  },
   "why": {
     "title": "What you are paying for in Pro",
+    "lead": "You do not pay for a more restricted version of Core. You pay for the additional work that has already been done for you.",
     "pillars": {
       "p1": {
         "title": "The provider you already use, including the ones that handle tax",
@@ -582,6 +595,11 @@ export const FALLBACK_REPOACCESS = {
       "q": "What if I buy it and it does not work out?",
       "a": "Write to me at hello@edgekits.dev within 7 days of your purchase with a short reason, and I will look at it case by case. A refund can be declined where access has already been granted and extensively used, or where the request is abusive or fraudulent. Worth saying out loud: a refund also revokes the repo access automatically, because enforcing refunds is literally what this product does. You are not being asked to trust a promise I would otherwise have to keep by hand."
     }
+  },
+  "closing": {
+    "title": "Your payment provider. Your GitHub. Your infrastructure.",
+    "body": "RepoAccess connects them. A payment grants access, a refund revokes it. And if the provider half ever has to change, you do not rebuild the half that pays your rent.",
+    "closer": "Less vendor lock-in. Better business continuity."
   },
   "buy": {
     "title": "Get RepoAccess Pro",
