@@ -406,7 +406,7 @@ export const FALLBACK_REPOACCESS = {
     },
     "ctaPrimary": "See your options",
     "ctaSecondary": "npm install repoaccess-core",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0. If you sell through Stripe, you never have to pay me anything."
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0 and ships the Stripe adapter. Pro adds Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars. If you sell through Stripe, you never have to pay me anything."
   },
   "how": {
     "title": "What your buyer actually goes through",
