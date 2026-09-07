@@ -234,7 +234,7 @@ export const FALLBACK_LANDING = {
         "b5": "Internal tool for EdgeKits",
         "b6": "Available standalone"
       },
-      "buttonText": "Learn More"
+      "buttonText": "Explore RepoAccess Worker"
     }
   },
   "builtWith": "Built with industry standards",
