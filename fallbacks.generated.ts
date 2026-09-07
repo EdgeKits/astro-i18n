@@ -406,7 +406,7 @@ export const FALLBACK_REPOACCESS = {
     },
     "ctaPrimary": "See your options",
     "ctaSecondary": "npm install repoaccess-core",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0 and ships the Stripe adapter. Pro adds Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars. If you sell through Stripe, you never have to pay me anything."
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0 and ships the Stripe adapter. Pro adds Paddle, Lemon Squeezy and Gumroad, which handle your tax as Merchant of Record, plus Razorpay for India and Telegram Stars. If you sell through Stripe, you never have to pay me anything."
   },
   "how": {
     "title": "What your buyer actually goes through",
@@ -474,7 +474,7 @@ export const FALLBACK_REPOACCESS = {
     "proTitle": "RepoAccess Pro",
     "proItems": {
       "i1": "Every other payment provider: Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars, with Core's Stripe adapter still in the box.",
-      "i2": "Merchant of Record options (Paddle, Lemon Squeezy) if you would rather not own sales tax and compliance.",
+      "i2": "Merchant of Record options (Paddle, Lemon Squeezy, Gumroad) if you would rather not own sales tax and compliance.",
       "i3": "Customizable claim-page templates.",
       "i4": "Provider changes tracked and patched, and a responsible party when something breaks."
     },
