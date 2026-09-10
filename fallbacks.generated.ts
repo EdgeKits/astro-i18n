@@ -424,6 +424,10 @@ export const FALLBACK_REPOACCESS = {
         "title": "They are invited to the repo",
         "body": "An invitation to the GitHub team holding your private repo, accepted from their email. If the payment is later refunded or charged back, the access goes with it, whether or not you were watching."
       }
+    },
+    "video": {
+      "title": "RepoAccess demo: a purchase, a GitHub invitation, a refund, and the access removed again.",
+      "caption": "The same three steps recorded end to end, including the refund."
     }
   },
   "options": {

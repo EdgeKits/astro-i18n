@@ -54,7 +54,8 @@ function shouldBypassI18n(pathname: string): boolean {
 // Applies strict Content Security Policy (CSP) and other security headers to the response.
 // Wrap outgoing responses with this function to ensure consistent security posture.
 // `pathname` selects the policy: every route gets the base one, the checkout surface
-// gets the Paddle variant (src/domain/security/checkout-surface.ts).
+// gets the Paddle variant and the product page the Stream variant
+// (src/domain/security/checkout-surface.ts).
 function applySecurityHeaders(response: Response, pathname: string): Response {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -107,9 +108,11 @@ function applySecurityHeaders(response: Response, pathname: string): Response {
   // 2026-06-10 — diagrams are static infographics now, no eval anywhere.)
   //
   // The string itself now lives in src/domain/security/checkout-surface.ts, which
-  // serializes the SAME base policy byte-for-byte (pinned by test) and, on the
-  // checkout surface only, adds https://*.paddle.com to script-src/connect-src/
-  // img-src plus a frame-src for the cross-origin Paddle checkout iframe.
+  // serializes the SAME base policy byte-for-byte (pinned by test) and widens it
+  // on two surfaces only: the checkout adds https://*.paddle.com to
+  // script-src/connect-src/img-src plus a frame-src for the cross-origin Paddle
+  // iframe, and the RepoAccess product page adds a frame-src for the Cloudflare
+  // Stream demo player and nothing else.
   response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(pathname))
 
   return response
