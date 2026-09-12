@@ -464,7 +464,9 @@ export const FALLBACK_REPOACCESS = {
       "i3": "The claim page, for providers that cannot carry a custom field at checkout.",
       "i4": "Configuration as typed code: one config object your editor checks, not escaped JSON crammed into environment variables."
     },
-    "audience": "If you sell through Stripe, are happy to maintain it yourself, and want to read every line before you trust it with your buyers, take Core and stop here."
+    "audience": "If you sell through Stripe, are happy to maintain it yourself, and want to read every line before you trust it with your buyers, take Core and stop here.",
+    "licensing": "Core is dual-licensed. Almost everyone owes nothing under the AGPL, and the exceptions are short:",
+    "licensingLink": "which licence you need"
   },
   "compare": {
     "title": "Which one do you need?",
