@@ -384,7 +384,7 @@ export const FALLBACK_REPOACCESS = {
     "lead": "Sell access to a private GitHub repo and keep everything that matters yours: your payment provider, your GitHub organization, your infrastructure.",
     "body": "A buyer pays and is invited to the GitHub team that carries your private repo. A refund or a chargeback removes them. No collaborator to add by hand after every sale, no list to reconcile after every refund, and no \"Login with GitHub\" in front of a buyer who has just paid you: GitHub's own invitation is the identity check. The whole thing runs as a single Cloudflare Worker on your own account, on the free tier, with no per-sale or chargeback cut - no RepoAccess server ever sits between you and your buyers.",
     "price": "{price} one-time · or free",
-    "priceNote": "Pro with every provider and the setup wizard, or the open-source Core with Stripe. Same engine either way.",
+    "priceNote": "Pro with every provider, or the open-source Core with Stripe. Same engine either way.",
     "diagram": {
       "title": "How a sale becomes repo access: a payment webhook reaches your Cloudflare Worker, which invites the buyer to your GitHub team and removes them on a refund.",
       "step1": {
@@ -404,9 +404,9 @@ export const FALLBACK_REPOACCESS = {
         "badge": "GRANTED"
       }
     },
-    "ctaPrimary": "See your options",
-    "ctaSecondary": "npm install repoaccess-core",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0 and ships the Stripe adapter. Pro adds Paddle, Lemon Squeezy and Gumroad, which handle your tax as Merchant of Record, plus Razorpay for India and Telegram Stars. If you sell through Stripe, you never have to pay me anything."
+    "ctaPrimary": "Buy Pro",
+    "ctaSecondary": "See your options",
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0: the Stripe adapter, the whole grant and revoke chain, and nothing to pay me, ever. Pro is the same worker on your own Cloudflare account and adds Paddle, Lemon Squeezy and Gumroad as Merchant of Record, Razorpay for India, Telegram Stars, the buyer-facing pages, and upkeep as the providers change."
   },
   "how": {
     "title": "What your buyer actually goes through",
