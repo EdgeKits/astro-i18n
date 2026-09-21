@@ -605,42 +605,46 @@ export const FALLBACK_REPOACCESS = {
       "a": "The product that was refunded, not the buyer. The worker removes them from the teams mapped to that product and cancels any invitation still in flight, then reconciles their organisation membership against live GitHub state rather than against its own records. So a buyer who owns A, buys B and refunds B loses B and keeps A. One thing worth knowing before your inbox finds out: a buyer left in no team at all also gets GitHub's organisation-removal email, which reads like a ban and is not one. A buyer who still holds another purchase stays in that purchase's team and never receives it."
     },
     "f5": {
+      "q": "Can I use RepoAccess if Stripe is not available in my country?",
+      "a": "Yes, and it is the main reason Pro exists. Core ships the Stripe adapter only. Pro adds Paddle, Lemon Squeezy and Gumroad, which are Merchants of Record and take sales tax off your desk, plus Razorpay for India and Telegram Stars. RepoAccess does not decide where you can sell: your payment provider does, so read its supported-countries page before you buy. Once a provider accepts you, the worker does the same job it does for Stripe. It invites the buyer to your GitHub team on payment and removes them on a refund."
+    },
+    "f6": {
       "q": "Are there limitations I should know about before I pick a provider?",
       "a": "One, and it is Lemon Squeezy's. Refunds are handled fully; chargebacks are not, in this version. Lemon Squeezy does emit dispute events, but they are absent from its published event types, there is no dispute object in its API reference, and a dispute cannot be triggered in test mode, so there is no payload to build an adapter against. Until that changes, a Lemon Squeezy chargeback has to be revoked by hand. Every other adapter handles chargebacks automatically, apart from Telegram Stars, which has none to handle."
     },
-    "f6": {
+    "f7": {
       "q": "Can't I just build this myself in an evening?",
       "a": "Yes, and for one provider you probably can. A single webhook adapter against Stripe is an evening of work, which is exactly why Core is free and open source: nobody should pay me for that evening. What Pro sells is what the evening does not buy. The edge cases verified against live providers, refunds, disputes, replayed webhooks and signature changes. Every provider beyond Stripe, including the Merchant of Record options. And somebody tracking provider changes for twelve months so the first sign of one is not a buyer who paid and got nothing. The evening is cheap. Keeping it working for a year is the part that costs, and buying that is cheaper than maintaining it."
     },
-    "f7": {
+    "f8": {
       "q": "How does this compare with a platform that takes a percentage?",
       "a": "A platform charging 5% plus 50 cents a sale takes a bit over $100 a month out of $2,000 of monthly sales, and takes it again every month after that. Pro is paid once and takes no cut of any sale, so the only recurring bill is Cloudflare's, which is nothing until you are past a few hundred sales a day. Set the one-time price on this page against a single month of that percentage and the arithmetic does itself. What the percentage buys that this does not is the platform acting as your tax authority, which is why the Merchant of Record adapters exist: pay it to a payment provider, where it buys you something, rather than to a delivery tool."
     },
-    "f8": {
+    "f9": {
       "q": "What does it cost to run?",
       "a": "A one-time payment for the licence and no cut of any sale. The only running cost is Cloudflare's, and it is spent at the moment somebody pays you. On the free plan that works out at roughly 600 sales a day when the handle arrives with the payment, or 250 a day when the buyer enters it on a claim page. Past that, the Workers Paid plan is $5 a month and carries tens of thousands of sales a month before usage adds anything to it. You pay Cloudflare, never me."
     },
-    "f9": {
+    "f10": {
       "q": "Core is AGPL-3.0. Does that oblige me to publish anything?",
       "a": "Not if you are running it unmodified for your own sales. Deploy Core to your own Cloudflare account, sell access to your own repositories, and you owe nobody anything. Modify it and let buyers interact with your version over a network, and the AGPL's section 13 asks you to offer them your source. Pro is not under the AGPL at all: your Pro licence covers the engine too, so no copyleft obligation attaches to the worker you run. Putting RepoAccess inside a product you ship to other people is a different question again, and Pro does not answer it. The licensing page says what does."
     },
-    "f10": {
+    "f11": {
       "q": "What does one Pro licence cover?",
       "a": "Your own business: selling access to your own repositories to your own customers, on as many deployments and for as many customers as you like, modifying the code, and writing your own adapters. Not reselling it, not handing a copy to a third party, and not running a service whose purpose is managing other people's repositories. The full terms ship in the repo as LICENSE, and they govern."
     },
-    "f11": {
+    "f12": {
       "q": "Is there anything I need that is not obvious?",
       "a": "A second GitHub account, free and throwaway, to play the test buyer. Not your own: an account already in your organization never receives an invitation at all, so it cannot walk the path a real buyer walks, which is invite, accept, refund, revoke. It is the one prerequisite that catches people out, which is why it is here and not in the small print."
     },
-    "f12": {
+    "f13": {
       "q": "What happens after twelve months?",
       "a": "About a week before your twelve months end you can renew to keep updates and support running. If you do not, the version you have keeps working, your clone and your deployed worker are untouched, and you simply stop receiving new updates until you renew. Renewing costs a fraction of what you paid the first time: it is a maintenance fee, not a second purchase."
     },
-    "f13": {
+    "f14": {
       "q": "What does support actually mean, and what is it not?",
       "a": "Email to hello@edgekits.dev, answered by the person who wrote the code. I aim to reply within one or two business days, which is a target I hold myself to rather than a guarantee. It covers this software's own behaviour. It does not cover writing your code for you, debugging your infrastructure, or maintaining adapters you wrote yourself, though if you built one from the recipe in AGENTS.md and it will not work, write anyway and I will look. What I most want to hear about is a provider that has changed: all six are monitored weekly for exactly that, and a seller with money on the line still beats a monitor."
     },
-    "f14": {
+    "f15": {
       "q": "What if I buy it and it does not work out?",
       "a": "Write to me at hello@edgekits.dev within 7 days of your purchase with a short reason, and I will look at it case by case. A refund can be declined where access has already been granted and extensively used, or where the request is abusive or fraudulent. Worth saying out loud: a refund also revokes the repo access automatically, because enforcing refunds is literally what this product does. You are not being asked to trust a promise I would otherwise have to keep by hand."
     }
