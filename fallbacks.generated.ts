@@ -525,6 +525,11 @@ export const FALLBACK_REPOACCESS = {
       }
     }
   },
+  "integrations": {
+    "title": "Integration guides, one per provider",
+    "lead": "What each provider does for a code seller, how the buyer gives a GitHub username on its checkout, and what a refund does to their access. Read before you buy.",
+    "linkLabel": "Read the integration page"
+  },
   "branding": {
     "title": "Your brand on every page the buyer sees",
     "lead": "The worker renders the whole post-payment chain itself: the claim page where the buyer types their handle, the setting-up page while the grant runs, access granted, the failure page, your legal pages, and the Paddle checkout. None of it is somebody else's screen with somebody else's logo on it.",
