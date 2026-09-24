@@ -491,7 +491,7 @@ export const FALLBACK_REPOACCESS = {
     "p1": "Your payment provider is part of your revenue infrastructure. Fees change, terms change, accounts get reviewed, and platforms get folded into other platforms -",
     "p1Link": "Lemon Squeezy's move to Stripe Managed Payments",
     "p1After": "is happening right now.",
-    "p2": "With Pro, the connection between your revenue and your product is not welded to any one provider. Six adapters are implemented, live-verified and maintained. Switching providers is configuration, not a rebuild.",
+    "p2": "With Pro, the connection between your revenue and your product is not welded to any one provider. Six adapters are implemented, live-verified and maintained. Switching providers is configuration, not a rebuild. They also run side by side: one Pro install can take Paddle for card buyers and Telegram Stars inside Telegram at the same time, which is how this page sells Pro.",
     "p3": "That holds even in the emergency case: your provider stops working for you and you do not yet have an account at the next one. The wizard takes you from nothing to a live replacement in a few hours, accounts included.",
     "closer": "This is not a convenience feature. It is a fallback plan for your revenue infrastructure."
   },
