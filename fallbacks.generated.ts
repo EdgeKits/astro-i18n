@@ -528,7 +528,9 @@ export const FALLBACK_REPOACCESS = {
   "integrations": {
     "title": "Integration guides, one per provider",
     "lead": "What each provider does for a code seller, how the buyer gives a GitHub username on its checkout, and what a refund does to their access. Read before you buy.",
-    "linkLabel": "Read the integration page"
+    "linkLabel": "Read the integration page",
+    "worksWith": "Works with",
+    "hubLinkLabel": "All integration guides"
   },
   "branding": {
     "title": "Your brand on every page the buyer sees",
@@ -677,5 +679,12 @@ export const FALLBACK_REPOACCESS = {
     "refundLink": "Read the refund policy",
     "contact": "Questions before you buy? Write to me at"
   },
-  "authorSlogan": "I sell my own repos with the same worker you are buying."
+  "authorSlogan": "I sell my own repos with the same worker you are buying.",
+  "guides": {
+    "title": "RepoAccess guides",
+    "seo": {
+      "title": "RepoAccess Guides: Payment Provider Integrations",
+      "description": "How RepoAccess works with each payment provider: the GitHub username at checkout, the invite on payment, and what a refund does to repo access."
+    }
+  }
 } as const;
