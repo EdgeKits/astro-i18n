@@ -688,8 +688,8 @@ export const FALLBACK_REPOACCESS = {
   "guides": {
     "title": "RepoAccess guides",
     "seo": {
-      "title": "RepoAccess Guides: Payment Provider Integrations",
-      "description": "How RepoAccess works with each payment provider: the GitHub username at checkout, the invite on payment, and what a refund does to repo access."
+      "title": "RepoAccess Guides: Integrations and Comparisons",
+      "description": "How RepoAccess works with each payment provider, and the choices around GitHub delivery compared, from app or token to license keys or repo access."
     }
   }
 } as const;
