@@ -532,6 +532,11 @@ export const FALLBACK_REPOACCESS = {
     "worksWith": "Works with",
     "hubLinkLabel": "All integration guides"
   },
+  "comparisons": {
+    "title": "Comparisons: the choices around delivery",
+    "lead": "The decisions a code seller makes next to the payment provider: how the worker talks to GitHub, and what repo access replaces. Each one set side by side.",
+    "linkLabel": "Read the comparison"
+  },
   "branding": {
     "title": "Your brand on every page the buyer sees",
     "lead": "The worker renders the whole post-payment chain itself: the claim page where the buyer types their handle, the setting-up page while the grant runs, access granted, the failure page, your legal pages, and the Paddle checkout. None of it is somebody else's screen with somebody else's logo on it.",
