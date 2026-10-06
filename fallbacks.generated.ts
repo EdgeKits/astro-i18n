@@ -406,7 +406,16 @@ export const FALLBACK_REPOACCESS = {
     },
     "ctaPrimary": "Buy RepoAccess Pro",
     "ctaSecondary": "See your options",
-    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0: the Stripe adapter, the whole grant and revoke chain, and nothing to pay me, ever. Pro is the same worker on your own Cloudflare account and adds Paddle, Lemon Squeezy and Gumroad as Merchant of Record, Razorpay for India, Telegram Stars, the buyer-facing pages, and upkeep as the providers change."
+    "ctaSecondaryNote": "Core is free and open source under AGPL-3.0: the Stripe adapter, the whole grant and revoke chain, and nothing to pay me, ever. Pro is the same worker on your own Cloudflare account and adds Paddle, Lemon Squeezy and Gumroad as Merchant of Record, Razorpay for India, Telegram Stars, the buyer-facing pages, and upkeep as the providers change.",
+    "agent": {
+      "title": "Or let your coding agent take you there",
+      "lead": "A free RepoAccess skill for coding agents. Tell your agent you want to sell access to a private GitHub repo: it explains your options, clones the core and hands you to the setup wizard.",
+      "coworkSteps": "Customize → Plugins → Discover, then search for RepoAccess",
+      "others": "Cursor, OpenCode and other agents",
+      "note": "Listed in Anthropic's plugin directory for Claude Code and Cowork. Selling with Paddle, Lemon Squeezy, Gumroad, Razorpay or Telegram Stars? The same skill points you to Pro.",
+      "copy": "Copy command",
+      "copied": "Copied"
+    }
   },
   "how": {
     "title": "What your buyer actually goes through",
@@ -659,6 +668,10 @@ export const FALLBACK_REPOACCESS = {
     "f15": {
       "q": "What if I buy it and it does not work out?",
       "a": "Write to me at hello@edgekits.dev within 7 days of your purchase with a short reason, and I will look at it case by case. A refund can be declined where access has already been granted and extensively used, or where the request is abusive or fraudulent. Worth saying out loud: a refund also revokes the repo access automatically, because enforcing refunds is literally what this product does. You are not being asked to trust a promise I would otherwise have to keep by hand."
+    },
+    "f16": {
+      "q": "Can a coding agent set RepoAccess up for me?",
+      "a": "Yes, through a free RepoAccess skill. In Claude Code and Claude Cowork it is a plugin listed in Anthropic's plugin directory; in Cursor, OpenCode and other agents you add it with npx skills add EdgeKits/repoaccess-skill. Tell your agent you want to sell access to a private GitHub repo and the skill explains core and Pro, asks which payment provider you use, clones the core for Stripe sellers and hands you to the setup wizard, which runs in a terminal coding agent. The skill sets nothing up by itself and never sees your secrets. Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars sellers are pointed to Pro."
     }
   },
   "closing": {
