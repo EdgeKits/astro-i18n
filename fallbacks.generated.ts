@@ -671,7 +671,7 @@ export const FALLBACK_REPOACCESS = {
     },
     "f16": {
       "q": "Can a coding agent set RepoAccess up for me?",
-      "a": "Yes, through a free RepoAccess skill. In Claude Code and Claude Cowork it is a plugin listed in Anthropic's plugin directory; in Cursor, OpenCode and other agents you add it with npx skills add EdgeKits/repoaccess-skill. Tell your agent you want to sell access to a private GitHub repo and the skill explains core and Pro, asks which payment provider you use, clones the core for Stripe sellers and hands you to the setup wizard, which runs in a terminal coding agent. The skill sets nothing up by itself and never sees your secrets. Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars sellers are pointed to Pro."
+      "a": "Yes, through a free RepoAccess skill. In Claude Code and Claude Cowork it is a plugin listed in Anthropic's plugin directory; in Cursor, OpenCode and other agents you add it with npx skills add EdgeKits/skills --skill sell-repo-access. Tell your agent you want to sell access to a private GitHub repo and the skill explains core and Pro, asks which payment provider you use, clones the core for Stripe sellers and hands you to the setup wizard, which runs in a terminal coding agent. The skill sets nothing up by itself and never sees your secrets. Paddle, Lemon Squeezy, Gumroad, Razorpay and Telegram Stars sellers are pointed to Pro."
     }
   },
   "closing": {
