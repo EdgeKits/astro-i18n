@@ -21,6 +21,10 @@ export const FALLBACK_BLOG = {
     "next": "Next",
     "pageLabel": "Page {n}",
     "ariaLabel": "Blog pagination"
+  },
+  "summarize": {
+    "label": "Summarize this page with:",
+    "prompt": "Summarize the key points of this article: {url}"
   }
 } as const;
 
