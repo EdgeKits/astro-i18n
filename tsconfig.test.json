@@ -1,10 +1,13 @@
 {
-  // Tests only (selected by test/register.mjs): maps the integration's virtual config
-  // to a fixture, so production code needs no test hook.
+  // Tests only (selected by test/register.mjs): maps the integration's virtual modules and
+  // `cloudflare:workers` to fixtures, so production code needs no test hook.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "virtual:@edgekits/astro-i18n/config": ["./test/fixtures/i18n.config.ts"]
+      "virtual:@edgekits/astro-i18n/config": ["./test/fixtures/i18n.config.ts"],
+      "virtual:@edgekits/astro-i18n/runtime-constants": ["./test/fixtures/runtime-constants.ts"],
+      "virtual:@edgekits/astro-i18n/fallbacks": ["./test/fixtures/fallbacks.ts"],
+      "cloudflare:workers": ["./test/fixtures/cloudflare-workers.ts"]
     }
   }
 }

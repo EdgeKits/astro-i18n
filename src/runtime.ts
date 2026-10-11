@@ -4,6 +4,15 @@
 export { fetchTranslations } from './fetcher'
 export { fmt, plural, pluralIcu, toIetfTag, replaceLocaleInPath, getLangFromUrl } from './format'
 export type { PluralCategory, PluralPatterns } from './format'
+export { I18N_CONFIG } from './config'
+export {
+  DEFAULT_LOCALE,
+  ENABLE_MISSING_TRANSLATION_BANNER,
+  LANG_COOKIE_NAME,
+  LANGUAGES,
+  SUPPORTED_LOCALES,
+} from './constants'
+export type { Language, SupportedLocales } from './constants'
 export { LocaleSchema } from './schema'
 export type { Namespace, PickSchema } from './schema'
 export { checkMissingTranslation, resolveLocale, resolveLocaleForTranslations } from './resolve-locale'
