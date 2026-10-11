@@ -1,0 +1,10 @@
+node_modules
+dist
+.astro
+.wrangler
+.dev.vars
+.env*
+
+# Maintainer-owned internal files (Gary Stupak): never committed
+journal/
+CLAUDE.md
