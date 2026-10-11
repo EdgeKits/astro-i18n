@@ -1,4 +1,4 @@
-import { deepMerge } from '@/utils/shared/deep-merge'
+import { deepMerge } from './deep-merge'
 
 /**
  * Assemble a single translation namespace from a raw value and its compiled

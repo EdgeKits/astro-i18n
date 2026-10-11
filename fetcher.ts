@@ -2,8 +2,8 @@ import { env, waitUntil } from 'cloudflare:workers'
 
 import { assembleNamespace } from './assemble'
 import { buildTranslationKvKey, buildTranslationCacheRequest } from './translations-keys'
-import { parseBooleanFlag } from '@/utils/shared/parse-boolean'
-import type { Locale } from '@/domain/i18n/constants'
+import { parseBooleanFlag } from './parse-boolean'
+import type { Locale } from './constants'
 import type { Namespace, PickSchema } from './schema'
 
 // Optional fallbacks (auto-loaded if generated)

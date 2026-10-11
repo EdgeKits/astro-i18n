@@ -20,4 +20,4 @@ export const DEFAULT_LOCALE: SupportedLocales = I18N_CONFIG.defaultLocale
 export const ENABLE_MISSING_TRANSLATION_BANNER = I18N_CONFIG.missingTranslationBanner
 
 // Cookie name
-export const LANG_COOKIE_NAME = I18N_CONFIG.cookieName
+export const LANG_COOKIE_NAME = I18N_CONFIG.cookie.name

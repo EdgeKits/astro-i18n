@@ -1,4 +1,4 @@
-import { PROJECT } from '@/config'
+import { COOKIE_TTL, PROJECT } from '@/config'
 
 /**
  * The project values the i18n engine uses, in one place.
@@ -19,6 +19,7 @@ export const I18N_CONFIG = {
     ja: { countryCode: 'jp', name: '日本語' },
   },
   defaultLocale: 'en',
-  cookieName: 'lang',
+  // The lang cookie the middleware keeps in sync with the URL locale.
+  cookie: { name: 'lang', maxAge: COOKIE_TTL.oneYear },
   missingTranslationBanner: true,
 } as const

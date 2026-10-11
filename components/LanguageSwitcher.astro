@@ -3,8 +3,8 @@ import WorldIcon from '@tabler/icons/outline/world.svg'
 import PointIcon from '@tabler/icons/filled/point.svg'
 import { cn } from '@/utils/cn'
 
-import { SUPPORTED_LOCALES, LANGUAGES } from '@/domain/i18n/constants'
-import type { Locale } from '@/domain/i18n/constants'
+import { SUPPORTED_LOCALES, LANGUAGES } from '../constants'
+import type { Locale } from '../constants'
 import Flag from '@/components/icons/Flag.astro'
 
 const { uiLocale: currentLang } = Astro.locals
@@ -60,7 +60,7 @@ const { uiLocale: currentLang } = Astro.locals
 </language-switcher>
 
 <script>
-  import { LANG_COOKIE_NAME, type Locale } from '@/domain/i18n/constants'
+  import { LANG_COOKIE_NAME, type Locale } from '../constants'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
