@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { AstroConfig } from 'astro'
 
-import type { I18nConfig } from '../types'
+import type { I18nConfig } from '../types.ts'
 
 type VitePlugin = NonNullable<NonNullable<AstroConfig['vite']>['plugins']>[number]
 

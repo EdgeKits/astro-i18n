@@ -11,11 +11,35 @@
   "engines": {
     "node": ">=22"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime": "./src/runtime.ts",
+    "./middleware": "./src/middleware.ts",
+    "./components/*": "./src/components/*.astro",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "edgekits-i18n": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "test": "node --import ./test/register.mjs --test test/**/*.test.ts",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "jiti": "^2.7.0",
+    "jsonc-parser": "^3.3.1"
   },
   "peerDependencies": {
     "@astrojs/cloudflare": "^14.3.0",

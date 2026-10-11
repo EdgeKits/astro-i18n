@@ -1,7 +1,7 @@
 import type { AstroIntegration } from 'astro'
 
-import { DEFAULT_GENERATED_DIR, defineI18nConfig, type I18nConfig } from '../types'
-import { i18nVitePlugin } from './vite-plugin'
+import { DEFAULT_GENERATED_DIR, defineI18nConfig, type I18nConfig } from '../types.ts'
+import { i18nVitePlugin } from './vite-plugin.ts'
 
 export type EdgekitsI18nOptions = {
   // 'auto' registers the i18n middleware; 'manual' leaves it to the project, which
@@ -10,6 +10,8 @@ export type EdgekitsI18nOptions = {
 }
 
 const MIDDLEWARE_MODES = ['auto', 'manual'] as const
+
+export const PACKAGE_NAME = '@edgekits/astro-i18n'
 
 /**
  * The Astro integration. Build time only: it runs in Node while Astro loads its
@@ -35,7 +37,14 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
           astroConfig.root,
         )
 
-        updateConfig({ vite: { plugins: [i18nVitePlugin(i18nConfig, generatedDir)] } })
+        updateConfig({
+          vite: {
+            plugins: [i18nVitePlugin(i18nConfig, generatedDir)],
+            // The runtime ships as source and imports the virtual modules above: Vite
+            // must process it rather than hand it to Node as an external dependency.
+            ssr: { noExternal: [PACKAGE_NAME] },
+          },
+        })
 
         if (middleware === 'auto') {
           addMiddleware({ entrypoint: '@edgekits/astro-i18n/middleware', order: 'pre' })
@@ -48,22 +57,29 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
   }
 }
 
+// Each entry that exports `I18nLocales` from its own declaration: the root entry's comes
+// from dist/types.d.ts, the runtime entry's from the shipped source (src/types.ts).
+const LOCALE_MODULES = ['@edgekits/astro-i18n', '@edgekits/astro-i18n/runtime']
+
 /**
  * Augments `I18nLocales` with the configured locales, so `Locale` narrows from
- * `string` to their union in the project. The `export {}` keeps the file a module:
- * without it `declare module` would replace the package's types instead of merging.
+ * `string` to their union in the project, through both entries. The `export {}` keeps
+ * the file a module: without it `declare module` would replace the package's types
+ * instead of merging.
  */
 export function localesDeclaration(locales: readonly string[]): string {
-  const members = locales.map((locale) => `    ${JSON.stringify(locale)}: true`).join('\n')
+  const members = locales.map((locale) => `    ${JSON.stringify(locale)}: true`)
 
   return [
     'export {}',
-    '',
-    "declare module '@edgekits/astro-i18n' {",
-    '  interface I18nLocales {',
-    members,
-    '  }',
-    '}',
+    ...LOCALE_MODULES.flatMap((specifier) => [
+      '',
+      `declare module '${specifier}' {`,
+      '  interface I18nLocales {',
+      ...members,
+      '  }',
+      '}',
+    ]),
     '',
   ].join('\n')
 }

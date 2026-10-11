@@ -1,5 +1,6 @@
 import { I18N_CONFIG } from './config'
 import type { Locale } from './constants'
+import { formatTranslationCacheUrl, formatTranslationKvKey } from './key-format'
 import type { Namespace } from './schema'
 
 /**
@@ -7,12 +8,12 @@ import type { Namespace } from './schema'
  *
  * Used by both:
  *   - fetcher.ts (runtime: cache.match / cache.put)
- *   - bundle-translations.ts (build: Cloudflare Purge API)
+ *   - the CLI (build: KV bulk data), through the same `key-format.ts`
  *
  * Format: <I18N_CONFIG.keyPrefix>:<namespace>:<locale>
  */
 export function buildTranslationKvKey(locale: Locale, ns: Namespace): string {
-  return `${I18N_CONFIG.keyPrefix}:${ns}:${locale}`
+  return formatTranslationKvKey(I18N_CONFIG.keyPrefix, locale, ns)
 }
 
 /**
@@ -20,17 +21,16 @@ export function buildTranslationKvKey(locale: Locale, ns: Namespace): string {
  *
  * Used by both:
  *   - fetcher.ts (runtime: cache.match / cache.put)
- *   - bundle-translations.ts (build: Cloudflare Purge API)
+ *   - the CLI (build: Cloudflare Purge API), through the same `key-format.ts`
  *
  * The URL uses a static, non-versioned structure. Cache invalidation is
- * handled explicitly via the Cloudflare Purge API in bundle-translations.ts
+ * handled explicitly via the Cloudflare Purge API in `edgekits-i18n migrate`
  * rather than by changing the key on every deploy.
  *
  * Format: https://<I18N_CONFIG.keyPrefix>/<encodeURIComponent(i18n:<locale>:<namespace>)>
  */
 export function buildTranslationCacheUrl(locale: Locale, ns: Namespace): string {
-  const cacheId = `i18n:${locale}:${ns}`
-  return `https://${I18N_CONFIG.keyPrefix}/${encodeURIComponent(cacheId)}`
+  return formatTranslationCacheUrl(I18N_CONFIG.keyPrefix, locale, ns)
 }
 
 /**

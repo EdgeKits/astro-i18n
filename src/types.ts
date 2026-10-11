@@ -19,9 +19,12 @@ export type I18nConfig = {
   // Where the CLI writes `fallbacks.generated.ts` and `runtime-constants.ts`,
   // relative to the project root.
   generatedDir?: string
+  // Where the CLI reads `<locale>/<namespace>.json`, relative to the project root.
+  localesDir?: string
 }
 
 export const DEFAULT_GENERATED_DIR = 'src/i18n'
+export const DEFAULT_LOCALES_DIR = 'locales'
 
 /**
  * Validates and returns the config unchanged. Throws at config time on an empty

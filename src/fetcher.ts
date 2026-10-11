@@ -26,7 +26,7 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
  *   https://<I18N_CONFIG.keyPrefix>/<encodeURIComponent(i18n:<locale>:<ns>)>
  *
  * Cache invalidation is handled explicitly by the Cloudflare Purge API
- * in bundle-translations.ts — only namespaces whose content actually changed
+ * in `edgekits-i18n migrate` — only namespaces whose content actually changed
  * are purged, leaving untouched namespaces warm in the cache.
  *
  * Hot path (all namespaces cached):
@@ -278,7 +278,7 @@ function getEdgeCache(): {
  *
  * After adding the variable:
  *   - Update wrangler.jsonc / wrangler.toml or .dev.vars
- *   - Run: npm run typegen
+ *   - Run: wrangler types (if the project generates its Env)
  */
 function isCacheEnabled(): boolean {
   return parseBooleanFlag(i18nEnv.I18N_CACHE, /* defaultValue */ true)
@@ -292,7 +292,7 @@ function isCacheEnabled(): boolean {
  *
  * After adding the variable:
  *   - Update wrangler.jsonc / wrangler.toml or .dev.vars
- *   - Run: npm run typegen
+ *   - Run: wrangler types (if the project generates its Env)
  */
 function debug(...args: unknown[]): void {
   const enabled = parseBooleanFlag(i18nEnv.DEBUG_I18N, /* defaultValue */ false)
