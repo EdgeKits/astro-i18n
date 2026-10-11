@@ -4,7 +4,6 @@ import { DEFAULT_LOCALE, type Locale } from '../constants'
 import { getCookieLang, setCookieLang } from '../cookie-storage'
 import { mapCountryToLocale } from '../country-to-locale-map'
 import { resolveLocaleForTranslations } from '../resolve-locale'
-import { buildContentSecurityPolicy } from '@/domain/security/checkout-surface'
 
 // Regex to identify public static assets (images, fonts, scripts, etc.)
 // These files should bypass i18n routing and locale detection.
@@ -49,73 +48,6 @@ function shouldBypassI18n(pathname: string): boolean {
   // Markdown endpoints: /en/blog/slug.md/ (with or without trailing slash)
   if (/\.md\/?$/.test(pathname)) return true
   return false
-}
-
-// Applies strict Content Security Policy (CSP) and other security headers to the response.
-// Wrap outgoing responses with this function to ensure consistent security posture.
-// `pathname` selects the policy: every route gets the base one, the checkout surface
-// gets the Paddle variant and the product page the Stream variant
-// (src/domain/security/checkout-surface.ts).
-function applySecurityHeaders(response: Response, pathname: string): Response {
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Разрешаем скрипты аналитики
-  //     `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; ` +
-  //     // Разрешаем отправку данных (beacons) в Google
-  //     `connect-src 'self' https://www.google-analytics.com; ` +
-  //     // Разрешаем картинки с нашего CDN, data/blob и пиксели Google
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://www.google-analytics.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     // Allowing audio/video downloads from CDN
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // // Zaraz v2
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   `default-src 'self'; ` +
-  //     `style-src 'self' 'unsafe-inline'; ` +
-  //     // Add 'unsafe-eval' for correct work of Zaraz
-  //     `script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; ` +
-  //     `connect-src 'self' https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `img-src 'self' data: blob: ${PROJECT.cdnUrl} https://*.google-analytics.com https://stats.g.doubleclick.net https://www.google.com; ` +
-  //     `font-src 'self' data:; ` +
-  //     // Allow media from our CDN
-  //     `media-src 'self' ${PROJECT.cdnUrl}; ` +
-  //     `frame-ancestors 'self'; ` +
-  //     `object-src 'none';`,
-  // )
-
-  // Zaraz v4 — fully same-origin.
-  // Zaraz GA4 runs server-side: the browser only talks to /cdn-cgi/zaraz/* on our
-  // own origin (verified in DevTools 2026-06-10: zero requests to google-analytics/
-  // doubleclick/google.com after disabling "Google Analytics Audiences" in the GA4
-  // tool). Google origins removed from connect-src/img-src accordingly.
-  // 'unsafe-eval' and data: dropped from script-src: Zaraz removed its eval
-  // dependency in 2024 (changelog 2024-07-23 "CSP Compliance: Remove eval
-  // dependency"), and data: URIs in script-src are an XSS vector.
-  // NOTE: smoke-test after deploy: (1) newsletter subscribe -> segmentation step,
-  // (2) zaraz events in /cdn-cgi/zaraz/t. (Mermaid client rendering removed
-  // 2026-06-10 — diagrams are static infographics now, no eval anywhere.)
-  //
-  // The string itself now lives in src/domain/security/checkout-surface.ts, which
-  // serializes the SAME base policy byte-for-byte (pinned by test) and widens it
-  // on two surfaces only: the checkout adds https://*.paddle.com to
-  // script-src/connect-src/img-src plus a frame-src for the cross-origin Paddle
-  // iframe, and the RepoAccess product page adds a frame-src for the Cloudflare
-  // Stream demo player and nothing else.
-  response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(pathname))
-
-  return response
 }
 
 // Constructs a standardized localized URL path ensuring a trailing slash.
@@ -200,7 +132,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
       const target = `/en/${contentSegments.join('/')}`
 
       if (pathname !== target) {
-        return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
+        return context.redirect(target, REDIRECT_STATUS)
       }
     }
 
@@ -231,10 +163,9 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   if (!firstSegment) {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
-      // Apply headers to the redirect response
-      return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
+      return context.redirect(target, REDIRECT_STATUS)
     }
-    return applySecurityHeaders(await next(), pathname)
+    return await next()
   }
 
   // 2. URL has first segment — validate as locale
@@ -266,18 +197,18 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     // Normalize trailing slash and structure
     const normalized = buildLocalizedPath(urlLocale, segments.slice(1))
     if (pathname !== normalized) {
-      return applySecurityHeaders(context.redirect(normalized, REDIRECT_STATUS), pathname)
+      return context.redirect(normalized, REDIRECT_STATUS)
     }
 
-    return applySecurityHeaders(await next(), pathname)
+    return await next()
   }
 
   // 3. Invalid locale in URL -> treat the whole path as content missing the locale prefix.
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    return applySecurityHeaders(context.redirect(target, REDIRECT_STATUS), pathname)
+    return context.redirect(target, REDIRECT_STATUS)
   }
 
-  return applySecurityHeaders(await next(), pathname)
+  return await next()
 }
