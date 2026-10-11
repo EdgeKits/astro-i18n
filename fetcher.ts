@@ -23,7 +23,7 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
  * Cache strategy — per-namespace static cache keys:
  *
  * Each namespace is cached individually under a static (non-versioned) URL:
- *   https://<project.id>/<encodeURIComponent(<project.id>:i18n:<locale>:<ns>)>
+ *   https://<I18N_CONFIG.keyPrefix>/<encodeURIComponent(i18n:<locale>:<ns>)>
  *
  * Cache invalidation is handled explicitly by the Cloudflare Purge API
  * in bundle-translations.ts — only namespaces whose content actually changed
