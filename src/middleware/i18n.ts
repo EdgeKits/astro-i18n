@@ -1,8 +1,9 @@
 import type { MiddlewareHandler } from 'astro'
 import { LocaleSchema } from '../schema'
+import { I18N_CONFIG } from '../config'
 import { DEFAULT_LOCALE, type Locale } from '../constants'
 import { getCookieLang, setCookieLang } from '../cookie-storage'
-import { mapCountryToLocale } from '../country-to-locale-map'
+import { resolveFallbackLocale as resolveFallbackFrom } from '../locale-fallback'
 import { resolveLocaleForTranslations } from '../resolve-locale'
 
 // Regex to identify public static assets (images, fonts, scripts, etc.)
@@ -57,36 +58,31 @@ function buildLocalizedPath(locale: Locale, rest: string[]): string {
   return suffix ? `/${locale}/${suffix}/` : `/${locale}/`
 }
 
-// Resolves the most appropriate locale for the user based on a fallback cascade:
+// Resolves the most appropriate locale for the user based on a fallback cascade
+// (locale-fallback.ts, where the order is documented and tested):
 // 1. User's saved cookie preference.
-// 2. Browser's Accept-Language header (matching 2-char code).
-// 3. Cloudflare Geo-IP country mapping.
+// 2. Astro's `preferredLocale` (Accept-Language matched against the project's Astro
+//    `i18n.locales`): full tag, then its language part.
+// 3. Only when Astro reports no preferred locale: the Cloudflare Geo-IP country, through
+//    the project's `countryToLocale` table (skipped when the config has none).
 // 4. Finally, falls back to the application's DEFAULT_LOCALE.
 function resolveFallbackLocale(context: I18nMiddlewareContext): Locale {
-  const cookieLocale = getCookieLang(context.cookies)
-  if (cookieLocale) return cookieLocale
-
-  const browserRaw = context.preferredLocale
-  if (browserRaw) {
-    // Currently we support 2-chars locales only.
-    // 1) Try full match (for cases where you actually have 'pt-br' in SUPPORTED_LOCALES)
-    let parsed = LocaleSchema.safeParse(browserRaw)
-    if (parsed.success) return parsed.data
-
-    // 2) Fallback: language part only, e.g. 'pt-br' -> 'pt'
-    const short = browserRaw.split('-')[0]
-    parsed = LocaleSchema.safeParse(short)
-    if (parsed.success) return parsed.data
-  } else {
-    // 3) Cloudflare Geo-IP Strategy
-    // cf is undefined in local dev unless simulated
-    const country = context.request?.cf?.country
-    const geoLocale = mapCountryToLocale(country)
-    let parsed = LocaleSchema.safeParse(geoLocale)
-    if (parsed.success) return parsed.data
-  }
-
-  return DEFAULT_LOCALE
+  return resolveFallbackFrom<Locale>(
+    {
+      cookieLocale: () => getCookieLang(context.cookies),
+      preferredLocale: () => context.preferredLocale,
+      // cf is undefined in local dev unless simulated
+      country: () => context.request?.cf?.country,
+    },
+    {
+      parseLocale: (value) => {
+        const parsed = LocaleSchema.safeParse(value)
+        return parsed.success ? parsed.data : null
+      },
+      defaultLocale: DEFAULT_LOCALE,
+      countryToLocale: I18N_CONFIG.countryToLocale,
+    },
+  )
 }
 
 // Main i18n middleware handler. Intercepts incoming requests, manages routing,

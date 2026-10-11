@@ -1,22 +1,22 @@
 ---
 import { checkMissingTranslation } from '../resolve-locale'
-import { fetchTranslations } from '../fetcher'
 
-const { uiLocale, translationLocale, isMissingContent } = Astro.locals
+interface Props {
+  // The project's copy for both cases, from its own translations: the engine fetches
+  // nothing here and assumes no namespace. `content`: the page's content is missing in
+  // the selected language; `ui`: the interface is not fully translated.
+  texts: { content: string; ui: string }
+}
+
+const { texts } = Astro.props
+const { uiLocale, isMissingContent } = Astro.locals
 
 const missingType = checkMissingTranslation(uiLocale, isMissingContent)
 
 let bannerText: string | null = null
 
 if (missingType) {
-  const { messages } = await fetchTranslations(translationLocale, ['messages'])
-
-  bannerText =
-    missingType === 'content'
-      ? messages.errors.ui.MISSING_TRANSLATED_CONTENT ||
-        'Sorry, this article is not yet available in your selected language.'
-      : messages.errors.ui.MISSING_TRANSLATED_UI ||
-        'Sorry, this page is not yet fully available in your selected language.'
+  bannerText = missingType === 'content' ? texts.content : texts.ui
 }
 ---
 

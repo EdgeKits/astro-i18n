@@ -2,13 +2,10 @@
 // so a project's pure modules (unit tests under Node, `src/content.config.ts` evaluated by
 // `astro sync`) can derive the locale constants from the config file directly.
 // `test/node-safe-entries.test.ts` loads it under plain Node to keep it that way.
-import { defineI18nConfig, type I18nConfig, type I18nLanguage } from './types'
+import { defineI18nConfig, type I18nConfig, type I18nLanguage, type LocaleOf } from './types'
 
 export { defineI18nConfig }
-export type { I18nBindings, I18nConfig, I18nLanguage, I18nLocales, Locale } from './types'
-
-/** The locale keys of a config's `languages`: a literal union for a literal config. */
-export type LocaleOf<C extends I18nConfig> = Extract<keyof C['languages'], string>
+export type { I18nBindings, I18nConfig, I18nLanguage, I18nLocales, Locale, LocaleOf } from './types'
 
 export type LocalesOf<C extends I18nConfig> = {
   DEFAULT_LOCALE: LocaleOf<C>
@@ -23,8 +20,10 @@ export type LocalesOf<C extends I18nConfig> = {
  *
  * `defaultLocale` must be one of `languages` at the type level, and is validated at run time.
  */
-export function localesOf<const C extends I18nConfig>(config: C & { defaultLocale: LocaleOf<C> }): LocalesOf<C> {
-  defineI18nConfig(config)
+export function localesOf<const C extends I18nConfig>(
+  config: C & { defaultLocale: LocaleOf<C>; countryToLocale?: Record<string, LocaleOf<C>> },
+): LocalesOf<C> {
+  defineI18nConfig<C>(config)
 
   return {
     DEFAULT_LOCALE: config.defaultLocale,

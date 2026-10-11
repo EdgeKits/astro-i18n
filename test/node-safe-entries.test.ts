@@ -52,6 +52,18 @@ test('./config and ./format load under plain Node and work', () => {
   })
 })
 
+test('./format warning paths warn under plain Node instead of throwing', () => {
+  const { status, stdout, stderr } = loadInPlainNode(`
+    const format = await import(${JSON.stringify(entryUrl('format.ts'))})
+    console.log(JSON.stringify({ fmt: format.fmt(null), pluralIcu: format.pluralIcu(2, 'en', { one: '{count} item' }) }))
+  `)
+
+  assert.equal(status, 0, `child failed:\n${stderr}`)
+  assert.deepEqual(JSON.parse(stdout), { fmt: '', pluralIcu: '' })
+  assert.match(stderr, /\[i18n\] fmt\(\) called with null\/undefined template/)
+  assert.match(stderr, /\[i18n\] pluralIcu\(\): missing "other" pattern/)
+})
+
 const CONFIG = {
   languages: { en: { countryCode: 'us', name: 'English' }, ja: { countryCode: 'jp', name: '日本語' } },
   defaultLocale: 'ja',

@@ -21,16 +21,29 @@ export type I18nConfig = {
   generatedDir?: string
   // Where the CLI reads `<locale>/<namespace>.json`, relative to the project root.
   localesDir?: string
+  // Geo-IP step of the middleware's locale fallback: ISO 3166-1 alpha-2 country code
+  // (uppercase, as `request.cf.country` sends it) → one of `languages`. Without it the
+  // step is skipped; the package ships no table of its own.
+  countryToLocale?: Record<string, string>
 }
 
 export const DEFAULT_GENERATED_DIR = 'src/i18n'
 export const DEFAULT_LOCALES_DIR = 'locales'
 
+/** The locale keys of a config's `languages`: a literal union for a literal config. */
+export type LocaleOf<C extends I18nConfig> = Extract<keyof C['languages'], string>
+
+const COUNTRY_CODE = /^[A-Z]{2}$/
+
 /**
  * Validates and returns the config unchanged. Throws at config time on an empty
- * `languages`, a `defaultLocale` that is not one of its keys, or an unknown `routing`.
+ * `languages`, a `defaultLocale` that is not one of its keys, an unknown `routing`, or a
+ * `countryToLocale` entry whose key is not an uppercase country code or whose value is
+ * not one of `languages` (also a type error for a literal config).
  */
-export function defineI18nConfig<const C extends I18nConfig>(config: C): C {
+export function defineI18nConfig<const C extends I18nConfig>(
+  config: C & { countryToLocale?: Record<string, LocaleOf<C>> },
+): C {
   const locales = Object.keys(config.languages ?? {})
 
   if (locales.length === 0) {
@@ -45,6 +58,18 @@ export function defineI18nConfig<const C extends I18nConfig>(config: C): C {
     throw new Error(
       `[@edgekits/astro-i18n] \`routing\` "${String(config.routing)}" is not supported; the only routing is 'prefix'.`,
     )
+  }
+  for (const [country, locale] of Object.entries(config.countryToLocale ?? {})) {
+    if (!COUNTRY_CODE.test(country)) {
+      throw new Error(
+        `[@edgekits/astro-i18n] \`countryToLocale\` key "${country}" is not an uppercase ISO 3166-1 alpha-2 country code.`,
+      )
+    }
+    if (!locales.includes(locale)) {
+      throw new Error(
+        `[@edgekits/astro-i18n] \`countryToLocale\` maps "${country}" to "${locale}", which is not one of \`languages\`: ${locales.join(', ')}.`,
+      )
+    }
   }
 
   return config

@@ -10,6 +10,13 @@ function escapeHtml(unsafe: string | number): string {
 
 type TemplateValues = Record<string, string | number>
 
+// `./format` is a Node-safe entry: under plain Node (a project's unit tests, `astro sync`)
+// there is no `import.meta.env`, and a missing one counts as "not production", so the
+// dev warnings below still fire instead of throwing.
+function isProd(): boolean {
+  return import.meta.env?.PROD === true
+}
+
 /**
  * Interpolates {placeholders} in a template string and escapes values.
  * - If `template` is undefined/null, returns an empty string (and logs in dev).
@@ -17,7 +24,7 @@ type TemplateValues = Record<string, string | number>
  */
 export function fmt(template: string | null | undefined, values?: TemplateValues): string {
   if (template == null) {
-    if (!import.meta.env.PROD) {
+    if (!isProd()) {
       console.warn('[i18n] fmt() called with null/undefined template')
     }
     return ''
@@ -72,7 +79,7 @@ export function pluralIcu(count: number, locale: string, patterns: PluralPattern
   const template =
     patterns[cat] ??
     patterns.other ??
-    (import.meta.env.PROD ? '' : (console.warn('[i18n] pluralIcu(): missing "other" pattern'), ''))
+    (isProd() ? '' : (console.warn('[i18n] pluralIcu(): missing "other" pattern'), ''))
 
   return fmt(template, { count })
 }
