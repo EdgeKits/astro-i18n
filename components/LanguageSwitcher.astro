@@ -1,16 +1,26 @@
 ---
 import WorldIcon from '@tabler/icons/outline/world.svg'
 import PointIcon from '@tabler/icons/filled/point.svg'
-import { cn } from '@/utils/cn'
 
-import { SUPPORTED_LOCALES, LANGUAGES } from '../constants'
+import { I18N_CONFIG } from '../config'
+import { SUPPORTED_LOCALES, LANGUAGES, LANG_COOKIE_NAME } from '../constants'
 import type { Locale } from '../constants'
-import Flag from '@/components/icons/Flag.astro'
 
+interface Props {
+  // The project's flag component (an Astro component reference), passed in so the
+  // engine imports no project UI. Without it, items render label-only.
+  flag?: (props: { code: string; size?: number }) => any
+}
+
+const { flag: Flag } = Astro.props
 const { uiLocale: currentLang } = Astro.locals
 ---
 
-<language-switcher data-current-lang={currentLang}>
+<language-switcher
+  data-current-lang={currentLang}
+  data-cookie-name={LANG_COOKIE_NAME}
+  data-cookie-max-age={I18N_CONFIG.cookie.maxAge}
+>
   <div class="relative">
     <button
       type="button"
@@ -38,16 +48,16 @@ const { uiLocale: currentLang } = Astro.locals
           return (
             <button
               type="button"
-              class={cn(
+              class:list={[
                 'ls-selector hover:bg-muted flex w-44 items-center justify-between px-4 py-2 text-sm',
                 isActive && 'bg-background cursor-default',
-              )}
+              ]}
               data-lang={locale}
               role="menuitem"
               disabled={isActive}
             >
               <span class="pointer-events-none flex items-center gap-3">
-                <Flag code={flagCode} size={16} />
+                {Flag && <Flag code={flagCode} size={16} />}
                 {label.name}
               </span>
               {isActive && <PointIcon class="size-6" />}
@@ -60,7 +70,9 @@ const { uiLocale: currentLang } = Astro.locals
 </language-switcher>
 
 <script>
-  import { LANG_COOKIE_NAME, type Locale } from '../constants'
+  // Config arrives as data attributes on the element: a client script in the engine
+  // cannot import the project's config.
+  import type { Locale } from '../constants'
 
   class LanguageSwitcher extends HTMLElement {
     private trigger: HTMLButtonElement | null = null
@@ -140,12 +152,14 @@ const { uiLocale: currentLang } = Astro.locals
 
       if (!currentLang) return
 
+      const { cookieName, cookieMaxAge } = this.dataset
+
       // Persist the EXPLICIT language choice client-side. The i18n middleware
       // no longer creates the cookie on plain page views (a cookie-less request
       // must stay free of Set-Cookie so the HTML edge cache can serve it), so
       // the switcher is the place where the preference is born. Not httpOnly —
       // the server only ever reads it (schema-validated), never trusts it.
-      document.cookie = `${LANG_COOKIE_NAME}=${lang}; path=/; max-age=31536000; SameSite=Lax; Secure`
+      document.cookie = `${cookieName}=${lang}; path=/; max-age=${cookieMaxAge}; SameSite=Lax; Secure`
 
       window.location.href = this.replaceLocaleInPath(pathname, currentLang, lang)
     }
