@@ -3,7 +3,7 @@ import type { AstroGlobal } from 'astro'
 import { LocaleSchema } from './schema'
 import type { Locale } from './constants'
 import { DEFAULT_LOCALE, ENABLE_MISSING_TRANSLATION_BANNER } from './constants'
-import { LOCALES_WITH_TRANSLATIONS, FULLY_TRANSLATED_LOCALES } from './runtime-constants'
+import { LOCALES_WITH_TRANSLATIONS, FULLY_TRANSLATED_LOCALES } from 'virtual:@edgekits/astro-i18n/runtime-constants'
 
 // Checking for the presence of at least one file with translations
 function hasTranslations(locale: Locale): boolean {

@@ -5,8 +5,8 @@ import { execSync } from 'node:child_process'
 
 import { parse as parseJsonc, printParseErrorCode, type ParseError } from 'jsonc-parser'
 
-import { DEFAULT_LOCALE } from '../src/domain/i18n/constants'
-import { buildTranslationKvKey, buildTranslationCacheUrl } from '../src/domain/i18n/translations-keys'
+import { DEFAULT_LOCALE } from '../src/constants'
+import { buildTranslationKvKey, buildTranslationCacheUrl } from '../src/translations-keys'
 
 const ROOT = process.cwd()
 const LOCALES_DIR = path.join(ROOT, 'locales')

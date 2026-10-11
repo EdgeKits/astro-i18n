@@ -1,7 +1,4 @@
 ---
-import WorldIcon from '@tabler/icons/outline/world.svg'
-import PointIcon from '@tabler/icons/filled/point.svg'
-
 import { I18N_CONFIG } from '../config'
 import { SUPPORTED_LOCALES, LANGUAGES, LANG_COOKIE_NAME } from '../constants'
 import type { Locale } from '../constants'
@@ -10,9 +7,13 @@ interface Props {
   // The project's flag component (an Astro component reference), passed in so the
   // engine imports no project UI. Without it, items render label-only.
   flag?: (props: { code: string; size?: number }) => any
+  // The project's icons for the trigger button and the active item (Astro component
+  // references, like `flag`). Without them, the minimal inline defaults below render.
+  triggerIcon?: (props: Record<string, unknown>) => any
+  activeIcon?: (props: Record<string, unknown>) => any
 }
 
-const { flag: Flag } = Astro.props
+const { flag: Flag, triggerIcon: TriggerIcon, activeIcon: ActiveIcon } = Astro.props
 const { uiLocale: currentLang } = Astro.locals
 ---
 
@@ -30,7 +31,24 @@ const { uiLocale: currentLang } = Astro.locals
       aria-expanded="false"
       aria-label="Switch language"
     >
-      <WorldIcon class="text-foreground size-5" stroke-width="1" />
+      {
+        TriggerIcon ? (
+          <TriggerIcon class="text-foreground size-5" stroke-width="1" />
+        ) : (
+          <svg
+            class="text-foreground size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <ellipse cx="12" cy="12" rx="4" ry="9" />
+            <path d="M3 12h18" />
+          </svg>
+        )
+      }
     </button>
 
     <div
@@ -60,7 +78,14 @@ const { uiLocale: currentLang } = Astro.locals
                 {Flag && <Flag code={flagCode} size={16} />}
                 {label.name}
               </span>
-              {isActive && <PointIcon class="size-6" />}
+              {isActive &&
+                (ActiveIcon ? (
+                  <ActiveIcon class="size-6" />
+                ) : (
+                  <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                ))}
             </button>
           )
         })

@@ -1,11 +1,12 @@
 import { I18N_CONFIG } from './config'
+import type { I18nLanguage, Locale } from './types'
 
-export type Language = { countryCode: string; name: string }
+export type { Locale }
 
-// Languages are configured in ./config.ts
-export const LANGUAGES = I18N_CONFIG.languages
+export type Language = I18nLanguage
 
-export type Locale = keyof typeof LANGUAGES
+// Languages are configured in the project's edgekits-i18n.config.ts
+export const LANGUAGES = I18N_CONFIG.languages as Record<Locale, Language>
 
 // Locales Configuration
 export const SUPPORTED_LOCALES = Object.keys(LANGUAGES) as [Locale, ...Locale[]]
@@ -14,7 +15,7 @@ export const SUPPORTED_LOCALES = Object.keys(LANGUAGES) as [Locale, ...Locale[]]
 export type SupportedLocales = (typeof SUPPORTED_LOCALES)[number]
 
 // Default locale
-export const DEFAULT_LOCALE: SupportedLocales = I18N_CONFIG.defaultLocale
+export const DEFAULT_LOCALE: SupportedLocales = I18N_CONFIG.defaultLocale as Locale
 
 // Missing translation banner flag
 export const ENABLE_MISSING_TRANSLATION_BANNER = I18N_CONFIG.missingTranslationBanner

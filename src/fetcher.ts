@@ -1,19 +1,19 @@
 import { env, waitUntil } from 'cloudflare:workers'
+import * as fallbacksModule from 'virtual:@edgekits/astro-i18n/fallbacks'
 
 import { assembleNamespace } from './assemble'
 import { buildTranslationKvKey, buildTranslationCacheRequest } from './translations-keys'
 import { parseBooleanFlag } from './parse-boolean'
 import type { Locale } from './constants'
 import type { Namespace, PickSchema } from './schema'
+import type { I18nBindings } from './types'
 
-// Optional fallbacks (auto-loaded if generated)
-let FALLBACKS: Record<string, any> | null = null
+// The bindings this module reads, typed by the package rather than the project's Env.
+const i18nEnv = env as unknown as I18nBindings
 
-try {
-  FALLBACKS = await import('./fallbacks.generated.ts')
-} catch {
-  FALLBACKS = null
-}
+// Optional fallbacks: the project's fallbacks.generated.ts if generated, otherwise an
+// empty stub module (no FALLBACK_* exports), served by the integration's Vite plugin.
+const FALLBACKS: Record<string, unknown> = fallbacksModule
 
 const KV_JSON_OPTIONS = { type: 'json' as const }
 
@@ -45,7 +45,7 @@ const KV_JSON_OPTIONS = { type: 'json' as const }
  *
  * KV unavailable:
  *   Falls back to FALLBACK_* compiled dictionaries (always available).
- *   If FALLBACKS is null, returns empty objects per namespace — no crash.
+ *   If none were generated, returns empty objects per namespace — no crash.
  */
 export async function fetchTranslations<N extends Namespace>(
   locale: Locale,
@@ -100,7 +100,7 @@ export async function fetchTranslations<N extends Namespace>(
       // Cached entries are merged with FALLBACK_* too. A namespace cached before
       // a schema addition is missing the newer keys; without this merge it would
       // reach pages as-is and any read of a new key would throw (ADR-0014).
-      finalData[ns] = assembleNamespace(data, getFallback(ns)) as PickSchema<N>[typeof ns]
+      ;(finalData as any)[ns] = assembleNamespace(data, getFallback(ns))
     } else {
       missingNamespaces.push(ns)
     }
@@ -128,7 +128,7 @@ export async function fetchTranslations<N extends Namespace>(
   let kvFailed = false
 
   try {
-    kvResults = (await env.TRANSLATIONS.get(missingKvKeys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
+    kvResults = (await i18nEnv.TRANSLATIONS.get(missingKvKeys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
 
     debug('i18n KV batch OK', { locale, missingNamespaces })
   } catch (error) {
@@ -158,7 +158,7 @@ export async function fetchTranslations<N extends Namespace>(
       debug(`i18n namespace "${ns}" unavailable: KV failed and no fallback`)
     }
 
-    finalData[ns] = nsData as PickSchema<N>[typeof ns]
+    ;(finalData as any)[ns] = nsData
 
     // Cache the resolved namespace individually with a long TTL.
     // Invalidation is handled explicitly via Cloudflare Purge API —
@@ -211,7 +211,7 @@ async function fetchAllFromKV<N extends Namespace>(locale: Locale, namespaces: r
   let kvFailed = false
 
   try {
-    kvResults = (await env.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
+    kvResults = (await i18nEnv.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
   } catch (error) {
     kvFailed = true
   }
@@ -235,7 +235,7 @@ async function fetchAllFromKV<N extends Namespace>(locale: Locale, namespaces: r
  * Look up the compiled FALLBACK_* dictionary for a namespace, if one was generated.
  */
 function getFallback(ns: Namespace): unknown {
-  return FALLBACKS?.[`FALLBACK_${String(ns).toUpperCase()}`]
+  return FALLBACKS[`FALLBACK_${String(ns).toUpperCase()}`]
 }
 
 /**
@@ -281,7 +281,7 @@ function getEdgeCache(): {
  *   - Run: npm run typegen
  */
 function isCacheEnabled(): boolean {
-  return parseBooleanFlag(env.I18N_CACHE, /* defaultValue */ true)
+  return parseBooleanFlag(i18nEnv.I18N_CACHE, /* defaultValue */ true)
 }
 
 /**
@@ -295,7 +295,7 @@ function isCacheEnabled(): boolean {
  *   - Run: npm run typegen
  */
 function debug(...args: unknown[]): void {
-  const enabled = parseBooleanFlag(env.DEBUG_I18N, /* defaultValue */ false)
+  const enabled = parseBooleanFlag(i18nEnv.DEBUG_I18N, /* defaultValue */ false)
   if (!enabled) return
 
   // eslint-disable-next-line no-console

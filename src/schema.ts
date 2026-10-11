@@ -1,10 +1,11 @@
 import { z } from 'astro/zod'
 
 import { SUPPORTED_LOCALES } from './constants'
-import { NAMESPACE_KEYS } from './runtime-constants'
+import { NAMESPACE_KEYS } from 'virtual:@edgekits/astro-i18n/runtime-constants'
 
-// Auto-generated namespaces and real supported locales that have translations
-export * from './runtime-constants'
+// Generated namespaces and real supported locales that have translations: the project's
+// runtime-constants.ts through the virtual module (empty lists until the CLI generates it)
+export * from 'virtual:@edgekits/astro-i18n/runtime-constants'
 
 // Locale schema from shared constant
 export const LocaleSchema = z.enum(SUPPORTED_LOCALES)

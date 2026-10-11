@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { assembleNamespace } from '../src/assemble.ts'
-import { FALLBACK_BLOG } from '../src/fallbacks.generated.ts'
+import { FALLBACK_BLOG } from './fixtures/fallbacks.ts'
 
 /**
  * Guard for the 2026-07-18 `/en/blog/` 500 (colo ORD): a Cache API entry for the

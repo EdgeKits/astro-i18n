@@ -13,6 +13,7 @@
   },
   "scripts": {
     "test": "node --import tsx --test test/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -21,10 +22,13 @@
     "astro": "^7.3.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261011.1",
     "@types/node": "^25.9.1",
+    "astro": "^7.3.8",
     "prettier": "3.9.4",
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "0.8.0",
-    "tsx": "^4.23.12"
+    "tsx": "^4.23.12",
+    "typescript": "~5.9.3"
   }
 }
