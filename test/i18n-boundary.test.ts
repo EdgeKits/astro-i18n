@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 
@@ -30,7 +30,8 @@ import test from 'node:test'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC_DIR = path.join(ROOT, 'src')
 
-type Edge = { file: string; specifier: string }
+// `typeOnly`: an `import type` / `export type` statement, erased before anything loads.
+type Edge = { file: string; specifier: string; typeOnly?: boolean }
 
 const RUNTIME_ALLOWED = new Set(['astro', 'astro/zod', 'cloudflare:workers'])
 const VIRTUAL_PREFIX = 'virtual:@edgekits/astro-i18n/'
@@ -49,6 +50,7 @@ const IMPORT_FROM = /^[ \t]*import\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gm
 const IMPORT_SIDE_EFFECT = /^[ \t]*import\s*['"]([^'"]+)['"]/gm
 const EXPORT_FROM = /^[ \t]*export\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gm
 const IMPORT_CALL = /\bimport\(\s*['"]([^'"]+)['"]\s*\)/g
+const TYPE_ONLY = /^\s*(import|export)\s+type\b/
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -64,7 +66,7 @@ function collectEdges(): Edge[] {
     const file = path.relative(SRC_DIR, full).split(path.sep).join('/')
     return [IMPORT_FROM, IMPORT_SIDE_EFFECT, EXPORT_FROM, IMPORT_CALL]
       .flatMap((pattern) => [...source.matchAll(pattern)])
-      .map((match) => ({ file, specifier: match[1]! }))
+      .map((match) => ({ file, specifier: match[1]!, typeOnly: TYPE_ONLY.test(match[0]) }))
   })
 }
 
@@ -199,4 +201,67 @@ test('the guard catches a seeded violation (fails when it should)', () => {
   ]
   const violations = [...collectEdges(), ...seeded].filter(isViolation).map(key)
   assert.deepEqual(violations, seeded.map(key))
+})
+
+// The Node-safe entries (`./config`, `./format`) load in plain Node: in a project's unit
+// tests and in `astro sync`. Nothing they reach at run time may be workerd-only
+// (`cloudflare:`) or served by Vite (`virtual:`). Their relative value imports are
+// followed; type-only imports are erased and not followed.
+// test/node-safe-entries.test.ts proves the same by loading them in a child Node.
+const NODE_SAFE_ENTRIES = ['config.entry.ts', 'format.ts']
+
+function resolveRelative(file: string, specifier: string): string | undefined {
+  const base = path.join(path.dirname(file), specifier).split(path.sep).join('/')
+  return [base, `${base}.ts`, `${base}/index.ts`].find((candidate) => existsSync(path.join(SRC_DIR, candidate)))
+}
+
+/** Every run-time edge reachable from `entry` through relative value imports. */
+function runtimeClosure(entry: string): Edge[] {
+  const edges = collectEdges().filter((e) => !e.typeOnly)
+  const seen = new Set<string>()
+  const reached: Edge[] = []
+  const queue = [entry]
+
+  while (queue.length > 0) {
+    const file = queue.shift()!
+    if (seen.has(file)) continue
+    seen.add(file)
+
+    for (const edge of edges.filter((e) => e.file === file)) {
+      reached.push(edge)
+      if (!edge.specifier.startsWith('.')) continue
+      const target = resolveRelative(file, edge.specifier)
+      assert.ok(target, `unresolved import ${key(edge)}`)
+      queue.push(target)
+    }
+  }
+
+  return reached
+}
+
+const isWorkerdOrVirtual = ({ specifier }: Edge) =>
+  specifier.startsWith('cloudflare:') || specifier.startsWith('virtual:')
+
+test('the Node-safe entries reach nothing workerd-only or virtual, transitively', () => {
+  for (const entry of NODE_SAFE_ENTRIES) {
+    assert.deepEqual(runtimeClosure(entry).filter(isWorkerdOrVirtual).map(key), [], `${entry} is not Node-safe`)
+  }
+})
+
+test('the Node-safe walk follows relative imports and skips type-only ones (non-vacuous)', () => {
+  assert.ok(
+    runtimeClosure('config.entry.ts').some((e) => e.file === 'types.ts' || key(e) === 'config.entry.ts -> ./types'),
+    'config.entry.ts reaches types.ts',
+  )
+  // The runtime constants reach the virtual config two hops away: the walk must see it.
+  assert.ok(
+    runtimeClosure('constants.ts').some((e) => key(e) === `config.ts -> ${CONFIG_ID}`),
+    'constants.ts -> ./config -> virtual config is found',
+  )
+  // config.entry.ts imports `type I18nConfig` from ./types on a value line, so check a pure
+  // type-only statement instead: constants.ts `import type { … } from './types'`.
+  assert.ok(
+    collectEdges().some((e) => e.typeOnly && key(e) === 'constants.ts -> ./types'),
+    'type-only edges are recognised',
+  )
 })

@@ -16,6 +16,8 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./config": "./src/config.entry.ts",
+    "./format": "./src/format.ts",
     "./runtime": "./src/runtime.ts",
     "./middleware": "./src/middleware.ts",
     "./components/*": "./src/components/*.astro",
