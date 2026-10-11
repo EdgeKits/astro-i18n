@@ -1,0 +1,17 @@
+# Normalize all text files to LF in the repo and on checkout.
+# Prevents Windows core.autocrlf from injecting CRLF churn / noisy diffs.
+* text=auto eol=lf
+
+# Binary assets — never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.m4a binary
+*.mp3 binary
