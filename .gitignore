@@ -8,3 +8,5 @@ dist
 # Maintainer-owned internal files (Gary Stupak): never committed
 journal/
 CLAUDE.md
+audit/
+.claude/
