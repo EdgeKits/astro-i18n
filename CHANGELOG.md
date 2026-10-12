@@ -17,3 +17,4 @@ All notable changes to this package are documented here. The format follows
 - `countryToLocale`, the geo-IP step of the locale fallback, as an optional config field.
 - `markdownLocale`: the locale `.md` endpoints are redirected to, as an optional config field; without it they pass through untouched.
 - Type declarations for the virtual modules, injected into the consumer's program, so `tsc` and `astro check` accept the runtime source.
+- The `astro-i18n` agent skill (a Claude Code plugin, source in `plugins/astro-i18n/`): adopts the package, localizes forms and multilingual SEO; its version tracks the package's.

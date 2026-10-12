@@ -1,0 +1,15 @@
+{
+  "seo": {
+    "title": "Your site title",
+    "description": "Your site description for search engines and social cards."
+  },
+  "backToHome": "Back to home",
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you are looking for does not exist."
+  },
+  "ui": {
+    "emphasis": "Please note: <strong>{content}</strong>",
+    "learnMore": "Read our <a href='{url}'>{label}</a> for details."
+  }
+}
