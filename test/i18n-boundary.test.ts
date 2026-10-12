@@ -49,7 +49,9 @@ const CONFIG_ID = `${VIRTUAL_PREFIX}config`
 const IMPORT_FROM = /^[ \t]*import\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gm
 const IMPORT_SIDE_EFFECT = /^[ \t]*import\s*['"]([^'"]+)['"]/gm
 const EXPORT_FROM = /^[ \t]*export\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gm
-const IMPORT_CALL = /\bimport\(\s*['"]([^'"]+)['"]\s*\)/g
+// A specifier opening with `${` is declaration text generated inside a template literal
+// (src/integration/virtual-types.ts), not an import: no module path starts that way.
+const IMPORT_CALL = /\bimport\(\s*['"](?!\$\{)([^'"]+)['"]\s*\)/g
 const TYPE_ONLY = /^\s*(import|export)\s+type\b/
 
 function walk(dir: string): string[] {

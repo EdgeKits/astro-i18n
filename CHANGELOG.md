@@ -15,3 +15,5 @@ All notable changes to this package are documented here. The format follows
 - Node-safe entries `./config` and `./format` for code that runs outside workerd.
 - Headless `LanguageSwitcher` and `MissingTranslationBanner`: a `classes` prop map and stable `data-*` hooks, no CSS shipped.
 - `countryToLocale`, the geo-IP step of the locale fallback, as an optional config field.
+- `markdownLocale`: the locale `.md` endpoints are redirected to, as an optional config field; without it they pass through untouched.
+- Type declarations for the virtual modules, injected into the consumer's program, so `tsc` and `astro check` accept the runtime source.

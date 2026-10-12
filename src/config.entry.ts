@@ -21,7 +21,11 @@ export type LocalesOf<C extends I18nConfig> = {
  * `defaultLocale` must be one of `languages` at the type level, and is validated at run time.
  */
 export function localesOf<const C extends I18nConfig>(
-  config: C & { defaultLocale: LocaleOf<C>; countryToLocale?: Record<string, LocaleOf<C>> },
+  config: C & {
+    defaultLocale: LocaleOf<C>
+    countryToLocale?: Record<string, LocaleOf<C>>
+    markdownLocale?: LocaleOf<C>
+  },
 ): LocalesOf<C> {
   defineI18nConfig<C>(config)
 

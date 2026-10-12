@@ -1,5 +1,7 @@
 // The virtual modules served by the integration's Vite plugin (src/integration/vite-plugin.ts),
-// declared for the package's own typecheck.
+// declared for the package's own typecheck. A copy of `virtualModulesDeclaration('./types')`
+// (src/integration/virtual-types.ts), which consumers receive through `injectTypes`; edit
+// that function, then this file. test/virtual-types.test.ts fails while the two differ.
 
 declare module 'virtual:@edgekits/astro-i18n/config' {
   const config: import('./types').I18nConfig

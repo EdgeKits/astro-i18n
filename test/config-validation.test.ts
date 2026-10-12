@@ -33,3 +33,16 @@ test('countryToLocale: a key that is not an uppercase alpha-2 code throws, namin
   )
   assert.throws(() => defineI18nConfig({ ...BASE, countryToLocale: { USA: 'en' } }), /key "USA"/)
 })
+
+test('markdownLocale: one of `languages` is accepted; the field is optional', () => {
+  assert.equal(defineI18nConfig({ ...BASE, markdownLocale: 'de' }).markdownLocale, 'de')
+  assert.equal('markdownLocale' in defineI18nConfig(BASE), false)
+})
+
+test('markdownLocale: a value outside `languages` throws, naming it', () => {
+  assert.throws(
+    // @ts-expect-error: 'ja' is not one of the config's languages
+    () => defineI18nConfig({ ...BASE, markdownLocale: 'ja' }),
+    /`markdownLocale` "ja" is not one of `languages`: en, de\./,
+  )
+})

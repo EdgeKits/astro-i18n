@@ -2,6 +2,7 @@ import type { AstroConfig, AstroIntegration } from 'astro'
 
 import { DEFAULT_GENERATED_DIR, defineI18nConfig, type I18nConfig } from '../types.ts'
 import { i18nVitePlugin } from './vite-plugin.ts'
+import { virtualModulesDeclaration } from './virtual-types.ts'
 
 export type EdgekitsI18nOptions = {
   // 'auto' registers the i18n middleware; 'manual' leaves it to the project, which
@@ -57,6 +58,9 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
       },
       'astro:config:done': ({ injectTypes }) => {
         injectTypes({ filename: 'locales.d.ts', content: localesDeclaration(Object.keys(i18nConfig.languages)) })
+        // The shipped runtime imports the virtual modules; a consumer's program needs their
+        // declarations too. A separate file: these must not sit in a module (see virtual-types.ts).
+        injectTypes({ filename: 'virtual-modules.d.ts', content: virtualModulesDeclaration(PACKAGE_NAME) })
       },
     },
   }

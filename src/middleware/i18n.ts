@@ -4,6 +4,7 @@ import { I18N_CONFIG } from '../config'
 import { DEFAULT_LOCALE, type Locale } from '../constants'
 import { getCookieLang, setCookieLang } from '../cookie-storage'
 import { resolveFallbackLocale as resolveFallbackFrom } from '../locale-fallback'
+import { MARKDOWN_PATH, markdownRedirectTarget } from '../markdown-path'
 import { resolveLocaleForTranslations } from '../resolve-locale'
 
 // Regex to identify public static assets (images, fonts, scripts, etc.)
@@ -47,7 +48,7 @@ function shouldBypassI18n(pathname: string): boolean {
   if (PUBLIC_FILE_REGEX.test(pathname)) return true
   if (IGNORED_PREFIXES.some((p) => pathname.startsWith(p))) return true
   // Markdown endpoints: /en/blog/slug.md/ (with or without trailing slash)
-  if (/\.md\/?$/.test(pathname)) return true
+  if (MARKDOWN_PATH.test(pathname)) return true
   return false
 }
 
@@ -111,25 +112,14 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
 
   // 3. Bypass static files and system paths (with Soft 404 protection)
   if (shouldBypassI18n(pathname)) {
-    // Normalize .md endpoints in ONE pass: English-only, no trailing slash.
-    // We build the canonical target and redirect once if it differs.
-    //
-    // Why the rewrite: the old code assumed segments[0] was always a locale and
-    // stripped it on `firstSegment !== 'en'` without validating it. That broke any
-    // .md whose first segment is NOT a locale — e.g. `/foo.md` collapsed to `/en/`
-    // (the homepage!) and `/blog/x.md` lost the `blog` segment. It also fired two
-    // chained redirects for `/de/blog/x.md/` (strip slash, then force locale).
-    if (/\.md\/?$/.test(pathname)) {
-      // Only strip the first segment when it is a REAL locale; otherwise keep the
-      // whole path and just prefix /en/. `segments` already excludes the trailing
-      // slash (filter(Boolean)), so this also normalizes trailing slashes for free.
-      const localeParsed = LocaleSchema.safeParse(firstSegment)
-      const contentSegments = localeParsed.success ? segments.slice(1) : segments
-      const target = `/en/${contentSegments.join('/')}`
-
-      if (pathname !== target) {
-        return context.redirect(target, REDIRECT_STATUS)
-      }
+    // .md endpoints: one redirect to the project's `markdownLocale`, no trailing slash
+    // (markdown-path.ts). Without `markdownLocale` they pass through untouched.
+    const markdownTarget = markdownRedirectTarget(pathname, {
+      isLocale: (segment) => LocaleSchema.safeParse(segment).success,
+      markdownLocale: I18N_CONFIG.markdownLocale,
+    })
+    if (markdownTarget) {
+      return context.redirect(markdownTarget, REDIRECT_STATUS)
     }
 
     const response = await next()

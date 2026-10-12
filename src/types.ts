@@ -25,6 +25,10 @@ export type I18nConfig = {
   // (uppercase, as `request.cf.country` sends it) → one of `languages`. Without it the
   // step is skipped; the package ships no table of its own.
   countryToLocale?: Record<string, string>
+  // The locale of the project's `.md` endpoints: a `.md` path is redirected once to
+  // `/<markdownLocale>/<rest>` (a leading locale segment replaced, otherwise kept). Without
+  // it, `.md` paths pass through the middleware untouched.
+  markdownLocale?: string
 }
 
 export const DEFAULT_GENERATED_DIR = 'src/i18n'
@@ -37,12 +41,12 @@ const COUNTRY_CODE = /^[A-Z]{2}$/
 
 /**
  * Validates and returns the config unchanged. Throws at config time on an empty
- * `languages`, a `defaultLocale` that is not one of its keys, an unknown `routing`, or a
- * `countryToLocale` entry whose key is not an uppercase country code or whose value is
- * not one of `languages` (also a type error for a literal config).
+ * `languages`, a `defaultLocale` or `markdownLocale` that is not one of its keys, an
+ * unknown `routing`, or a `countryToLocale` entry whose key is not an uppercase country
+ * code or whose value is not one of `languages` (also a type error for a literal config).
  */
 export function defineI18nConfig<const C extends I18nConfig>(
-  config: C & { countryToLocale?: Record<string, LocaleOf<C>> },
+  config: C & { countryToLocale?: Record<string, LocaleOf<C>>; markdownLocale?: LocaleOf<C> },
 ): C {
   const locales = Object.keys(config.languages ?? {})
 
@@ -52,6 +56,11 @@ export function defineI18nConfig<const C extends I18nConfig>(
   if (!locales.includes(config.defaultLocale)) {
     throw new Error(
       `[@edgekits/astro-i18n] \`defaultLocale\` "${config.defaultLocale}" is not one of \`languages\`: ${locales.join(', ')}.`,
+    )
+  }
+  if (config.markdownLocale !== undefined && !locales.includes(config.markdownLocale)) {
+    throw new Error(
+      `[@edgekits/astro-i18n] \`markdownLocale\` "${config.markdownLocale}" is not one of \`languages\`: ${locales.join(', ')}.`,
     )
   }
   if (config.routing !== 'prefix') {

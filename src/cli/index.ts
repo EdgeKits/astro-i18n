@@ -162,7 +162,7 @@ async function run(command: Command, args: string[]): Promise<void> {
 
   // -------------------------------------------------------------------------
   // 5. Push to KV + purge changed cache entries via Cloudflare API
-  //    seed    → local KV only, no purge (cache is off locally), hashes untouched
+  //    seed    → local KV only, no purge (local KV; the edge cache is not involved), hashes untouched
   //    migrate → remote KV + Cloudflare Purge API, hashes written on success
   // -------------------------------------------------------------------------
 
@@ -243,7 +243,7 @@ async function deploy({
   }
 
   if (isLocal) {
-    // Local: no edge cache, no purge, and the hashes describe production only.
+    // Local KV: no purge (the edge cache is not involved), and the hashes describe production only.
     console.log('[i18n] .i18n-hashes.json left untouched (local seed).')
     return
   }

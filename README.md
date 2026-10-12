@@ -41,6 +41,7 @@ Add the namespace to `wrangler.jsonc` under the binding name `TRANSLATIONS`:
 
 ```jsonc
 {
+  "compatibility_date": "2026-09-01",
   "kv_namespaces": [{ "binding": "TRANSLATIONS", "id": "<the id wrangler printed>" }],
 }
 ```
@@ -82,9 +83,11 @@ export default defineI18nConfig({
 | `localesDir`               | no       | `'locales'`  | where the CLI reads `<locale>/<namespace>.json`                          |
 | `generatedDir`             | no       | `'src/i18n'` | where the CLI writes `runtime-constants.ts` and `fallbacks.generated.ts` |
 | `countryToLocale`          | no       | none         | geo-IP step of the locale fallback (see Reference)                       |
+| `markdownLocale`           | no       | none         | the locale `.md` endpoints are served in (see Reference)                 |
 
-The config is validated when it loads: an empty `languages`, a `defaultLocale` outside it, or a
-bad `countryToLocale` entry throws with a message naming the field.
+The config is validated when it loads: an empty `languages`, a `defaultLocale` or
+`markdownLocale` outside it, or a bad `countryToLocale` entry throws with a message naming the
+field.
 
 ### 4. Add the integration
 
@@ -113,6 +116,8 @@ The integration sets up:
   block, its `locales` must include every configured locale and its `defaultLocale` must match,
   or the build stops with a message saying which;
 - the `Locale` type: the union of your locales, for the package's exports;
+- type declarations for its virtual modules, so `tsc` and `astro check` accept the package's
+  runtime source in your program;
 - the locale-routing middleware, with `edgekitsI18n(i18nConfig)` or
   `edgekitsI18n(i18nConfig, { middleware: 'auto' })`. With `{ middleware: 'manual' }` nothing is
   registered and you place it in your own `sequence()`:
@@ -202,6 +207,11 @@ schema: `common.hero.title` is a `string`, a key that does not exist is a type e
 `npx astro dev` and open `/de/`: the heading reads "Hallo, Welt", served from local KV. Before
 you edit and re-seed, see `I18N_CACHE` below.
 
+`npx astro check` passes on this setup as is. `tsc` also checks the package's runtime source
+when a `.ts` file of yours imports it, and that source reads `cloudflare:workers` and a
+`KVNamespace` binding: generate the Workers types once with `npx wrangler types` (it needs the
+`compatibility_date` above) and `tsc` passes too.
+
 `@edgekits/astro-i18n/runtime` also exports `fmt` (`{placeholder}` interpolation), `plural` and
 `pluralIcu`, the locale constants (`DEFAULT_LOCALE`, `SUPPORTED_LOCALES`, `LANGUAGES`) and the
 `Locale` type.
@@ -261,6 +271,30 @@ export default defineI18nConfig({
 
 Without `countryToLocale` the geo step is skipped: the package ships no country table of its
 own, so a visitor with no cookie and no preferred locale gets `defaultLocale`.
+
+### Markdown endpoints: `markdownLocale`
+
+The middleware leaves paths ending in `.md` (or `.md/`) out of locale routing. With
+`markdownLocale` set, it also gives them one canonical form: `/<markdownLocale>/<rest>` with no
+trailing slash, reached in a single redirect. A leading locale segment is replaced; any other
+leading segment is kept.
+
+```ts
+// edgekits-i18n.config.ts
+export default defineI18nConfig({
+  // …
+  markdownLocale: 'en', // one of `languages`; checked at config time
+})
+```
+
+| Request          | With `markdownLocale: 'en'` | Without `markdownLocale` |
+| ---------------- | --------------------------- | ------------------------ |
+| `/de/blog/x.md/` | redirect to `/en/blog/x.md` | passed through as is     |
+| `/blog/x.md`     | redirect to `/en/blog/x.md` | passed through as is     |
+| `/en/blog/x.md`  | served                      | passed through as is     |
+
+Use it when your markdown endpoints exist in one locale only. Without it, the package assumes
+nothing about them.
 
 ### Styling the components
 
