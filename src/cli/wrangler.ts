@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import { parse as parseJsonc, printParseErrorCode, type ParseError } from 'jsonc-parser'
@@ -59,4 +60,37 @@ export function getWranglerVar(root: string, key: string): string | undefined {
   const config = readWranglerConfig(root)
   const vars = config.vars as Record<string, string> | undefined
   return vars?.[key]
+}
+
+// ---------------------------------------------------------------------------
+// Wrangler binary
+// The CLI runs wrangler's JavaScript entry with the current Node binary, never through
+// a shell (no `.cmd` shim on Windows, nothing for a shell to interpret).
+// ---------------------------------------------------------------------------
+
+/**
+ * The absolute path of the project's wrangler entry (`bin.wrangler` in its package.json),
+ * resolved from `root` as the project itself would resolve it. `wrangler/package.json` is
+ * an exported subpath; `bin/` is not, hence the detour through the manifest. Throws when
+ * the project has no wrangler or its manifest declares no `bin.wrangler`.
+ */
+export function resolveWranglerBin(root: string): string {
+  const requireFromRoot = createRequire(path.join(root, 'package.json'))
+
+  let manifestPath: string
+  try {
+    manifestPath = requireFromRoot.resolve('wrangler/package.json')
+  } catch {
+    throw new Error(
+      `wrangler is not installed in ${root}. The CLI runs the project's own wrangler: install it there (npm i -D wrangler).`,
+    )
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as { bin?: string | Record<string, string> }
+  const bin = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin?.wrangler
+  if (!bin) {
+    throw new Error(`wrangler at ${path.dirname(manifestPath)} declares no bin.wrangler in its package.json.`)
+  }
+
+  return path.join(path.dirname(manifestPath), bin)
 }

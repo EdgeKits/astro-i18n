@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { execFileSync, execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -18,7 +18,7 @@ import {
 import { diffHashes, purgeUrlsFor, type HashMap } from './hashes.ts'
 import { CONFIG_FILE, loadI18nConfig } from './load-config.ts'
 import { purgeTranslationsCache } from './purge.ts'
-import { getKvNamespaceId, getWranglerVar, KV_BINDING } from './wrangler.ts'
+import { getKvNamespaceId, getWranglerVar, KV_BINDING, resolveWranglerBin } from './wrangler.ts'
 
 const HELP = `Usage: edgekits-i18n <command> [--fallbacks]
 
@@ -97,6 +97,17 @@ async function run(command: Command, args: string[]): Promise<void> {
       `[i18n] The ${KV_BINDING} id in wrangler.jsonc, "${kvId}", is not a KV namespace id (32 hex characters).`,
     )
     process.exit(1)
+  }
+
+  // The project's wrangler, found before anything is written.
+  let wranglerBin: string | undefined
+  if (shouldDeploy) {
+    try {
+      wranglerBin = resolveWranglerBin(ROOT)
+    } catch (err) {
+      console.error(`[i18n] ${err instanceof Error ? err.message : String(err)}`)
+      process.exit(1)
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -191,7 +202,7 @@ async function run(command: Command, args: string[]): Promise<void> {
     return
   }
 
-  await deploy({ config, kvId: kvId!, isLocal, changedKeys, currentHashes })
+  await deploy({ config, kvId: kvId!, wranglerBin: wranglerBin!, isLocal, changedKeys, currentHashes })
 }
 
 function collectTranslations(localesDir: string): CollectedData {
@@ -239,12 +250,14 @@ function writeFile(file: string, content: string): void {
 async function deploy({
   config,
   kvId,
+  wranglerBin,
   isLocal,
   changedKeys,
   currentHashes,
 }: {
   config: I18nConfig
   kvId: string
+  wranglerBin: string
   isLocal: boolean
   changedKeys: string[]
   currentHashes: HashMap
@@ -255,13 +268,16 @@ async function deploy({
   // Push all translations to KV
   console.log(`[i18n] Pushing translations to ${target} KV...`)
   try {
-    // No shell, except on Windows, where npm's `wrangler.cmd` shim needs one; the
-    // arguments are constants and the shape-checked id.
-    execFileSync('wrangler', ['kv', 'bulk', 'put', 'i18n-data.json', kvFlag, `--namespace-id=${kvId}`], {
-      cwd: ROOT,
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-    })
+    // wrangler's JavaScript entry, run by this Node binary: no shell on any platform
+    // (no `.cmd` shim on Windows), and the arguments are constants plus the shape-checked id.
+    execFileSync(
+      process.execPath,
+      [wranglerBin, 'kv', 'bulk', 'put', 'i18n-data.json', kvFlag, `--namespace-id=${kvId}`],
+      {
+        cwd: ROOT,
+        stdio: 'inherit',
+      },
+    )
     console.log(`[i18n] ✅ KV updated (${target}).`)
   } catch (err) {
     console.error(`[i18n] ❌ Failed to push to ${target} KV.`, err)
@@ -407,7 +423,7 @@ function assertCleanPurgeBaseline(): void {
   try {
     // Porcelain v1 is a stable format, and `--` scopes it to the one path, so a
     // dirty working tree elsewhere (the usual state) is not this guard's business.
-    status = execSync(`git status --porcelain -- ${relativePath}`, {
+    status = execFileSync('git', ['status', '--porcelain', '--', relativePath], {
       cwd: ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
