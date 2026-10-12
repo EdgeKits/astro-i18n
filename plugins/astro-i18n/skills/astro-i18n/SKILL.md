@@ -62,7 +62,8 @@ Starter files: copy `assets/locales/common.json` and `assets/locales/messages.js
 the form error codes).
 
 Creating the KV namespace (`wrangler kv namespace create`) touches the user's Cloudflare
-account: ask before running it. Local development works with any id until then.
+account: ask before running it. Until then, local development works with any 32-character hex
+id (the CLI rejects other shapes).
 
 ### A2. Generated files and the purge baseline
 
@@ -111,6 +112,8 @@ Read `references/seo.md`: using `t` in pages and components, `fmt` and `pluralIc
 - The default locale's JSON defines the schema: a key added only to another locale is not typed.
   Add it to the default locale first.
 - Generated files are produced by the CLI, never edited by hand.
+- Secrets (`.dev.vars`, `.env*`, API tokens) never enter git: run `git check-ignore <file>`
+  before writing a secret file, and stage files by name, never with `git add -A`.
 - Never import `@edgekits/astro-i18n/runtime` (or `/middleware`) from a module Node loads:
   `astro.config`, `edgekits-i18n.config.ts`, `src/content.config.ts`, unit tests. Use
   `localesOf(config)` from `./config` and the helpers from `./format` there.

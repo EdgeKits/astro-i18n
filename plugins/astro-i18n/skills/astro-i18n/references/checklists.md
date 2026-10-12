@@ -43,7 +43,9 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
       `TRANSLATIONS` binding in `wrangler.jsonc`.
 - [ ] `CLOUDFLARE_ZONE_ID` in `wrangler.jsonc` vars (or the environment); the domain is
       **proxied** (orange cloud); `keyPrefix` is the site's domain.
-- [ ] `CLOUDFLARE_CACHEPURGE_API_TOKEN` (Zone › Cache Purge) in the environment or `.dev.vars`.
+- [ ] `CLOUDFLARE_CACHEPURGE_API_TOKEN` (Zone › Cache Purge) in the environment or `.dev.vars`;
+      confirm `.dev.vars` is in `.gitignore` first (`git check-ignore .dev.vars`). Never commit
+      it, never print it, never pass it on a command line.
 - [ ] The Worker deployed at least once.
 - [ ] `npx edgekits-i18n migrate` pushes to production KV and purges only the changed namespaces
       (its log lists them).
