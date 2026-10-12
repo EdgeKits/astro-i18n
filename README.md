@@ -16,8 +16,9 @@ The design is explained in the edgekits.dev series:
 ## Requirements
 
 - Astro `^7.3` with `output: 'server'` and the `@astrojs/cloudflare` adapter `^14.3`.
-- wrangler `^4.125` and a `wrangler.jsonc` (the CLI reads that file; `wrangler.toml` and
-  `wrangler.json` are not read).
+- wrangler `^4.125`, installed in the project (a peer dependency: the CLI runs the project's own
+  wrangler for its KV writes).
+- A `wrangler.jsonc` (the CLI reads that file; `wrangler.toml` and `wrangler.json` are not read).
 - Node `>=22`.
 - A Workers KV namespace bound as `TRANSLATIONS`.
 - For `migrate` only: the site on a proxied Cloudflare zone, its zone ID, and an API token with
