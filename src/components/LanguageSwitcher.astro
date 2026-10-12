@@ -11,9 +11,14 @@ interface Props {
   // references, like `flag`). Without them, the minimal inline defaults below render.
   triggerIcon?: (props: Record<string, unknown>) => any
   activeIcon?: (props: Record<string, unknown>) => any
+  // The component is headless: every class comes from here. A slot left out renders no
+  // `class` attribute; `itemActive` is appended to `item` on the active entry.
+  classes?: Partial<
+    Record<'root' | 'trigger' | 'triggerIcon' | 'dropdown' | 'item' | 'itemActive' | 'itemLabel' | 'activeIcon', string>
+  >
 }
 
-const { flag: Flag, triggerIcon: TriggerIcon, activeIcon: ActiveIcon } = Astro.props
+const { flag: Flag, triggerIcon: TriggerIcon, activeIcon: ActiveIcon, classes = {} } = Astro.props
 const { uiLocale: currentLang } = Astro.locals
 ---
 
@@ -21,22 +26,23 @@ const { uiLocale: currentLang } = Astro.locals
   data-current-lang={currentLang}
   data-cookie-name={LANG_COOKIE_NAME}
   data-cookie-max-age={I18N_CONFIG.cookie.maxAge}
+  data-open="false"
 >
-  <div class="relative">
+  <div class={classes.root}>
     <button
       type="button"
       data-ls-trigger
-      class="rounded-full"
+      class={classes.trigger}
       aria-haspopup="true"
       aria-expanded="false"
       aria-label="Switch language"
     >
       {
         TriggerIcon ? (
-          <TriggerIcon class="text-foreground size-5" stroke-width="1" />
+          <TriggerIcon class={classes.triggerIcon} stroke-width="1" />
         ) : (
           <svg
-            class="text-foreground size-5"
+            class={classes.triggerIcon}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -51,11 +57,7 @@ const { uiLocale: currentLang } = Astro.locals
       }
     </button>
 
-    <div
-      data-ls-dropdown
-      class="bg-card animate-in fade-in slide-in-from-top-8 absolute right-8 z-50 -mt-8 hidden w-44 overflow-hidden rounded-lg border shadow-lg duration-300"
-      role="menu"
-    >
+    <div data-ls-dropdown class={classes.dropdown} role="menu" hidden>
       {
         SUPPORTED_LOCALES.map((lang) => {
           const locale = lang as Locale
@@ -66,23 +68,22 @@ const { uiLocale: currentLang } = Astro.locals
           return (
             <button
               type="button"
-              class:list={[
-                'ls-selector hover:bg-muted flex w-44 items-center justify-between px-4 py-2 text-sm',
-                isActive && 'bg-background cursor-default',
-              ]}
+              class:list={[classes.item, isActive && classes.itemActive]}
+              data-ls-item
               data-lang={locale}
+              data-active={isActive ? 'true' : undefined}
               role="menuitem"
               disabled={isActive}
             >
-              <span class="pointer-events-none flex items-center gap-3">
+              <span class={classes.itemLabel}>
                 {Flag && <Flag code={flagCode} size={16} />}
                 {label.name}
               </span>
               {isActive &&
                 (ActiveIcon ? (
-                  <ActiveIcon class="size-6" />
+                  <ActiveIcon class={classes.activeIcon} />
                 ) : (
-                  <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <svg class={classes.activeIcon} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 ))}
@@ -121,7 +122,8 @@ const { uiLocale: currentLang } = Astro.locals
 
     private open() {
       if (!this.dropdown || !this.trigger) return
-      this.dropdown.classList.remove('hidden')
+      this.dropdown.hidden = false
+      this.dataset.open = 'true'
       this.trigger.setAttribute('aria-expanded', 'true')
 
       document.addEventListener('click', this.onDocumentClick)
@@ -130,7 +132,8 @@ const { uiLocale: currentLang } = Astro.locals
 
     private close() {
       if (!this.dropdown || !this.trigger) return
-      this.dropdown.classList.add('hidden')
+      this.dropdown.hidden = true
+      this.dataset.open = 'false'
       this.trigger.setAttribute('aria-expanded', 'false')
 
       this.removeGlobalListeners()
@@ -145,8 +148,7 @@ const { uiLocale: currentLang } = Astro.locals
       e.stopPropagation()
       if (!this.dropdown) return
 
-      const isHidden = this.dropdown.classList.contains('hidden')
-      isHidden ? this.open() : this.close()
+      this.dropdown.hidden ? this.open() : this.close()
     }
 
     // Isolated logic for getting language from URL
@@ -166,7 +168,7 @@ const { uiLocale: currentLang } = Astro.locals
 
     private onSelect = (event: Event) => {
       const target = event.target as HTMLElement
-      const button = target.closest<HTMLButtonElement>('.ls-selector')
+      const button = target.closest<HTMLButtonElement>('[data-ls-item]')
       if (!button) return
 
       const lang = button.dataset.lang as Locale | undefined

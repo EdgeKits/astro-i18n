@@ -6,9 +6,11 @@ interface Props {
   // nothing here and assumes no namespace. `content`: the page's content is missing in
   // the selected language; `ui`: the interface is not fully translated.
   texts: { content: string; ui: string }
+  // Headless: the class comes from here; without it the banner renders no `class`.
+  classes?: Partial<Record<'root', string>>
 }
 
-const { texts } = Astro.props
+const { texts, classes = {} } = Astro.props
 const { uiLocale, isMissingContent } = Astro.locals
 
 const missingType = checkMissingTranslation(uiLocale, isMissingContent)
@@ -22,7 +24,7 @@ if (missingType) {
 
 {
   bannerText && (
-    <div class="border-brand-astro/20 bg-brand-astro/5 text-brand-astro mx-6 mt-6 max-w-3xl border px-4 py-2 text-center text-balance @xl:mx-auto">
+    <div class={classes.root} data-missing={missingType}>
       {bannerText}
     </div>
   )
