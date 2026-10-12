@@ -18,3 +18,4 @@ All notable changes to this package are documented here. The format follows
 - `markdownLocale`: the locale `.md` endpoints are redirected to, as an optional config field; without it they pass through untouched.
 - Type declarations for the virtual modules, injected into the consumer's program, so `tsc` and `astro check` accept the runtime source.
 - The `astro-i18n` agent skill (a Claude Code plugin, source in `plugins/astro-i18n/`): adopts the package, localizes forms and multilingual SEO; its version tracks the package's.
+- Security audit fixes (2026-10-12): locale-negotiated redirects are temporary (302) and uncacheable (`Cache-Control: private, no-store`, `Vary: Cookie, Accept-Language`); the CLI validates locale folders and namespace names and escapes generated string literals; the purge client's HTTP 429 retry is bounded and honours `Retry-After`; hardening of `deepMerge`, the `wrangler` call and KV-failure logging.

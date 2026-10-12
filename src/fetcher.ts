@@ -214,6 +214,7 @@ async function fetchAllFromKV<N extends Namespace>(locale: Locale, namespaces: r
     kvResults = (await i18nEnv.TRANSLATIONS.get(keys, KV_JSON_OPTIONS)) as Map<string, unknown | null>
   } catch (error) {
     kvFailed = true
+    debug('i18n KV ERROR (cache bypassed), using FALLBACK_* for all namespaces', error)
   }
 
   if (kvFailed) {

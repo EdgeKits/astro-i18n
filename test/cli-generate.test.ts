@@ -2,10 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  assertValidNames,
   buildBulkData,
   buildFallbacksContent,
   buildRuntimeConstantsContent,
   buildTypesContent,
+  quoteString,
   schemaSourceLocale,
 } from '../src/cli/generate.ts'
 import { LOCALE_TREE } from './fixtures/locales.ts'
@@ -75,4 +77,43 @@ test('bulk data: <prefix>:<namespace>:<locale> keys, JSON-string values', () => 
     { key: 'edgekits.dev:blog:en', value: '{"heading":"Blog"}' },
     { key: 'edgekits.dev:common:de', value: '{"title":"Hallo","nav":{"home":"Startseite"}}' },
   ])
+})
+
+// Audit 2026-10-12 A05-1: names reach generated TypeScript, so they are validated first,
+// and every string literal is escaped.
+
+const LANGUAGES = { en: {}, de: {} }
+
+test('names: configured locale folders and lowercase namespace names pass', () => {
+  assert.doesNotThrow(() => assertValidNames(LOCALE_TREE, LANGUAGES))
+  assert.doesNotThrow(() => assertValidNames({ en: { common: {}, page_2: {}, '404': {} } }, LANGUAGES))
+})
+
+test('names: a namespace file name outside [a-z0-9_] is rejected, naming it', () => {
+  for (const ns of ['my-ns', 'Common', '_draft', "it's", 'a.b']) {
+    assert.throws(
+      () => assertValidNames({ en: { [ns]: {} } }, LANGUAGES),
+      (err: Error) => err.message.startsWith(`Namespace "${ns}" (en/${ns}.json) must match`),
+      ns,
+    )
+  }
+})
+
+test('names: a locale folder that is not one of `languages` is rejected, naming it', () => {
+  assert.throws(
+    () => assertValidNames({ en: { common: {} }, fr: { common: {} } }, LANGUAGES),
+    /Locale folder "fr" is not one of `languages` in edgekits-i18n\.config\.ts: en, de\./,
+  )
+})
+
+test('quoteString: plain names keep the single-quoted form; anything else is escaped, not injected', () => {
+  assert.equal(quoteString('common'), "'common'")
+  assert.equal(quoteString('pt-br'), "'pt-br'")
+
+  for (const value of ["it's", 'say "hi"', 'back\\slash', "'];process.exit(1);['", 'line\nbreak', ' ']) {
+    const literal = quoteString(value)
+    assert.ok(literal.startsWith("'") && literal.endsWith("'"), literal)
+    // The literal evaluates to exactly the input: nothing escapes the string.
+    assert.equal(new Function(`return ${literal}`)(), value, literal)
+  }
 })

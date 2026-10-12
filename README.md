@@ -182,7 +182,8 @@ edit a JSON file.
   never touches it: local KV is not production.
 - Commit it after every `migrate`. It is the record of what production holds.
 - `migrate` refuses to run while the file has uncommitted changes, since a wrong baseline would
-  skip purges silently.
+  skip purges silently. When that git check cannot run (no `git` on the PATH, or not a git work
+  tree), `migrate` warns and proceeds without the purge-baseline check.
 
 `migrate` reads the zone ID from `CLOUDFLARE_ZONE_ID` (a var in `wrangler.jsonc` or the
 environment) and the token from `CLOUDFLARE_CACHEPURGE_API_TOKEN` (the environment or

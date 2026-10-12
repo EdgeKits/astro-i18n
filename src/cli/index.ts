@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { execSync } from 'node:child_process'
+import { execFileSync, execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
 import { DEFAULT_GENERATED_DIR, DEFAULT_LOCALES_DIR, type I18nConfig } from '../types.ts'
 import {
+  assertValidNames,
   buildBulkData,
   buildFallbacksContent,
   buildRuntimeConstantsContent,
@@ -48,6 +49,8 @@ const OUTPUT_TYPES = path.join(ROOT, 'src', 'i18n.generated.d.ts')
 // Absence means "first run", all namespaces treated as changed.
 const HASHES_FILE = path.join(ROOT, '.i18n-hashes.json')
 
+const KV_NAMESPACE_ID = /^[0-9a-f]{32}$/i
+
 await main(process.argv.slice(2))
 
 async function main(args: string[]): Promise<void> {
@@ -87,11 +90,28 @@ async function run(command: Command, args: string[]): Promise<void> {
   // Read before writing anything, so a missing binding fails the run up front.
   const kvId = shouldDeploy ? getKvNamespaceId(ROOT, KV_BINDING) : undefined
 
+  // The id becomes a command-line argument (deploy()); only a real namespace id's shape
+  // may get there.
+  if (kvId !== undefined && !KV_NAMESPACE_ID.test(kvId)) {
+    console.error(
+      `[i18n] The ${KV_BINDING} id in wrangler.jsonc, "${kvId}", is not a KV namespace id (32 hex characters).`,
+    )
+    process.exit(1)
+  }
+
   // -------------------------------------------------------------------------
   // 1. Collect translations from <localesDir>/<locale>/<namespace>.json
   // -------------------------------------------------------------------------
 
   const collected = collectTranslations(localesDir)
+
+  try {
+    assertValidNames(collected, config.languages)
+  } catch (err) {
+    console.error(`[i18n] ${err instanceof Error ? err.message : String(err)}`)
+    process.exit(1)
+  }
+
   const locales = localesWithTranslations(collected)
 
   if (locales.length === 0) {
@@ -235,7 +255,13 @@ async function deploy({
   // Push all translations to KV
   console.log(`[i18n] Pushing translations to ${target} KV...`)
   try {
-    execSync(`wrangler kv bulk put i18n-data.json ${kvFlag} --namespace-id=${kvId}`, { cwd: ROOT, stdio: 'inherit' })
+    // No shell, except on Windows, where npm's `wrangler.cmd` shim needs one; the
+    // arguments are constants and the shape-checked id.
+    execFileSync('wrangler', ['kv', 'bulk', 'put', 'i18n-data.json', kvFlag, `--namespace-id=${kvId}`], {
+      cwd: ROOT,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    })
     console.log(`[i18n] ✅ KV updated (${target}).`)
   } catch (err) {
     console.error(`[i18n] ❌ Failed to push to ${target} KV.`, err)

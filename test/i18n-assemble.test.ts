@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { assembleNamespace } from '../src/assemble.ts'
+import { deepMerge } from '../src/deep-merge.ts'
 import { FALLBACK_BLOG } from './fixtures/fallbacks.ts'
 
 /**
@@ -76,4 +77,20 @@ test('tolerates null/undefined for either argument', () => {
   assert.deepEqual(assembleNamespace(undefined, undefined), {})
   assert.deepEqual(assembleNamespace(null, FALLBACK_BLOG), FALLBACK_BLOG)
   assert.deepEqual(assembleNamespace({ heading: 'x' }, null), { heading: 'x' })
+})
+
+// Audit 2026-10-12 A08-1: a parsed KV value can carry `__proto__` as an own key.
+test('deepMerge skips __proto__, constructor and prototype keys', () => {
+  const overrides = JSON.parse(
+    '{"__proto__": {"polluted": true}, "constructor": {"x": 1}, "prototype": "p", "title": "Hallo"}',
+  ) as Record<string, unknown>
+
+  const result = deepMerge({ title: 'Hello', nav: { home: 'Home' } } as Record<string, unknown>, overrides)
+
+  assert.equal(Object.getPrototypeOf(result), Object.prototype)
+  assert.equal((result as { polluted?: unknown }).polluted, undefined)
+  assert.equal(result.constructor, Object)
+  assert.equal(Object.hasOwn(result, 'prototype'), false)
+  assert.deepEqual(result, { title: 'Hallo', nav: { home: 'Home' } })
+  assert.equal(({} as { polluted?: unknown }).polluted, undefined, 'Object.prototype untouched')
 })

@@ -35,12 +35,35 @@ const IGNORED_PREFIXES = [
 // Extracts the context type from Astro's MiddlewareHandler for cleaner function signatures.
 type I18nMiddlewareContext = Parameters<MiddlewareHandler>[0]
 
-// Redirect status code: 302 (temporary) on the local dev server so nothing gets
-// cached while testing, 301 (permanent) in production for correct SEO. Every
-// redirect below uses this. NEVER ship 302 to prod — permanent redirects are what
-// consolidate canonical signals in Google. `import.meta.env.DEV` is true only under
-// `astro dev`; any production build (incl. `astro preview` / `wrangler dev`) -> 301.
-const REDIRECT_STATUS = import.meta.env.DEV ? 302 : 301
+// Two kinds of redirect, by whether the target depends on the visitor.
+//
+// Deterministic normalisations (a missing trailing slash, a `.md` path moved to
+// `markdownLocale`) always lead to the same URL, so they are permanent in production:
+// 301 consolidates canonical signals in Google. They use REDIRECT_STATUS: 302 under
+// `astro dev` (`import.meta.env.DEV`) so nothing gets cached while testing, 301 in any
+// production build (incl. `astro preview` / `wrangler dev`). `?.`: plain Node (the tests)
+// has no `import.meta.env`, which counts as production.
+//
+// Negotiated redirects (no locale or an invalid one in the URL: the target comes from the
+// visitor's cookie, Accept-Language or country) are always temporary and uncacheable, in
+// dev and production alike: see negotiatedRedirect(). A browser keeps a 301 and never asks
+// the server again, so a language chosen later in the switcher would be bypassed on the
+// next visit to `/`, and the URL-wins cookie sync below would then overwrite that choice.
+const REDIRECT_STATUS = import.meta.env?.DEV ? 302 : 301
+
+// A redirect whose target depends on the visitor: temporary, never stored by a shared
+// cache, and keyed on the request headers that chose it (the country is not a request
+// header, hence `no-store` rather than relying on Vary alone).
+function negotiatedRedirect(target: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: target,
+      'Cache-Control': 'private, no-store',
+      Vary: 'Cookie, Accept-Language',
+    },
+  })
+}
 
 // Determines if the current request path matches static assets or ignored prefixes.
 // Returns true to skip i18n processing for this request.
@@ -149,7 +172,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   if (!firstSegment) {
     const target = buildLocalizedPath(fallbackLocale, [])
     if (pathname !== target) {
-      return context.redirect(target, REDIRECT_STATUS)
+      return negotiatedRedirect(target)
     }
     return await next()
   }
@@ -193,7 +216,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
   const target = buildLocalizedPath(fallbackLocale, segments)
 
   if (pathname !== target) {
-    return context.redirect(target, REDIRECT_STATUS)
+    return negotiatedRedirect(target)
   }
 
   return await next()
