@@ -1,4 +1,4 @@
-import type { AstroIntegration } from 'astro'
+import type { AstroConfig, AstroIntegration } from 'astro'
 
 import { DEFAULT_GENERATED_DIR, defineI18nConfig, type I18nConfig } from '../types.ts'
 import { i18nVitePlugin } from './vite-plugin.ts'
@@ -37,6 +37,10 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
           astroConfig.root,
         )
 
+        // Astro computes `preferredLocale` (the middleware's Accept-Language step) only
+        // with an `i18n` block: set it when the project has none, check it when it has one.
+        if (astroConfig.i18n) assertAstroI18n(astroConfig.i18n, i18nConfig)
+
         updateConfig({
           vite: {
             plugins: [i18nVitePlugin(i18nConfig, generatedDir)],
@@ -44,6 +48,7 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
             // must process it rather than hand it to Node as an external dependency.
             ssr: { noExternal: [PACKAGE_NAME] },
           },
+          ...(astroConfig.i18n ? {} : { i18n: astroI18n(i18nConfig) }),
         })
 
         if (middleware === 'auto') {
@@ -82,6 +87,44 @@ export function localesDeclaration(locales: readonly string[]): string {
     ]),
     '',
   ].join('\n')
+}
+
+/**
+ * The Astro `i18n` block set when the project has none: locales and default from the
+ * config; every URL locale-prefixed (the middleware redirects `/` itself, so Astro
+ * does not). Complete, `fallbackType` included: Astro does not re-validate what
+ * `updateConfig` merges, so its schema defaults never fill a partial block.
+ */
+export function astroI18n(config: I18nConfig): NonNullable<AstroConfig['i18n']> {
+  return {
+    locales: Object.keys(config.languages),
+    defaultLocale: config.defaultLocale,
+    routing: { prefixDefaultLocale: true, redirectToDefaultLocale: false, fallbackType: 'redirect' },
+  }
+}
+
+/**
+ * A project's own Astro `i18n` block must cover every configured locale (as a string
+ * entry, a `path` or one of its `codes`) and share the default locale.
+ */
+function assertAstroI18n(block: NonNullable<AstroConfig['i18n']>, config: I18nConfig): void {
+  const declared = new Set(
+    block.locales.flatMap((entry) => (typeof entry === 'string' ? [entry] : [entry.path, ...entry.codes])),
+  )
+  const missing = Object.keys(config.languages).filter((locale) => !declared.has(locale))
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[@edgekits/astro-i18n] Astro \`i18n.locales\` is missing ${missing.join(', ')} from \`languages\`. ` +
+        'Add them, or remove the `i18n` block from astro.config and the integration sets it for you.',
+    )
+  }
+  if (block.defaultLocale !== config.defaultLocale) {
+    throw new Error(
+      `[@edgekits/astro-i18n] Astro \`i18n.defaultLocale\` "${block.defaultLocale}" differs from \`defaultLocale\` "${config.defaultLocale}". ` +
+        'Make them equal, or remove the `i18n` block from astro.config and the integration sets it for you.',
+    )
+  }
 }
 
 function trimSlashes(path: string): string {

@@ -1,12 +1,26 @@
 {
   "name": "@edgekits/astro-i18n",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Edge-native i18n for Astro on Cloudflare Workers: translations in Workers KV, a per-namespace edge cache invalidated by the Purge API, and typed keys.",
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "i18n",
+    "cloudflare",
+    "cloudflare-workers",
+    "kv",
+    "edge"
+  ],
   "type": "module",
   "license": "MIT",
+  "author": "Gary Stupak",
   "repository": {
     "type": "git",
     "url": "https://github.com/EdgeKits/astro-i18n"
+  },
+  "homepage": "https://github.com/EdgeKits/astro-i18n#readme",
+  "bugs": {
+    "url": "https://github.com/EdgeKits/astro-i18n/issues"
   },
   "engines": {
     "node": ">=22"
@@ -30,8 +44,12 @@
     "dist",
     "src",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "node --import ./test/register.mjs --test test/**/*.test.ts",
