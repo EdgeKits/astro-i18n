@@ -4,7 +4,19 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
-## 0.1.0 — unreleased
+## 0.1.1 — 2026-10-13
+
+### Changed
+
+- `countryCode` in `languages` is optional. `LanguageSwitcher` renders the `flag` component only for a locale that has one; the item then shows the name alone.
+- The `astro-i18n` skill asks whether to show flags (each locale's `countryCode`, SVGs from the `flag-icons` package or the project's own) and moves the project's pages under `src/pages/[lang]/` during adoption.
+
+### Added
+
+- "Using the skill": a user guide for the `astro-i18n` skill, the same section in this README and in the plugin's.
+- A `prepublishOnly` script that builds `dist/` before `npm publish`.
+
+## 0.1.0 — 2026-10-12
 
 ### Added
 
