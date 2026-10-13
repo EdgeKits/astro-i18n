@@ -1,0 +1,10 @@
+---
+// A stand-in for a project's flag component: marks where the switcher placed it.
+interface Props {
+  code: string
+  size?: number
+}
+const { code, size } = Astro.props
+---
+
+<i data-flag={code} data-size={size}></i>

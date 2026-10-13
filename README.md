@@ -73,18 +73,22 @@ export default defineI18nConfig({
 })
 ```
 
-| Field                      | Required | Default      | Meaning                                                                  |
-| -------------------------- | -------- | ------------ | ------------------------------------------------------------------------ |
-| `languages`                | yes      |              | `{ [locale]: { countryCode, name } }`; `countryCode` is for your flag UI |
-| `defaultLocale`            | yes      |              | one of `languages`; its JSON files define the schema                     |
-| `cookie`                   | yes      |              | `{ name, maxAge }` (seconds) of the language cookie                      |
-| `keyPrefix`                | yes      |              | KV keys are `<keyPrefix>:<namespace>:<locale>`                           |
-| `missingTranslationBanner` | yes      |              | enables `MissingTranslationBanner`                                       |
-| `routing`                  | yes      |              | `'prefix'`                                                               |
-| `localesDir`               | no       | `'locales'`  | where the CLI reads `<locale>/<namespace>.json`                          |
-| `generatedDir`             | no       | `'src/i18n'` | where the CLI writes `runtime-constants.ts` and `fallbacks.generated.ts` |
-| `countryToLocale`          | no       | none         | geo-IP step of the locale fallback (see Reference)                       |
-| `markdownLocale`           | no       | none         | the locale `.md` endpoints are served in (see Reference)                 |
+| Field                      | Required | Default      | Meaning                                                                                                  |
+| -------------------------- | -------- | ------------ | -------------------------------------------------------------------------------------------------------- |
+| `languages`                | yes      |              | `{ [locale]: { name, countryCode? } }`; `countryCode` is optional: the code your flag component receives |
+| `defaultLocale`            | yes      |              | one of `languages`; its JSON files define the schema                                                     |
+| `cookie`                   | yes      |              | `{ name, maxAge }` (seconds) of the language cookie                                                      |
+| `keyPrefix`                | yes      |              | KV keys are `<keyPrefix>:<namespace>:<locale>`                                                           |
+| `missingTranslationBanner` | yes      |              | enables `MissingTranslationBanner`                                                                       |
+| `routing`                  | yes      |              | `'prefix'`                                                                                               |
+| `localesDir`               | no       | `'locales'`  | where the CLI reads `<locale>/<namespace>.json`                                                          |
+| `generatedDir`             | no       | `'src/i18n'` | where the CLI writes `runtime-constants.ts` and `fallbacks.generated.ts`                                 |
+| `countryToLocale`          | no       | none         | geo-IP step of the locale fallback (see Reference)                                                       |
+| `markdownLocale`           | no       | none         | the locale `.md` endpoints are served in (see Reference)                                                 |
+
+Locale codes (the keys of `languages`) are lowercase everywhere: the config, the `locales/`
+folders and the URLs (`pt-br`, not `pt-BR`). `toIetfTag()` from `./format` gives the IETF form
+(`pt-BR`) where one is needed, such as `<html lang>` and hreflang.
 
 The config is validated when it loads: an empty `languages`, a `defaultLocale` or
 `markdownLocale` outside it, or a bad `countryToLocale` entry throws with a message naming the
@@ -378,6 +382,14 @@ language-switcher > div {
   border-left: 3px solid orange;
 }
 ```
+
+#### Flags
+
+The package ships no flag images. To show flags in the switcher, pass your own Astro component
+as `flag`: each item renders it as `<Flag code={countryCode} size={16} />` before the language
+name. A locale without a `countryCode` gets the name alone, and so does every locale when you
+pass no `flag`. A recipe that copies only the SVGs your locales use from the `flag-icons` npm
+package is in the skill's [SEO reference](https://github.com/EdgeKits/astro-i18n/blob/main/plugins/astro-i18n/skills/astro-i18n/references/seo.md#flags).
 
 ## How it works
 

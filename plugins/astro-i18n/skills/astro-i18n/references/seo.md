@@ -41,6 +41,31 @@ const { common, landing } = await fetchTranslations(translationLocale, ['common'
 Localized pages live under `src/pages/[lang]/…`; the middleware guarantees the first segment is
 a supported locale.
 
+### Route layout
+
+Adopting the package on an existing site moves its pages; nothing else changes their paths.
+
+```
+before                          after
+src/pages/                      src/pages/
+  index.astro                     [lang]/
+  about.astro                       index.astro         (was index.astro)
+  blog/[slug].astro                 about.astro
+  robots.txt.ts                     blog/[slug].astro
+  api/subscribe.ts                robots.txt.ts         (stays: not localized)
+                                  api/subscribe.ts      (stays)
+```
+
+- Every page moves under `src/pages/[lang]/` with the same relative path; relative imports in a
+  moved file gain one `../`.
+- No `src/pages/index.astro` remains at the root: the middleware redirects `/` to
+  `/<locale>/`.
+- Endpoints that are not localized stay at the root: `robots.txt`, `sitemap.xml`, `llms.txt`,
+  `/api/*`. Files in `public/` are served as they are.
+- Links inside pages carry the locale: `` `/${Astro.locals.uiLocale}/about/` ``.
+- The base layout sets `<html lang={toIetfTag(uiLocale)}>` (see "SEO suite" below); a layout
+  with a hard-coded `lang` is the most common leftover.
+
 ### Passing translations to a component
 
 Components receive typed slices as props; nothing re-fetches and nothing hydrates. `I18n.Schema`
@@ -112,7 +137,7 @@ URL's locale segment. It is headless: it renders no class unless you pass one, a
 project's own UI as props (all optional):
 
 - `flag`: an Astro component `({ code, size })` rendering a flag for `LANGUAGES[locale].countryCode`;
-  without it, items are label-only;
+  without it, or for a locale without a `countryCode`, items are label-only (recipe below);
 - `triggerIcon`, `activeIcon`: Astro components for the toggle and the current-language marker;
   without them, small inline SVGs render;
 - `classes`: one class string per slot (`root`, `trigger`, `triggerIcon`, `dropdown`, `item`,
@@ -141,6 +166,50 @@ import Flag from './Flag.astro' // the project's own flag component, if any
 The menu opens and closes through the `hidden` attribute. A display utility (`flex`, `grid`) on
 the `dropdown` slot overrides the browser's `[hidden] { display: none }`; leave display off that
 slot or restate the rule.
+
+### Flags
+
+The package ships no flag images. The flag of a locale is its `countryCode` (ISO 3166-1
+alpha-2, lowercase), not the locale: `pt` and `pt-br` are one language and can carry two flags
+(`pt`, `br`). The SVGs come from the [`flag-icons`](https://www.npmjs.com/package/flag-icons)
+npm package (MIT) unless the project has its own.
+
+1. `npm i -D flag-icons`.
+2. Copy one SVG per configured `countryCode`, and only those, into `src/assets/icons/flags/`;
+   commit them. The build then never reads `node_modules/flag-icons`.
+
+   ```sh
+   mkdir -p src/assets/icons/flags
+   for code in us de br; do cp node_modules/flag-icons/flags/4x3/$code.svg src/assets/icons/flags/; done
+   ```
+
+3. `src/components/Flag.astro`: globs the folder, renders the matching SVG inline at `size`,
+   and nothing when the code has no file (or render the project's own fallback icon there).
+
+   ```astro
+   ---
+   // src/components/Flag.astro
+   import type { SvgComponent } from 'astro/types'
+
+   interface Props {
+     code: string
+     size?: number
+   }
+   const { code, size = 16 } = Astro.props
+
+   const flags = import.meta.glob<SvgComponent>('../assets/icons/flags/*.svg', { eager: true, import: 'default' })
+   const Svg = flags[`../assets/icons/flags/${code}.svg`]
+   ---
+
+   {Svg && <Svg width={(size * 4) / 3} height={size} aria-hidden="true" />}
+   ```
+
+4. `flag={Flag}` on the switcher (example above).
+
+Adding a locale later is its `countryCode` in the config plus one SVG in that folder.
+`flags/4x3/` holds the classic 4:3 flags; `flags/1x1/` holds square ones (render them with
+`width={size}`). The SVG ids are prefixed per country (`us-a`), so several flags inline on one
+page do not collide.
 
 ---
 

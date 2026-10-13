@@ -5,7 +5,8 @@ import type { Locale } from '../constants'
 
 interface Props {
   // The project's flag component (an Astro component reference), passed in so the
-  // engine imports no project UI. Without it, items render label-only.
+  // engine imports no project UI. It receives the locale's `countryCode`; without the
+  // component, or for a locale without a `countryCode`, the item renders label-only.
   flag?: (props: { code: string; size?: number }) => any
   // The project's icons for the trigger button and the active item (Astro component
   // references, like `flag`). Without them, the minimal inline defaults below render.
@@ -76,7 +77,7 @@ const { uiLocale: currentLang } = Astro.locals
               disabled={isActive}
             >
               <span class={classes.itemLabel}>
-                {Flag && <Flag code={flagCode} size={16} />}
+                {Flag && flagCode && <Flag code={flagCode} size={16} />}
                 {label.name}
               </span>
               {isActive &&

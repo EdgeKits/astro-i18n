@@ -46,3 +46,8 @@ test('markdownLocale: a value outside `languages` throws, naming it', () => {
     /`markdownLocale` "ja" is not one of `languages`: en, de\./,
   )
 })
+
+test('countryCode is optional: a locale with only a name validates', () => {
+  const config = defineI18nConfig({ ...BASE, languages: { en: { name: 'English' }, eo: { name: 'Esperanto' } } })
+  assert.deepEqual(config.languages.eo, { name: 'Esperanto' })
+})

@@ -4,7 +4,9 @@
  * under plain Node.
  */
 
-export type I18nLanguage = { countryCode: string; name: string }
+// `countryCode` is what the switcher's `flag` component receives; without it the item
+// shows the name alone.
+export type I18nLanguage = { countryCode?: string; name: string }
 
 export type I18nConfig = {
   // The only source of truth for languages: the keys are the locales.

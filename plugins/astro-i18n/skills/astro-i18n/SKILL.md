@@ -12,9 +12,9 @@ description: >-
 
 # Astro i18n (EdgeKits)
 
-Adopts the npm package `@edgekits/astro-i18n` and builds on it. **The package README is the
-installation and configuration reference: read it, follow it, do not restate it.** After
-`npm i` it is at `node_modules/@edgekits/astro-i18n/README.md`.
+Adopts the npm package `@edgekits/astro-i18n` and builds on it. **The package README
+(`node_modules/@edgekits/astro-i18n/README.md` after `npm i`) is the installation and
+configuration reference: read it, follow it, do not restate it.**
 
 ## Mental model
 
@@ -42,20 +42,31 @@ installation and configuration reference: read it, follow it, do not restate it.
    geo step is skipped.
 5. Middleware: `auto` (the integration registers it) or `manual` (the project already has a
    `src/middleware.ts` sequence to slot it into)? If a `src/middleware.ts` exists, ask.
+6. Flags in the switcher? If yes, a locale's flag is its `countryCode` (ISO 3166-1 alpha-2,
+   lowercase). A regional locale takes its region (`pt-br` → `br`, `en-gb` → `gb`); for a
+   language-only locale propose the obvious country (`en` → `us`, `pt` → `pt`, `es` → `es`)
+   and let the user confirm. Show the full list back before writing the config. SVGs: the
+   `flag-icons` npm package (MIT), or the project's own.
 
 Defaults if the user does not care: `missingTranslationBanner: true`, no `countryToLocale`, no
-`markdownLocale`, `auto` middleware.
+`markdownLocale`, `auto` middleware, flags on from `flag-icons` by the rule above.
 
 ### A1. Install and follow the README in order
 
 `npm i @edgekits/astro-i18n`, then read the README and follow these sections in order:
 
 1. Requirements (Astro and adapter versions, `output: 'server'`, `wrangler.jsonc`).
-2. Quick start 1–8: Install; Bind a KV namespace; Write `edgekits-i18n.config.ts` (fill in the
-   A0 answers); Add the integration (`auto` vs `manual`); Write translations; Generate and
-   seed; Use translations in a page; Runtime switches.
-3. Reference: Which entry to import; Geo-IP locale fallback (`countryToLocale`); Markdown
-   endpoints (`markdownLocale`); Styling the components.
+2. Quick start 1–6: Install; Bind a KV namespace; Write `edgekits-i18n.config.ts` (the A0
+   answers; no `countryCode` when flags are off); Add the integration; Write translations;
+   Generate and seed.
+3. Route layout: move every existing page under `src/pages/[lang]/`, same relative path
+   (`about.astro` → `[lang]/about.astro`). No `index.astro` stays at the root: the
+   middleware redirects `/`. Non-localized endpoints (`robots.txt`, `sitemap`, `/api/*`) and
+   `public/` files stay at the root. Layouts set `<html lang>` from `Astro.locals.uiLocale`
+   through `toIetfTag`. Code: `references/seo.md` → Route layout.
+4. Quick start 7–8: Use translations in a page; Runtime switches.
+5. Reference: Which entry to import; `countryToLocale`; `markdownLocale`; Styling the
+   components. Flags on: `references/seo.md` → Flags.
 
 Starter files: copy `assets/locales/common.json` and `assets/locales/messages.json` into
 `locales/<default>/` and translate them per locale (`messages.json` holds the banner texts and

@@ -11,6 +11,11 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
       the user asked for; `markdownLocale`, `countryToLocale` and the middleware mode match the
       A0 answers.
 - [ ] Every locale code is **lowercase**, in the config and in the `locales/*` folder names.
+- [ ] Route layout: every page is under `src/pages/[lang]/`; nothing is left at
+      `src/pages/*.astro`, and only non-localized endpoints (`robots.txt`, `sitemap.xml`,
+      `/api/*`) remain at the root. No layout hard-codes `<html lang>`.
+- [ ] Flags: every configured `countryCode` has its SVG in `src/assets/icons/flags/` and the
+      switcher gets `flag={Flag}`; or flags are off (no `flag` prop, `countryCode` omitted).
 - [ ] `locales/<defaultLocale>/` has at least `common.json` (it defines the schema).
 - [ ] `astro.config` has `output: 'server'`, the Cloudflare adapter, and
       `edgekitsI18n(i18nConfig)` in `integrations`. With `{ middleware: 'manual' }`,
@@ -80,8 +85,9 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
 
 ## Recipe: add a locale
 
-1. Add it to `languages` in `edgekits-i18n.config.ts` (lowercase key, `countryCode`, `name`).
-   If `astro.config` has its own `i18n` block, add it to `i18n.locales` too.
+1. Add it to `languages` in `edgekits-i18n.config.ts` (lowercase key, `name`, and
+   `countryCode` when flags are on: copy its SVG too, see `seo.md` → Flags). If `astro.config`
+   has its own `i18n` block, add it to `i18n.locales` too.
 2. Optionally create `locales/<new>/` and translate. A locale without JSON is still routable:
    `translationLocale` falls back to the default locale, so the UI shows default copy and the
    missing-translation banner says so.
