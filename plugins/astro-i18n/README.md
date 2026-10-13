@@ -124,7 +124,9 @@ these, it uses the defaults: no geo table, no markdown locale, `auto` middleware
 - `src/components/Flag.astro` and one SVG per flag in `src/assets/icons/flags/`, if you chose
   flags (the recipe is below).
 - A KV namespace on your Cloudflare account (`wrangler kv namespace create`). The skill asks
-  before it runs that command. Until then, local development works with a placeholder id.
+  before it runs that command. Until then, local development works with a placeholder id of 32
+  hexadecimal characters, such as `00000000000000000000000000000000`: the CLI checks the id's
+  shape before it runs wrangler.
 
 #### Flags in the switcher
 
