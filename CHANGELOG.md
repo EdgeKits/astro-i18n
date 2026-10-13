@@ -4,6 +4,23 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.3 — 2026-10-13
+
+### Fixed
+
+- The `lang` cookie is no longer `httpOnly`. The `LanguageSwitcher` writes it from the browser and the middleware keeps it in sync with the URL; an `httpOnly` copy set by the server could never be overwritten by the switcher, so a stale value disabled it.
+- A `lang` cookie that is present but not one of the configured locales (a value left by another site on the same host) is set to the URL's locale on the next request. A request without the cookie still gets no `Set-Cookie`.
+
+### Added
+
+- Lists in translation JSON are typed: an array of strings (or an empty one) is `string[]`, an array of objects is `Array<{…}>` from its first element. An array that mixes kinds of elements stops the CLI with an error naming the key. A locale's list replaces the fallback's whole.
+
+### Changed
+
+- The skill's flags recipe serves the SVGs from `public/flags/` through an `<img>` instead of inlining them.
+- The skill treats the island-free form client as the default, not a prohibition: asked for React or a form library, it uses it, with errors as codes and no zod in the browser.
+- "Using the skill": `git init` under Prerequisites; Troubleshooting notes for npm 12's `allowScripts` (`esbuild`, `workerd`) and for a `lang` cookie left by another site on the same host.
+
 ## 0.1.2 — 2026-10-13
 
 ### Fixed

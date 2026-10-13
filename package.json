@@ -1,6 +1,6 @@
 {
   "name": "@edgekits/astro-i18n",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Edge-native i18n for Astro on Cloudflare Workers: translations in Workers KV, a per-namespace edge cache invalidated by the Purge API, and typed keys.",
   "keywords": [
     "astro",
