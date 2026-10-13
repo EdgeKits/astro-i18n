@@ -4,6 +4,13 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.2 — 2026-10-13
+
+### Fixed
+
+- `package.json` is normalised (`bin` path without `./`, `repository.url` in the `git+https://….git` form), so `npm publish` prints no warnings.
+- The build removes `dist/` before compiling, so a deleted source file can no longer ship as a stale `dist/*.js`.
+
 ## 0.1.1 — 2026-10-13
 
 ### Changed
