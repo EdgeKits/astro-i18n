@@ -9,4 +9,5 @@ dist
 journal/
 CLAUDE.md
 audit/
+docs/
 .claude/
