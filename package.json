@@ -16,7 +16,7 @@
   "author": "Gary Stupak",
   "repository": {
     "type": "git",
-    "url": "https://github.com/EdgeKits/astro-i18n"
+    "url": "git+https://github.com/EdgeKits/astro-i18n.git"
   },
   "homepage": "https://github.com/EdgeKits/astro-i18n#readme",
   "bugs": {
@@ -38,7 +38,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "edgekits-i18n": "./dist/cli/index.js"
+    "edgekits-i18n": "dist/cli/index.js"
   },
   "files": [
     "dist",
@@ -51,7 +51,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build",
     "test": "node --import ./test/register.mjs --test test/**/*.test.ts",
     "typecheck": "tsc --noEmit",
