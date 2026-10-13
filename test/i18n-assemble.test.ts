@@ -94,3 +94,24 @@ test('deepMerge skips __proto__, constructor and prototype keys', () => {
   assert.deepEqual(result, { title: 'Hallo', nav: { home: 'Home' } })
   assert.equal(({} as { polluted?: unknown }).polluted, undefined, 'Object.prototype untouched')
 })
+
+test('arrays are values: an override replaces the whole list, no element merge', () => {
+  const base = {
+    tags: ['a', 'b', 'c'],
+    items: [
+      { q: 'Q1', a: 'A1' },
+      { q: 'Q2', a: 'A2' },
+    ],
+    title: 'T',
+  }
+  const merged = assembleNamespace({ tags: ['x'], items: [{ q: 'F1' }] }, base) as typeof base
+
+  assert.deepEqual(merged.tags, ['x'])
+  assert.deepEqual(merged.items, [{ q: 'F1' }], 'no element-wise merge with the fallback list')
+  assert.equal(merged.title, 'T')
+  assert.deepEqual(base.tags, ['a', 'b', 'c'], 'the fallback is not mutated')
+
+  const kept = assembleNamespace({ title: 'U' }, base) as typeof base
+  assert.deepEqual(kept.tags, ['a', 'b', 'c'], 'a list missing from the override comes from the fallback')
+  assert.deepEqual(assembleNamespace({ tags: [] }, base), { ...base, tags: [] }, 'an empty list is a value too')
+})

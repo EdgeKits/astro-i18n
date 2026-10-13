@@ -164,6 +164,9 @@ locales/
 The default locale's files define the schema: their namespaces and keys are the types. Another
 locale may leave keys out; the default locale's text fills the gaps.
 
+Lists are allowed and typed: `["a", "b"]` is `string[]`, a list of objects is `Array<{…}>` from
+its first element, and a locale that has the list replaces it whole.
+
 ### 6. Generate and seed
 
 ```sh

@@ -11,3 +11,29 @@ export const LOCALE_TREE: CollectedData = {
     common: { title: 'Hallo', nav: { home: 'Startseite' } },
   },
 }
+
+// A tree with lists: strings, objects (with a nested list), an empty list and a list of
+// lists. `de` overrides two of them with shorter lists.
+export const ARRAY_TREE = {
+  en: {
+    faq: {
+      title: 'FAQ',
+      tags: ['edge', 'i18n', 'astro'],
+      items: [
+        { q: 'Why KV?', a: 'Reads at the edge.', links: ['/docs/', '/blog/'] },
+        { q: 'Why a cache?', a: 'Fewer KV reads.', links: [] },
+      ],
+      empty: [],
+      grid: [
+        ['a', 'b'],
+        ['c', 'd'],
+      ],
+    },
+  },
+  de: {
+    faq: {
+      tags: ['Edge'],
+      items: [{ q: 'Warum KV?', a: 'Lesen am Edge.', links: ['/de/docs/'] }],
+    },
+  },
+} satisfies CollectedData

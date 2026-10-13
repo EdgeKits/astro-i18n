@@ -116,8 +116,12 @@ async function run(command: Command, args: string[]): Promise<void> {
 
   const collected = collectTranslations(localesDir)
 
+  // The schema is built here too, so an untypeable value (a mixed array) stops the run
+  // before anything is written.
+  let typesContent: string
   try {
     assertValidNames(collected, config.languages)
+    typesContent = buildTypesContent(collected, defaultLocale)
   } catch (err) {
     console.error(`[i18n] ${err instanceof Error ? err.message : String(err)}`)
     process.exit(1)
@@ -161,7 +165,7 @@ async function run(command: Command, args: string[]): Promise<void> {
     )
   }
 
-  writeFile(OUTPUT_TYPES, buildTypesContent(collected, defaultLocale))
+  writeFile(OUTPUT_TYPES, typesContent)
   writeFile(outputRuntimeConstants, buildRuntimeConstantsContent(collected, defaultLocale))
 
   // -------------------------------------------------------------------------

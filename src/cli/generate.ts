@@ -82,35 +82,65 @@ export function buildBulkData(collected: CollectedData, keyPrefix: string): KvBu
   return bulkData
 }
 
-function generateSchemaTs(schema: TranslationTree, indent = 4): string {
-  const pad = ' '.repeat(indent)
-  const padInner = ' '.repeat(indent + 2)
-
-  if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
-    const entries = Object.entries(schema)
-    if (entries.length === 0) return '{}'
-
-    const lines = entries.map(([key, value]) => {
-      const valueTs =
-        value && typeof value === 'object' && !Array.isArray(value)
-          ? generateSchemaTs(value as TranslationTree, indent + 2)
-          : 'string'
-      return `${padInner}${JSON.stringify(key)}: ${valueTs}`
-    })
-
-    return `{\n${lines.join(';\n')};\n${pad}}`
-  }
-
-  return 'string'
+function isTree(value: unknown): value is TranslationTree {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-/** `src/i18n.generated.d.ts`: the global `I18n.Schema`, from the schema source locale. */
+// The JSON kind of an array element; an array is typed only when all its elements share one.
+function jsonKind(value: unknown): string {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) return 'array'
+  return typeof value
+}
+
+/**
+ * The TS type of one JSON value. Objects become object types; arrays become `string[]`
+ * (strings, other scalars, or empty) or `Array<…>` typed from their first element
+ * (objects, nested arrays); every other leaf stays `string`. `keyPath` and `file` name the
+ * value in the error a mixed array raises.
+ */
+function generateSchemaTs(value: unknown, indent: number, keyPath: string, file: string): string {
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 'string[]'
+
+    const kinds = [...new Set(value.map(jsonKind))]
+    if (kinds.length > 1) {
+      throw new Error(
+        `Key "${keyPath}" (${file}) is an array that mixes ${kinds.join(', ')} elements: ` +
+          'I18n.Schema cannot type it. Use one kind of element per array.',
+      )
+    }
+
+    const first = value[0]
+    if (!isTree(first) && !Array.isArray(first)) return 'string[]'
+    return `Array<${generateSchemaTs(first, indent, `${keyPath}[0]`, file)}>`
+  }
+
+  if (!isTree(value)) return 'string'
+
+  const entries = Object.entries(value)
+  if (entries.length === 0) return '{}'
+
+  const pad = ' '.repeat(indent)
+  const padInner = ' '.repeat(indent + 2)
+  const lines = entries.map(
+    ([key, child]) =>
+      `${padInner}${JSON.stringify(key)}: ${generateSchemaTs(child, indent + 2, `${keyPath}.${key}`, file)}`,
+  )
+
+  return `{\n${lines.join(';\n')};\n${pad}}`
+}
+
+/**
+ * `src/i18n.generated.d.ts`: the global `I18n.Schema`, from the schema source locale.
+ * Throws, naming the key, when an array in it mixes kinds of elements.
+ */
 export function buildTypesContent(collected: CollectedData, defaultLocale: string): string {
   const source = schemaSourceLocale(collected, defaultLocale)
   const schemaObject: TranslationTree = (source && collected[source]) || {}
 
   const namespaceLines = Object.entries(schemaObject).map(([ns, value]) => {
-    const valueTs = generateSchemaTs(value as TranslationTree, 10)
+    const valueTs = generateSchemaTs(value, 10, ns, `${source}/${ns}.json`)
     return `      ${JSON.stringify(ns)}: ${valueTs}`
   })
 
