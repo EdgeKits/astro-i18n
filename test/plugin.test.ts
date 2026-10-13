@@ -72,3 +72,15 @@ test('the references import package code only through its entries', () => {
     }
   }
 })
+
+test('the skill guide is the same in the plugin README and the package README', () => {
+  const section = (file: string) => {
+    const text = readFileSync(file, 'utf8')
+    const match = /<!-- skill-guide:start -->\n([\s\S]*?)<!-- skill-guide:end -->/.exec(text)
+    assert.ok(match, `${file}: no skill-guide markers`)
+    return match[1]!
+  }
+  const guide = section(path.join(PLUGIN_DIR, 'README.md'))
+  assert.match(guide, /^\n## Using the skill\n/)
+  assert.equal(section(path.join(ROOT, 'README.md')), guide)
+})
