@@ -2,7 +2,7 @@ import type { MiddlewareHandler } from 'astro'
 import { LocaleSchema } from '../schema'
 import { I18N_CONFIG } from '../config'
 import { DEFAULT_LOCALE, type Locale } from '../constants'
-import { getCookieLang, setCookieLang } from '../cookie-storage'
+import { getCookieLang, readCookieLang, setCookieLang } from '../cookie-storage'
 import { resolveFallbackLocale as resolveFallbackFrom } from '../locale-fallback'
 import { MARKDOWN_PATH, markdownRedirectTarget } from '../markdown-path'
 import { resolveLocaleForTranslations } from '../resolve-locale'
@@ -183,7 +183,7 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
 
   if (urlLocale) {
     // Keep the lang cookie in sync with the URL locale — but ONLY update an
-    // EXISTING cookie that differs. Rationale (HTML edge cache, P1/P2):
+    // EXISTING cookie that differs or does not parse. Rationale (HTML edge cache, P1/P2):
     //   - The old unconditional set emitted `Set-Cookie` on EVERY localized
     //     response, which made every response uncacheable (the edge cache
     //     refuses anything carrying Set-Cookie).
@@ -193,8 +193,11 @@ export const i18nMiddleware: MiddlewareHandler = async (context, next) => {
     //     created here — the explicit language choice is persisted client-side
     //     by the LanguageSwitcher, and an existing cookie is re-synced below
     //     when the user lands on a different locale by any other means.
-    const cookieLocale = getCookieLang(context.cookies)
-    if (cookieLocale && cookieLocale !== urlLocale) {
+    //   - A cookie that is present but invalid (a foreign value from another site
+    //     on the same host, a locale this site does not have) is corrected to the
+    //     URL locale too, so a stale value never outlives the next request.
+    const cookie = readCookieLang(context.cookies)
+    if (cookie.present && cookie.locale !== urlLocale) {
       setCookieLang(context.cookies, urlLocale)
     }
     // Set uiLocale to Astro locals

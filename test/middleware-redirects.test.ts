@@ -13,8 +13,14 @@ import { i18nMiddleware } from '../src/middleware/i18n.ts'
 
 type Fake = { cookie?: string; preferredLocale?: string; country?: string }
 
-async function run(path: string, fake: Fake = {}): Promise<{ response: Response; nextCalled: boolean }> {
+type CookieSet = { name: string; value: string; options: Record<string, unknown> }
+
+async function run(
+  path: string,
+  fake: Fake = {},
+): Promise<{ response: Response; nextCalled: boolean; cookieSets: CookieSet[] }> {
   let nextCalled = false
+  const cookieSets: CookieSet[] = []
   const request = new Request(`https://example.com${path}`)
   Object.assign(request, { cf: fake.country ? { country: fake.country } : undefined })
 
@@ -25,7 +31,9 @@ async function run(path: string, fake: Fake = {}): Promise<{ response: Response;
     preferredLocale: fake.preferredLocale,
     cookies: {
       get: (name: string) => (name === 'lang' && fake.cookie ? { value: fake.cookie } : undefined),
-      set: () => {},
+      set: (name: string, value: string, options: Record<string, unknown>) => {
+        cookieSets.push({ name, value, options })
+      },
     },
     redirect: (location: string, status = 302) => new Response(null, { status, headers: { Location: location } }),
   }
@@ -35,7 +43,7 @@ async function run(path: string, fake: Fake = {}): Promise<{ response: Response;
   }
 
   const response = (await i18nMiddleware(context as never, next as never)) as Response
-  return { response, nextCalled }
+  return { response, nextCalled, cookieSets }
 }
 
 function assertNegotiated(response: Response, location: string): void {
@@ -57,8 +65,6 @@ test('an invalid locale in the URL: 302 to the negotiated locale with the path k
 })
 
 test('trailing-slash normalisation stays permanent and carries no negotiation headers', async () => {
-  // No cookie: a differing one would make the middleware re-sync it through setCookieLang,
-  // which reads `import.meta.env` (absent under plain Node).
   const { response } = await run('/de/about', { preferredLocale: 'en' })
   assert.equal(response.status, 301)
   assert.equal(response.headers.get('Location'), '/de/about/')
@@ -69,4 +75,46 @@ test('a canonical localized URL is served, not redirected', async () => {
   const { response, nextCalled } = await run('/de/about/', { preferredLocale: 'en' })
   assert.equal(nextCalled, true)
   assert.equal(response.status, 200)
+})
+
+// The lang cookie sync on a URL that carries a valid locale (URL wins). The cache rule:
+// a cookie-less request never gets a Set-Cookie.
+test('no lang cookie: no Set-Cookie on a localized page', async () => {
+  const { response, cookieSets } = await run('/de/about/')
+  assert.equal(response.status, 200)
+  assert.deepEqual(cookieSets, [])
+})
+
+test('a lang cookie equal to the URL locale is left alone', async () => {
+  assert.deepEqual((await run('/de/about/', { cookie: 'de' })).cookieSets, [])
+})
+
+test('a valid lang cookie that differs from the URL locale is synced to it', async () => {
+  const { cookieSets } = await run('/de/about/', { cookie: 'ja' })
+  assert.deepEqual(
+    cookieSets.map(({ name, value }) => ({ name, value })),
+    [{ name: 'lang', value: 'de' }],
+  )
+})
+
+test('an invalid lang cookie (foreign value, unknown locale) is corrected to the URL locale', async (t) => {
+  t.mock.method(console, 'warn', () => {}) // the dev warning for an invalid cookie
+  for (const foreign of ['fr', 'dark-mode', ' ']) {
+    const { cookieSets } = await run('/es/', { cookie: foreign })
+    assert.deepEqual(
+      cookieSets.map(({ name, value }) => ({ name, value })),
+      [{ name: 'lang', value: 'es' }],
+      `cookie ${JSON.stringify(foreign)}`,
+    )
+  }
+})
+
+test('the lang cookie is not httpOnly', async () => {
+  // Two writers by design: the LanguageSwitcher's client script (`document.cookie`) and
+  // this sync. An httpOnly copy could never be overwritten by the switcher again, so a
+  // stale value would disable it for good.
+  const [set] = (await run('/de/', { cookie: 'en' })).cookieSets
+  assert.equal(set?.options.httpOnly, false)
+  assert.equal(set?.options.sameSite, 'lax')
+  assert.equal(set?.options.path, '/')
 })
