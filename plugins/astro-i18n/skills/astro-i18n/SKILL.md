@@ -101,9 +101,11 @@ Two invariants, whatever the field kit:
 1. **Errors as codes.** Validation and server layers emit stable codes (`INVALID_EMAIL`), never
    human text; the `messages` namespace holds the text for every code in every locale.
 2. **Island-free client.** A `.astro` form plus an inline `<script>` wiring the vanilla
-   `enhanceForm` controller. No React, no hydration directive, and no zod in the browser (its
+   `enhanceForm` controller, no hydration directive. No zod in the browser (its
    `new Function()` JIT breaks a no-`'unsafe-eval'` CSP): the client validates with a
-   hand-rolled mirror of the server schema.
+   hand-rolled mirror of the server schema. This is the default, not a ban: if the user asks
+   for React, a form library or any framework, use it, keep errors as codes and zod out of
+   the browser.
 
 Verify with `references/checklists.md` → "Verify: localized form".
 

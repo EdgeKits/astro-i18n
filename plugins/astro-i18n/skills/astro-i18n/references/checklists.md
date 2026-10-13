@@ -14,7 +14,7 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
 - [ ] Route layout: every page is under `src/pages/[lang]/`; nothing is left at
       `src/pages/*.astro`, and only non-localized endpoints (`robots.txt`, `sitemap.xml`,
       `/api/*`) remain at the root. No layout hard-codes `<html lang>`.
-- [ ] Flags: every configured `countryCode` has its SVG in `src/assets/icons/flags/` and the
+- [ ] Flags: every configured `countryCode` has its SVG in `public/flags/` and the
       switcher gets `flag={Flag}`; or flags are off (no `flag` prop, `countryCode` omitted).
 - [ ] `locales/<defaultLocale>/` has at least `common.json` (it defines the schema).
 - [ ] `astro.config` has `output: 'server'`, the Cloudflare adapter, and
@@ -58,6 +58,9 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
       to run while it has uncommitted changes.
 
 ## Verify: localized form (Workflow B)
+
+The island-free items (no React, no `client:*`) hold unless the user asked for a framework; the
+codes and no-zod-in-the-browser items hold always.
 
 - [ ] Every code in `error-codes.ts` (and `common-codes.ts`) has a matching key under
       `errors.ui` / `errors.server` / `common` in **every** locale's `messages.json`.

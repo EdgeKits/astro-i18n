@@ -461,6 +461,9 @@ npx skills add EdgeKits/astro-i18n --skill astro-i18n
   `output: 'server'` in `astro.config`.
 - wrangler `^4.125` installed in the project (`npm i -D wrangler`) and a `wrangler.jsonc`. The
   package's CLI runs the project's own wrangler, never a global one.
+- A git repository (`git init`): the generated files and the purge baseline
+  (`.i18n-hashes.json`) are committed, and `migrate` checks the baseline against git (outside
+  a repository it skips that check, with a warning).
 - A Cloudflare account. Local development needs none until you create the real KV namespace.
 - For `edgekits-i18n migrate` (pushing copy to production): the site on a proxied Cloudflare
   zone (orange cloud), that zone's ID, and an API token with the Zone › Cache Purge permission.
@@ -505,8 +508,8 @@ these, it uses the defaults: no geo table, no markdown locale, `auto` middleware
   The root `index.astro` moves too, since the middleware redirects `/` to `/<locale>/`.
   Endpoints that are not localized (`robots.txt`, `sitemap.xml`, `/api/*`) and `public/` stay
   where they are.
-- `src/components/Flag.astro` and one SVG per flag in `src/assets/icons/flags/`, if you chose
-  flags (the recipe is below).
+- `src/components/Flag.astro` and one SVG per flag in `public/flags/`, if you chose flags (the
+  recipe is below).
 - A KV namespace on your Cloudflare account (`wrangler kv namespace create`). The skill asks
   before it runs that command. Until then, local development works with a placeholder id of 32
   hexadecimal characters, such as `00000000000000000000000000000000`: the CLI checks the id's
@@ -519,37 +522,36 @@ prop and passes it each locale's `countryCode`. The skill's recipe, which you ca
 hand:
 
 1. `npm i -D flag-icons` (MIT).
-2. Copy the SVG of each configured `countryCode`, and only those, into
-   `src/assets/icons/flags/`, and commit them:
+2. Copy the SVG of each configured `countryCode`, and only those, into `public/flags/`, and
+   commit them:
 
    ```sh
-   mkdir -p src/assets/icons/flags
-   for code in us de br; do cp node_modules/flag-icons/flags/4x3/$code.svg src/assets/icons/flags/; done
+   mkdir -p public/flags
+   for code in us de br; do cp node_modules/flag-icons/flags/4x3/$code.svg public/flags/; done
    ```
 
-3. Add `src/components/Flag.astro`:
+3. Add `src/components/Flag.astro`. It serves the file through an `<img>` instead of inlining
+   the SVG: some flag-icons files are large (`es.svg` with its coat of arms is about 80 KB), and
+   an `<img>` is one cached request per flag instead of that markup in every page.
 
    ```astro
    ---
-   import type { SvgComponent } from 'astro/types'
-
+   // src/components/Flag.astro
    interface Props {
-     code: string
+     code?: string
      size?: number
    }
    const { code, size = 16 } = Astro.props
-
-   const flags = import.meta.glob<SvgComponent>('../assets/icons/flags/*.svg', { eager: true, import: 'default' })
-   const Svg = flags[`../assets/icons/flags/${code}.svg`]
    ---
 
-   {Svg && <Svg width={(size * 4) / 3} height={size} aria-hidden="true" />}
+   {code && <img src={`/flags/${code}.svg`} width={(size * 4) / 3} height={size} alt="" loading="lazy" decoding="async" />}
    ```
 
 4. Pass it to the switcher: `<LanguageSwitcher flag={Flag} />`.
 
-A locale without a `countryCode`, or without an SVG, shows its name alone. The flag belongs to
-the `countryCode`, not the language, so `pt` and `pt-br` can show different flags.
+A locale without a `countryCode` shows its name alone. A `countryCode` whose SVG is missing from
+`public/flags/` shows a broken image, so copy one file per code. The flag belongs to the
+`countryCode`, not the language, so `pt` and `pt-br` can show different flags.
 
 #### How it checks the result
 
@@ -590,9 +592,10 @@ file has uncommitted changes.
 form". The skill asks for the fields and their rules, where the form submits (an Astro Action
 by default) and where it renders. What comes back: stable error codes (`INVALID_EMAIL`) with a
 message for every code in every locale's `messages.json`; a server schema that emits the codes;
-an Astro Action; and a `.astro` form with an inline script. The browser side uses no framework
-and no zod: it validates with a small hand-written mirror of the server schema, so the form
-works with a strict Content Security Policy and without JavaScript.
+an Astro Action; and a `.astro` form with an inline script. By default the browser side uses
+no framework and no zod: it validates with a small hand-written mirror of the server schema, so
+the form works with a strict Content Security Policy and without JavaScript. Ask for React or a
+form library and the skill uses it, with the same error codes and still no zod in the browser.
 
 **SEO.** Ask for "hreflang tags", "a sitemap for every locale", "an RSS feed per locale",
 "`llms.txt`" or "`robots.txt` that blocks staging". The skill writes them as your project's
@@ -629,12 +632,27 @@ endpoints.
 - **`migrate` updated KV but the site shows old copy.** The purge was skipped: the zone is not
   proxied, or the zone ID or token is missing. Fix it and run `migrate` again; it retries the
   same purge.
+- **npm 12: `esbuild` or `workerd` did not install.** npm 12 blocks dependency install
+  scripts by default and lists the skipped packages at the end of `npm install`. Both need
+  theirs: run `npm install-scripts approve esbuild workerd`, then
+  `npm rebuild esbuild workerd`. The approval is the `allowScripts` field in `package.json`;
+  `approve` pins the installed versions (`"esbuild@0.28.2": true`), and a name-only entry
+  allows later versions too:
+
+  ```json
+  "allowScripts": { "esbuild": true, "workerd": true }
+  ```
+
+- **The language switcher has no effect (before 0.1.3).** A `lang` cookie from another site on
+  the same host (every `localhost` port shares one set of cookies) could not be overwritten by
+  the switcher. Since 0.1.3 the middleware replaces a `lang` value that is not one of your
+  locales with the URL's locale on the next request, and the switcher can write it again.
 - **Windows.** Local KV (`seed`) can fail with "Network connection lost" or "internal error"
   when the project sits in a deep folder: the local Workers runtime hits the path length
   limit, so keep the project at a short path. Stopping `astro dev` can leave `workerd.exe`
   running and holding `.wrangler/state`; end it before the next `seed`. In PowerShell, copy
   the flags with
-  `foreach ($c in 'us','de','br') { Copy-Item node_modules/flag-icons/flags/4x3/$c.svg src/assets/icons/flags/ }`.
+  `foreach ($c in 'us','de','br') { Copy-Item node_modules/flag-icons/flags/4x3/$c.svg public/flags/ }`.
 
 ### Privacy
 

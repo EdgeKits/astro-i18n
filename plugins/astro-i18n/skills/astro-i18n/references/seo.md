@@ -175,41 +175,38 @@ alpha-2, lowercase), not the locale: `pt` and `pt-br` are one language and can c
 npm package (MIT) unless the project has its own.
 
 1. `npm i -D flag-icons`.
-2. Copy one SVG per configured `countryCode`, and only those, into `src/assets/icons/flags/`;
-   commit them. The build then never reads `node_modules/flag-icons`.
+2. Copy one SVG per configured `countryCode`, and only those, into `public/flags/`; commit
+   them. The build then never reads `node_modules/flag-icons`.
 
    ```sh
-   mkdir -p src/assets/icons/flags
-   for code in us de br; do cp node_modules/flag-icons/flags/4x3/$code.svg src/assets/icons/flags/; done
+   mkdir -p public/flags
+   for code in us de br; do cp node_modules/flag-icons/flags/4x3/$code.svg public/flags/; done
    ```
 
-3. `src/components/Flag.astro`: globs the folder, renders the matching SVG inline at `size`,
-   and nothing when the code has no file (or render the project's own fallback icon there).
+3. `src/components/Flag.astro`: an `<img>` of `/flags/<code>.svg` at `size`, nothing when there
+   is no code. Not an inlined SVG: some flag-icons files are large (`es.svg` with its coat of
+   arms is about 80 KB) and inlining puts that into every page; an `<img>` is one cached
+   request per flag. That the file exists is the project's to ensure (the adoption checklist
+   checks it).
 
    ```astro
    ---
    // src/components/Flag.astro
-   import type { SvgComponent } from 'astro/types'
-
    interface Props {
-     code: string
+     code?: string
      size?: number
    }
    const { code, size = 16 } = Astro.props
-
-   const flags = import.meta.glob<SvgComponent>('../assets/icons/flags/*.svg', { eager: true, import: 'default' })
-   const Svg = flags[`../assets/icons/flags/${code}.svg`]
    ---
 
-   {Svg && <Svg width={(size * 4) / 3} height={size} aria-hidden="true" />}
+   {code && <img src={`/flags/${code}.svg`} width={(size * 4) / 3} height={size} alt="" loading="lazy" decoding="async" />}
    ```
 
 4. `flag={Flag}` on the switcher (example above).
 
 Adding a locale later is its `countryCode` in the config plus one SVG in that folder.
 `flags/4x3/` holds the classic 4:3 flags; `flags/1x1/` holds square ones (render them with
-`width={size}`). The SVG ids are prefixed per country (`us-a`), so several flags inline on one
-page do not collide.
+`width={size}`).
 
 ---
 

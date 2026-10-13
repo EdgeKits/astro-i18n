@@ -18,7 +18,9 @@ react-hook-form, no shadcn, and no zod in the browser**. (Zod v4 JIT-compiles pa
 issue — and it costs ~20 KB of first-screen JS.) The browser ships only the small
 controller plus a ~70-line schema contract. The **localization pattern is stack-agnostic**:
 it also works with native inputs, a plain `<form>` + API route, or any UI kit — only the
-field markup changes.
+field markup changes. The island-free stack is the default, not a ban: when the user asks for
+React, a form library or another framework, use it; errors-as-codes and no zod in the browser
+still hold.
 
 Two invariants make a form localized and zero-framework:
 
