@@ -4,6 +4,20 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.4 — 2026-10-14
+
+No runtime changes: the `astro-i18n` skill only, found while building astro-edgekits-core.
+
+### Skill
+
+- Forms: the action example takes `accept: 'form'`, and the enhanced submit sends `FormData`. Without it Astro 7 answers the native no-JS POST with 415 `UNSUPPORTED_MEDIA_TYPE`.
+- Forms: an empty field reaches the action as `null`; the server schema gives that type error the `REQUIRED` code, so the no-JS path reports `REQUIRED` instead of zod's untranslated `invalid_type` text. The client mirror reports `REQUIRED` for an empty email too.
+- Forms: the no-JS error helpers resolve field codes through the `messages` namespace, as the form-level error does, and never print a raw code.
+- Forms: the client email regex is described as a UX approximation; the server's zod is the authority (the old text claimed the two match byte for byte).
+- SEO: list pages show every post in every locale, the URL locale's version where one exists and the default locale's otherwise, with a badge on the card and the banner in `content` mode.
+- SEO: a fallback post stays 200 with its canonical on the default-locale URL, no robots meta and hreflang for the locales the post exists in; the layout takes a `canonicalOverride`, and the sitemap lists only existing post files.
+- The checklists and "Using the skill" cover both.
+
 ## 0.1.3 — 2026-10-13
 
 ### Fixed
