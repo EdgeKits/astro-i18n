@@ -143,20 +143,30 @@ Why the split, rather than one zod schema validated twice:
    chain.
 3. The mirror is UX-only; anything that slips past it is rejected by the action's zod.
 
-Server schema example:
+Server schema example. Astro's FormData parsing turns an empty (or missing) field into `null`,
+so zod reports a type error, not "too short": without a code on `z.string()`, that error carries
+zod's English `invalid_type` text, which no locale translates. Give the type error the
+`REQUIRED` code too:
 
 ```ts
 // src/domain/contact/schema.ts  (server-side; codes as messages)
 import { z } from 'astro/zod'
 import { ERROR_MESSAGE_CODES } from '@/domain/messages/error-codes'
 
+// An empty field arrives as null: the type error is REQUIRED, like the empty string.
+const required = () => z.string({ message: ERROR_MESSAGE_CODES.REQUIRED }).trim().min(1, { message: ERROR_MESSAGE_CODES.REQUIRED, abort: true })
+
 export const ContactFormSchema = z.object({
-  name: z.string().min(1, { message: ERROR_MESSAGE_CODES.REQUIRED }),
-  email: z.email({ message: ERROR_MESSAGE_CODES.INVALID_EMAIL }),
-  message: z.string().min(1, { message: ERROR_MESSAGE_CODES.REQUIRED }),
+  name: required(),
+  email: required().pipe(z.email({ message: ERROR_MESSAGE_CODES.INVALID_EMAIL })),
+  message: required(),
 })
 export type ContactFormData = z.infer<typeof ContactFormSchema>
 ```
+
+A checkbox field is `z.boolean()`: Astro turns its presence (`on`) into `true` and its absence
+into `false`; refine it with a code (`.refine((v) => v, { message: CONSENT_REQUIRED })`) when it
+must be checked.
 
 The client mirror for this schema is written inline in the form's `<script>` (Step 7) on
 top of the `client-schema.ts` helpers — **same field names, same CODES**, so the
@@ -175,19 +185,17 @@ errors-as-codes contract is identical on both sides.
 // src/actions/contact.ts
 import { ActionError, defineAction } from 'astro:actions'
 import { env } from 'cloudflare:workers'
-import { z } from 'astro/zod'
 
 import { LocaleSchema } from '@edgekits/astro-i18n/runtime'
 import { ERROR_MESSAGE_CODES, isErrorMessageCode } from '@/domain/messages'
+import { ContactFormSchema } from '@/domain/contact/schema'
 
 export const contact = {
   send: defineAction({
-    // Plain ZodObject so Astro's no-JS FormData coercion works for the native POST.
-    input: z.object({
-      name: z.string().min(1),
-      email: z.email(),
-      message: z.string().min(1),
-      locale: LocaleSchema, // pass UI locale for locale-aware server logic (emails, etc.)
+    // FormData on both paths: the no-JS native POST and the enhanced submit (Step 7).
+    accept: 'form',
+    input: ContactFormSchema.extend({
+      locale: LocaleSchema, // the UI locale, for locale-aware server logic (emails, etc.)
     }),
     handler: async (input, context) => {
       try {
@@ -206,6 +214,11 @@ export const contact = {
 ```
 
 Register in `src/actions/index.ts` (`export const server = { contact }`).
+
+`accept: 'form'` is required: without it Astro 7 answers the native no-JS POST (a FormData body)
+with 415 `UNSUPPORTED_MEDIA_TYPE`; with it, Astro coerces the FormData against the schema
+(strings stay strings, a checkbox's `on` becomes `true`, an empty or missing field `null`). The
+JS path then sends FormData too (`new FormData(form)`, Step 7), never a JSON object.
 
 > Two error channels, handled differently by the client:
 >
@@ -273,7 +286,7 @@ export interface ClientSchema<T> {
   safeParse(values: unknown): SafeParseResult<T>
 }
 
-/** Mirror of Zod v4's default `z.email()` pattern — client matches server byte-for-byte. */
+/** Close to Zod v4's default `z.email()` pattern; instant feedback only, the server's zod decides. */
 export const EMAIL_REGEX = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9-]*\.)+[A-Za-z]{2,}$/
 
 export function isEmail(value: unknown): value is string {
@@ -303,6 +316,10 @@ export function fail<T>(issues: SchemaIssue[]): SafeParseResult<T> {
   return { success: false, error: { issues } }
 }
 ```
+
+The client regex is a UX approximation, not a copy of the server's check: the server (zod) is
+the authority, and the two may disagree on edge cases. That is fine, because an address the
+mirror lets through and zod rejects comes back as an input error and renders the same way.
 
 > **Gotcha:** mirror value types must be `type` aliases, not `interface`s — only type
 > aliases get the implicit index signature required by `TValues extends Record<string, unknown>`.
@@ -356,7 +373,7 @@ export interface FormErrorHelpers {
 export interface EnhanceFormOptions<TValues extends FormValues, TData> {
   /** Map an error CODE → localized string (= t.messages.errors.ui). */
   tErrors: Record<string, string>
-  /** Map validated values into the action input (e.g. inject locale, nest fields). */
+  /** Map validated values into the action input (a FormData for an `accept: 'form'` action). */
   transform?: (values: TValues) => unknown
   onSuccess?: (data: TData, values: TValues) => void | Promise<void>
   /** Non-input action errors (domain ActionErrors). Use helpers, or toast and render nothing. */
@@ -622,6 +639,7 @@ import SpinnerIcon from '@tabler/icons/outline/loader-2.svg'
 import { Input } from '@/components/starwind/input'
 import { Label } from '@/components/starwind/label'
 import { isErrorMessageCode } from '@/domain/messages'
+import { resolveFieldMessages } from '@/ui/forms/error-mapper'
 import type { Locale } from '@edgekits/astro-i18n/runtime'
 
 interface Props {
@@ -632,12 +650,14 @@ const { t, locale } = Astro.props
 const { contact, messages } = t
 
 // No-JS: with JS this result is null (form is intercepted); without JS the native POST
-// runs and we render its result + inline errors server-side.
+// runs and we render its result + inline errors server-side. Codes go through the same
+// mapper as on the client: the page prints localized text, never a raw code.
 const result = Astro.getActionResult(actions.contact.send)
 const sent = Boolean(result && !result.error && result.data)
 const tUi = messages.errors.ui as Record<string, string>
-const noJsError = (field: string) => (result?.error && isInputError(result.error) ? (result.error.fields[field]?.[0] ?? '') : '')
-const noJsFormError = result?.error && !isInputError(result.error) ? (result.error.code === 'BAD_REQUEST' && isErrorMessageCode(result.error.message) ? tUi[result.error.message] : messages.errors.server.INTERNAL_SERVER_ERROR) : ''
+const noJsError = (field: string) => resolveFieldMessages(result?.error && isInputError(result.error) ? (result.error.fields[field] ?? []) : [], tUi)[0] ?? ''
+const formError = result?.error && !isInputError(result.error) ? result.error : undefined
+const noJsFormError = formError ? (formError.code === 'BAD_REQUEST' && isErrorMessageCode(formError.message) && tUi[formError.message]) || messages.errors.server.INTERNAL_SERVER_ERROR : ''
 
 // Strings the client controller needs (keeps i18n out of the bundle).
 const clientConfig = {
@@ -727,7 +747,8 @@ const fields = ['name', 'email', 'message'] as const
       const email = str(v.email).trim()
       const message = str(v.message).trim()
       if (!name) issues.push({ path: ['name'], message: ERROR_MESSAGE_CODES.REQUIRED })
-      if (!isEmail(email)) issues.push({ path: ['email'], message: ERROR_MESSAGE_CODES.INVALID_EMAIL })
+      if (!email) issues.push({ path: ['email'], message: ERROR_MESSAGE_CODES.REQUIRED })
+      else if (!isEmail(email)) issues.push({ path: ['email'], message: ERROR_MESSAGE_CODES.INVALID_EMAIL })
       if (!message) issues.push({ path: ['message'], message: ERROR_MESSAGE_CODES.REQUIRED })
       if (issues.length > 0) return fail(issues)
       return ok({ name, email, message })
@@ -740,12 +761,12 @@ const fields = ['name', 'email', 'message'] as const
       form.dataset.enhanced = 'true'
 
       const config = JSON.parse(form.dataset.config ?? '{}') as ContactConfig
-      const localeInput = form.elements.namedItem('locale')
-      const locale = localeInput instanceof HTMLInputElement ? localeInput.value : ''
 
       enhanceForm<ContactValues, { ok: true }>(form, ClientContactSchema, actions.contact.send, {
         tErrors: config.tErrors,
-        transform: (values) => ({ ...values, locale }),
+        // The action takes FormData (`accept: 'form'`), the same body as the no-JS POST;
+        // the hidden `locale` input travels with it.
+        transform: () => new FormData(form),
         onSuccess: () => {
           toast.success(config.successMessage)
           form.reset()

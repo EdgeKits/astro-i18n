@@ -238,21 +238,160 @@ const { messages } = await fetchTranslations(translationLocale, ['messages'])
 ```
 
 `content` mode is the page's call: set `Astro.locals.isMissingContent` when it falls back.
+The banner's root carries `data-missing="content|ui"` for styling.
+
+### Content fallback: the helpers
+
+Content entries are keyed `<locale>/<slug>` (`en/architecture`). Two helpers serve the post
+page and the list page; `draft` and `pubDate` stand for the collection's own fields.
 
 ```ts
-// src/pages/[lang]/blog/[...id].astro (frontmatter)
-import { getEntry } from 'astro:content'
-import { DEFAULT_LOCALE } from '@edgekits/astro-i18n/runtime'
+// src/lib/blog.ts
+import { getCollection, type CollectionEntry } from 'astro:content'
 
-const { uiLocale } = Astro.locals
-let post = await getEntry('blog', `${uiLocale}/${slug}`)
-if (!post) {
-  post = await getEntry('blog', `${DEFAULT_LOCALE}/${slug}`)
-  Astro.locals.isMissingContent = true // the banner shows in 'content' mode
+type Post = CollectionEntry<'blog'>
+
+export function splitId(id: string): { locale: string; slug: string } {
+  const [locale = '', ...rest] = id.split('/')
+  return { locale, slug: rest.join('/') }
+}
+
+const getPublishedPosts = () => getCollection('blog', ({ data }) => !data.draft)
+
+// slug -> the locales the post exists in (its hreflang set).
+export async function getPostLocales(): Promise<Map<string, string[]>> {
+  const bySlug = new Map<string, string[]>()
+  for (const post of await getPublishedPosts()) {
+    const { locale, slug } = splitId(post.id)
+    bySlug.set(slug, [...(bySlug.get(slug) ?? []), locale])
+  }
+  return bySlug
+}
+
+// Every default-locale post, each replaced by its `locale` version when one exists.
+export async function getPostsWithFallback(locale: string, defaultLocale: string): Promise<{ post: Post; isFallback: boolean }[]> {
+  const published = await getPublishedPosts()
+  const translated = new Map(published.filter((post) => splitId(post.id).locale === locale).map((post) => [splitId(post.id).slug, post]))
+  return published
+    .filter((post) => splitId(post.id).locale === defaultLocale)
+    .map((base) => {
+      const post = translated.get(splitId(base.id).slug)
+      return post ? { post, isFallback: false } : { post: base, isFallback: true }
+    })
+    .sort((a, b) => b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf())
 }
 ```
 
-The banner's root carries `data-missing="content|ui"` for styling.
+### Fallback post: canonical to the original, no robots meta
+
+A post opened in a locale it was not written in renders the default-locale post with the
+banner. The page stays 200, its `<link rel="canonical">` points at the default-locale URL of the
+same post, it carries **no robots meta**, and its hreflang set lists only the locales the post
+exists in, plus `x-default`. Never `noindex` it: `noindex` next to a canonical sends search
+engines conflicting signals, and the canonical alone consolidates the fallback URL into the
+original.
+
+```astro
+---
+// src/pages/[lang]/blog/[...slug].astro
+import { getEntry, render } from 'astro:content'
+import { DEFAULT_LOCALE } from '@edgekits/astro-i18n/runtime'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getPostLocales } from '../../../lib/blog'
+
+const { uiLocale } = Astro.locals
+const slug = Astro.params.slug ?? ''
+
+const altLocales = (await getPostLocales()).get(slug) ?? []
+const contentLocale = altLocales.includes(uiLocale) ? uiLocale : DEFAULT_LOCALE
+const post = altLocales.includes(contentLocale) ? await getEntry('blog', `${contentLocale}/${slug}`) : undefined
+if (!post) return Astro.rewrite(`/${uiLocale}/404/`)
+
+const isFallback = contentLocale !== uiLocale
+Astro.locals.isMissingContent = isFallback // the banner shows in 'content' mode
+const origin = import.meta.env.PROD ? 'https://example.com' : Astro.url.origin // as in the layout
+const canonicalOverride = isFallback ? `${origin}/${DEFAULT_LOCALE}/blog/${slug}/` : undefined
+const { Content } = await render(post)
+---
+
+<BaseLayout title={post.data.title} altLocales={altLocales} canonicalOverride={canonicalOverride}>
+  <article lang={isFallback ? contentLocale : undefined}><Content /></article>
+</BaseLayout>
+```
+
+The layout takes the override and keeps the self-canonical for every other page (the full
+layout is under "SEO suite" below):
+
+```astro
+---
+// src/layouts/BaseLayout.astro (excerpt)
+interface Props {
+  title?: string
+  // The locales this page exists in (hreflang). Default: every supported locale.
+  altLocales?: readonly string[]
+  // Absolute canonical URL when it is not this page (a fallback post points at the original).
+  canonicalOverride?: string
+}
+const { altLocales, canonicalOverride } = Astro.props
+const canonical = canonicalOverride ?? `${currentOrigin}${Astro.url.pathname}`
+---
+
+<link rel="canonical" href={canonical} />
+<SeoHreflangs currentLang={uiLocale} currentOrigin={currentOrigin} altLocales={altLocales} />
+```
+
+### List pages: show every post
+
+A list page (the blog index) shows every post in every locale, not only the translated ones:
+every published default-locale post, replaced by the URL locale's version where one exists,
+sorted. If any listed post is a fallback, the page sets `isMissingContent` (the banner in
+`content` mode) and marks that card: a locale badge and a `lang` attribute on the card. Every
+card links to the URL-locale path; the post page falls back.
+
+```astro
+---
+// src/pages/[lang]/blog/index.astro
+import { DEFAULT_LOCALE, fetchTranslations } from '@edgekits/astro-i18n/runtime'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getPostsWithFallback, splitId } from '../../../lib/blog'
+
+const { uiLocale, translationLocale } = Astro.locals
+const { blog } = await fetchTranslations(translationLocale, ['blog'])
+
+const posts = await getPostsWithFallback(uiLocale, DEFAULT_LOCALE)
+Astro.locals.isMissingContent = posts.some(({ isFallback }) => isFallback)
+---
+
+<BaseLayout title={blog.title}>
+  <ul>
+    {
+      posts.map(({ post, isFallback }) => {
+        const { locale, slug } = splitId(post.id)
+        return (
+          <li>
+            <article lang={isFallback ? locale : undefined}>
+              <h2>
+                <a href={`/${uiLocale}/blog/${slug}/`}>{post.data.title}</a>
+              </h2>
+              {isFallback && (
+                <span lang={uiLocale} title={blog.untranslated}>
+                  <span aria-hidden="true">{locale.toUpperCase()}</span>
+                  <span class="sr-only">{blog.untranslated}</span>
+                </span>
+              )}
+              <p>{post.data.description}</p>
+            </article>
+          </li>
+        )
+      })
+    }
+  </ul>
+</BaseLayout>
+```
+
+`blog.title` and `blog.untranslated` ("Not translated yet") are keys of the project's own `blog`
+namespace; `sr-only` is the project's visually-hidden class. Text on the card that comes from
+the URL locale's translations (dates, "read more") takes `lang={uiLocale}`, as the badge does.
 
 ---
 
@@ -283,7 +422,8 @@ const currentOrigin = import.meta.env.PROD ? 'https://example.com' : Astro.url.o
 ```
 
 Locale codes stay lowercase everywhere; `toIetfTag('pt-br')` returns `pt-BR` for `lang` and
-`hreflang` only.
+`hreflang` only. A fallback post replaces the self-canonical through `canonicalOverride` (see
+"Fallback post" above).
 
 ### `SeoHreflangs.astro`
 
@@ -323,7 +463,8 @@ const href = (code: string) => currentOrigin + replaceLocaleInPath(currentPath, 
 Endpoints under `src/pages/`, running in workerd, so they import from `./runtime`:
 
 - `src/pages/sitemap.xml.ts`: every static route for every locale, plus content entries keyed
-  `<locale>/<slug>`.
+  `<locale>/<slug>`: the post files that exist, never a fallback URL (no `/de/blog/x` when
+  only `en/x` exists).
   ```ts
   import { SUPPORTED_LOCALES } from '@edgekits/astro-i18n/runtime'
   for (const locale of SUPPORTED_LOCALES) for (const route of ['/', '/blog/']) entries.push({ loc: `${siteUrl}/${locale}${route}` })

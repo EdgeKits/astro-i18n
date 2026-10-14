@@ -37,7 +37,10 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
   - [ ] an unsupported first segment (`/zz/`) is treated as content and prefixed, not crashed;
   - [ ] with `markdownLocale`, `/<other>/x.md` redirects once to `/<markdownLocale>/x.md`;
   - [ ] `<html lang>` is IETF-cased (`pt-BR`); hreflang tags exist for every locale plus
-        `x-default`.
+        `x-default`;
+  - [ ] with a blog: the list shows every post in every locale, with the banner when one is
+        untranslated; a fallback post has its canonical on the default-locale URL and no
+        robots meta.
 - [ ] The `LanguageSwitcher` changes the URL's locale segment and sets the language cookie; the
       dropdown hides again (if it never hides, a display class on the `dropdown` slot overrides
       `[hidden]`).
@@ -68,6 +71,8 @@ codes and no-zod-in-the-browser items hold always.
       a hand-rolled `ClientSchema` mirror (`client-schema.ts` helpers) with the same fields and
       CODES. **No zod, drizzle or server-only import in any `<script>`** (zod's `new Function()`
       JIT breaks a no-`'unsafe-eval'` CSP and bloats the bundle).
+- [ ] The action has `accept: 'form'` and the JS path sends `FormData`; an empty field's type
+      error carries `REQUIRED` (`z.string({ message: REQUIRED })`).
 - [ ] The action throws `ActionError({ message: CODE, code: 'BAD_REQUEST' | 'INTERNAL_SERVER_ERROR' })`.
 - [ ] The form is **island-free**: a `.astro` with `<form method="POST" action={actions.x}>` and
       an inline `<script>` calling `enhanceForm(form, clientSchema, action, { tErrors, … })`.
@@ -81,6 +86,9 @@ codes and no-zod-in-the-browser items hold always.
       renders **localized** text; a forced server error renders the localized server message
       (toast or `_form` slot). Without JS: native POST, and `Astro.getActionResult` shows the
       result and inline errors.
+- [ ] Without JS, the native POST returns localized field errors: no 415, no raw codes.
+- [ ] An empty required field reports `REQUIRED` on both paths (not `INVALID_EMAIL`, not zod's
+      `invalid_type` text).
 - [ ] `npx astro check` passes (`t` typed as `Pick<I18n.Schema, …>`); no `react` or `client:`
       ships for the form.
 

@@ -602,6 +602,9 @@ form library and the skill uses it, with the same error codes and still no zod i
 code, using the package's locale constants and helpers: a `SeoHreflangs` component and
 `<html lang>` in the base layout, `sitemap.xml`, `[lang]/rss.xml`, `llms.txt` and `robots.txt`
 endpoints.
+For a blog in several languages, ask to "list every post in every locale": an untranslated
+post is listed and shown in the default locale with the banner, and its page points its
+canonical at the original instead of using `noindex`.
 
 ### Rules the agent follows
 
