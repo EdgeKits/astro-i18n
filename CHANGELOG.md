@@ -4,6 +4,16 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.5 — 2026-10-15
+
+No runtime changes: the `astro-i18n` skill only, found on edgekits.dev.
+
+### Skill
+
+- Forms: the form's `action` carries a fragment (`actions.contact.send + '#contact'`) and the form sits in a wrapper with that `id`, so the no-JS response opens at the form instead of the top of the page. The browser keeps the fragment; the server never sees it.
+- Forms: a new Step 4b adds Post/Redirect/Get for the native path: a pure `redirectAfterNativePost` and a two-line `src/middleware.ts` around `getActionContext`. A successful no-JS submit answers 303 to the page with `?sent=1`, so a reload is a GET and cannot submit twice; an error renders in place. The form reads success from `?sent=1`. The enhanced (RPC) submit is untouched.
+- The form checklist covers the fragment, the middleware and a reload after a no-JS success.
+
 ## 0.1.4 — 2026-10-14
 
 No runtime changes: the `astro-i18n` skill only, found while building astro-edgekits-core.

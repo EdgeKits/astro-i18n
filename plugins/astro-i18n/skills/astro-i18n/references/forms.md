@@ -232,6 +232,64 @@ JS path then sends FormData too (`new FormData(form)`, Step 7), never a JSON obj
 > never localized text". An API route can `return new Response(JSON.stringify({ code }), {status:400})`;
 > in `enhanceForm` give a custom `action` thunk that adapts the response to `{ data?, error? }`.
 
+### Step 4b — Post/Redirect/Get for the native path (`src/middleware.ts`)
+
+Without JS, Astro renders the page as the response to the POST: a reload re-posts the form (the
+action runs twice), and the result lands at the top of the page, out of view. The fix is one
+pure function plus a two-line middleware.
+
+```ts
+// src/ui/forms/native-post.ts
+/** The part of `getActionContext(context)` this rule reads, typed without `astro:actions`. */
+export interface FormActionContext<R extends { error?: unknown }, S> {
+  action?: { calledFrom: 'rpc' | 'form'; name: string; handler: () => Promise<R> }
+  setActionResult: (actionName: string, actionResult: S) => void
+  serializeActionResult: (result: R) => S
+}
+
+/**
+ * Post/Redirect/Get for a native (no-JS) form post. Success is a 303 back to the page at the
+ * form's fragment with `?sent=1`, so a reload is a GET and cannot submit twice. An error renders
+ * in place, as Astro does by default: the page reads it through `Astro.getActionResult`.
+ * RPC calls (the enhanced submit) and every other action pass through untouched.
+ */
+export async function redirectAfterNativePost<R extends { error?: unknown }, S>(actionContext: FormActionContext<R, S>, actionName: string, fragment: string, requestContext: { url: URL; redirect: (path: string, status: 303) => Response }, next: () => Promise<Response>): Promise<Response> {
+  const { action } = actionContext
+  if (action?.calledFrom !== 'form' || action.name !== actionName) return next()
+
+  const result = await action.handler()
+  if (!result.error) {
+    return requestContext.redirect(`${requestContext.url.pathname}?sent=1#${fragment}`, 303)
+  }
+
+  // Setting the result here also stops Astro from running the action again.
+  actionContext.setActionResult(action.name, actionContext.serializeActionResult(result))
+  return next()
+}
+```
+
+```ts
+// src/middleware.ts
+import { getActionContext } from 'astro:actions'
+import { defineMiddleware, sequence } from 'astro:middleware'
+
+import { redirectAfterNativePost } from '@/ui/forms/native-post'
+
+const contactFormPost = defineMiddleware((ctx, next) => redirectAfterNativePost(getActionContext(ctx), 'contact.send', 'contact', ctx, next))
+
+export const onRequest = sequence(contactFormPost)
+```
+
+- The rule is a pure function because `astro:actions` resolves only inside workerd; the
+  middleware is the thin adapter. With `middleware: 'manual'` the i18n middleware stays the
+  first entry of this sequence; in `auto` mode the integration registers it ahead of this file.
+- Cookies the handler sets ride on the 303.
+- The JS path is untouched: the enhanced submit calls the action by RPC
+  (`calledFrom: 'rpc'`), which the function passes through.
+- The function is testable under Node with stubs: a form call whose handler resolves without
+  `error` returns the 303 and never calls `next` or `setActionResult`; one with `error` calls
+  `setActionResult` once and returns `next()`; an RPC call or another action returns `next()`.
+
 ---
 
 ## Step 5 — Pure error mapper (`src/ui/forms/error-mapper.ts`)
@@ -350,7 +408,7 @@ import type { ClientSchema, ClientSchemaError } from './client-schema'
  *   - aria-invalid is toggled on [name="<name>"], data-invalid on its closest [data-slot="field"]
  *
  * No-JS fallback: the <form> carries method="POST" + action={actions.x}; the page renders
- * Astro.getActionResult(actions.x). This controller preventDefault()s only when JS is present.
+ * Astro.getActionResult(actions.x) or, after Step 4b, the 303's `?sent=1`. This controller preventDefault()s only when JS is present.
  */
 
 type FormValues = Record<string, unknown>
@@ -650,10 +708,11 @@ const { t, locale } = Astro.props
 const { contact, messages } = t
 
 // No-JS: with JS this result is null (form is intercepted); without JS the native POST
-// runs and we render its result + inline errors server-side. Codes go through the same
+// runs and we render its inline errors server-side. Codes go through the same
 // mapper as on the client: the page prints localized text, never a raw code.
+// Success is the 303 from Step 4b, so it is read from the URL, not from the result.
 const result = Astro.getActionResult(actions.contact.send)
-const sent = Boolean(result && !result.error && result.data)
+const sent = Astro.url.searchParams.get('sent') === '1'
 const tUi = messages.errors.ui as Record<string, string>
 const noJsError = (field: string) => resolveFieldMessages(result?.error && isInputError(result.error) ? (result.error.fields[field] ?? []) : [], tUi)[0] ?? ''
 const formError = result?.error && !isInputError(result.error) ? result.error : undefined
@@ -668,39 +727,41 @@ const clientConfig = {
 const fields = ['name', 'email', 'message'] as const
 ---
 
-{
-  sent ? (
-    <p class="text-primary">{messages.common.SUBSCRIPTION_SUCCEED}</p>
-  ) : (
-    <form method="POST" action={actions.contact.send} data-contact-form data-config={JSON.stringify(clientConfig)} novalidate class="mx-auto flex w-full max-w-md flex-col gap-7">
-      <input type="hidden" name="locale" value={locale} />
+<div id="contact">
+  {
+    sent ? (
+      <p class="text-primary">{messages.common.SUBSCRIPTION_SUCCEED}</p>
+    ) : (
+      <form method="POST" action={actions.contact.send + '#contact'} data-contact-form data-config={JSON.stringify(clientConfig)} novalidate class="mx-auto flex w-full max-w-md flex-col gap-7">
+        <input type="hidden" name="locale" value={locale} />
 
-      {fields.map((name) => (
-        <div role="group" data-slot="field" class="flex w-full flex-col gap-3">
-          <Label for={name} class="text-foreground/80">
-            {contact.fields[name]}
-          </Label>
-          <Input id={name} name={name} aria-invalid={noJsError(name) ? 'true' : undefined} />
-          <div data-error-for={name} class={noJsError(name) ? 'text-destructive text-sm font-normal' : ''} role={noJsError(name) ? 'alert' : undefined} hidden={!noJsError(name)}>
-            {noJsError(name)}
+        {fields.map((name) => (
+          <div role="group" data-slot="field" class="flex w-full flex-col gap-3">
+            <Label for={name} class="text-foreground/80">
+              {contact.fields[name]}
+            </Label>
+            <Input id={name} name={name} aria-invalid={noJsError(name) ? 'true' : undefined} />
+            <div data-error-for={name} class={noJsError(name) ? 'text-destructive text-sm font-normal' : ''} role={noJsError(name) ? 'alert' : undefined} hidden={!noJsError(name)}>
+              {noJsError(name)}
+            </div>
           </div>
+        ))}
+
+        <div data-error-for="_form" class={noJsFormError ? 'text-destructive text-sm font-normal' : ''} role={noJsFormError ? 'alert' : undefined} hidden={!noJsFormError}>
+          {noJsFormError}
         </div>
-      ))}
 
-      <div data-error-for="_form" class={noJsFormError ? 'text-destructive text-sm font-normal' : ''} role={noJsFormError ? 'alert' : undefined} hidden={!noJsFormError}>
-        {noJsFormError}
-      </div>
-
-      <button type="submit" class="primary-button disabled:cursor-not-allowed">
-        <span data-pending-hide>{contact.submit}</span>
-        <span data-pending-show class="items-center gap-2">
-          <SpinnerIcon class="size-4 animate-spin" stroke-width="1" />
-          {messages.common.PENDING}...
-        </span>
-      </button>
-    </form>
-  )
-}
+        <button type="submit" class="primary-button disabled:cursor-not-allowed">
+          <span data-pending-hide>{contact.submit}</span>
+          <span data-pending-show class="items-center gap-2">
+            <SpinnerIcon class="size-4 animate-spin" stroke-width="1" />
+            {messages.common.PENDING}...
+          </span>
+        </button>
+      </form>
+    )
+  }
+</div>
 
 <style>
   [data-pending-show] {
@@ -786,6 +847,10 @@ const fields = ['name', 'email', 'message'] as const
   document.addEventListener('astro:page-load', initContactForms)
 </script>
 ```
+
+The `#contact` fragment on the form's `action` never reaches the server: the browser keeps it
+and applies it to the response, so the native POST (and the 303 after a success) opens the page
+at the form; with JS on, `enhanceForm` intercepts the submit and the attribute is never read.
 
 > **Toasts** are localized at the source: the `.astro` reads `t.messages.common[code]` /
 > `t.messages.errors.server[code]` and passes the already-localized strings via

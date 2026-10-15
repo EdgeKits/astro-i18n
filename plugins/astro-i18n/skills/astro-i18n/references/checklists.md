@@ -73,6 +73,11 @@ codes and no-zod-in-the-browser items hold always.
       JIT breaks a no-`'unsafe-eval'` CSP and bloats the bundle).
 - [ ] The action has `accept: 'form'` and the JS path sends `FormData`; an empty field's type
       error carries `REQUIRED` (`z.string({ message: REQUIRED })`).
+- [ ] The form's `action` carries a fragment (`actions.x + '#<id>'`) and the form's wrapper has
+      that `id`, so the no-JS result opens in view.
+- [ ] `src/middleware.ts` runs `redirectAfterNativePost` for the form's action: a successful
+      native POST answers 303 to `<page>?sent=1#<id>`, an error renders in place; a reload after
+      success is a GET.
 - [ ] The action throws `ActionError({ message: CODE, code: 'BAD_REQUEST' | 'INTERNAL_SERVER_ERROR' })`.
 - [ ] The form is **island-free**: a `.astro` with `<form method="POST" action={actions.x}>` and
       an inline `<script>` calling `enhanceForm(form, clientSchema, action, { tErrors, … })`.
@@ -85,7 +90,8 @@ codes and no-zod-in-the-browser items hold always.
 - [ ] Manual test in two locales, **with and without JS**: happy path; each validation error
       renders **localized** text; a forced server error renders the localized server message
       (toast or `_form` slot). Without JS: native POST, and `Astro.getActionResult` shows the
-      result and inline errors.
+      result and inline errors; a reload after the no-JS success does not resubmit (the URL has
+      no `_action`).
 - [ ] Without JS, the native POST returns localized field errors: no 415, no raw codes.
 - [ ] An empty required field reports `REQUIRED` on both paths (not `INVALID_EMAIL`, not zod's
       `invalid_type` text).
