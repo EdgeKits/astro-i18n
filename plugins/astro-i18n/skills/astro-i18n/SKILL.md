@@ -31,50 +31,51 @@ configuration reference: read it, follow it, do not restate it.**
 
 ### A0. Ask first, and wait for the answers
 
-1. Which locales, and which is the default? Codes are lowercase (`pt-br`, not `pt-BR`).
-2. Is this an existing Astro + `@astrojs/cloudflare` project? This skill does not scaffold
-   Astro; if there is no project, say so and stop. Without the Cloudflare adapter, stop too:
-   the package is Workers- and KV-specific.
-3. Does the site serve markdown endpoints (`/blog/x.md`, `llms.txt` twins)? If so, in which
-   locale? That is `markdownLocale`; without it, `.md` paths pass through untouched.
-4. Should a visitor's country pick the locale when there is no cookie and no Accept-Language
-   match? If so, which countries map to which locale? That is `countryToLocale`; without it the
-   geo step is skipped.
-5. Middleware: `auto` (the integration registers it) or `manual` (the project already has a
-   `src/middleware.ts` sequence to slot it into)? If a `src/middleware.ts` exists, ask.
-6. Flags in the switcher? If yes, a locale's flag is its `countryCode` (ISO 3166-1 alpha-2,
-   lowercase). A regional locale takes its region (`pt-br` → `br`, `en-gb` → `gb`); for a
-   language-only locale propose the obvious country (`en` → `us`, `pt` → `pt`, `es` → `es`)
-   and let the user confirm. Show the full list back before writing the config. SVGs: the
-   `flag-icons` npm package (MIT), or the project's own.
+Before writing any file, ask the questions below that the user's request has not already
+answered, in one round, and wait. This holds in every mode, auto and non-interactive included:
+the defaults at the end of this section are not substitutes for answers; they apply only when
+the user says they do not care. If asking is impossible, stop and print the open questions.
 
-Defaults if the user does not care: `missingTranslationBanner: true`, no `countryToLocale`, no
-`markdownLocale`, `auto` middleware, flags on from `flag-icons` by the rule above.
+1. Which locales, and which is the default? Codes are lowercase (`pt-br`).
+2. Is this an existing Astro + `@astrojs/cloudflare` project? This skill does not scaffold
+   Astro: with no project, or no Cloudflare adapter (the package is Workers- and KV-specific),
+   say so and stop.
+3. Markdown endpoints (`/blog/x.md`, `llms.txt` twins)? In which locale? That is
+   `markdownLocale`; without it `.md` paths pass through.
+4. Should the visitor's country pick the locale when no cookie or Accept-Language matches?
+   Which countries, to which locale? That is `countryToLocale`; without it geo is skipped.
+5. Middleware: `auto` (the integration registers it) or `manual` (slotted into the project's
+   own `src/middleware.ts` sequence)? Ask if that file exists.
+6. Flags in the switcher? A flag is the locale's `countryCode` (ISO 3166-1 alpha-2,
+   lowercase): a regional locale takes its region (`pt-br` → `br`); for a language-only one
+   propose a country (`en` → `us`, `es` → `es`) for the user to confirm. Show the full list
+   back before writing the config. SVGs: `flag-icons` (MIT) or the project's own.
+
+Defaults when the user says they do not care: `missingTranslationBanner: true`, no
+`countryToLocale`, no `markdownLocale`, `auto` middleware, flags on by the rule above.
 
 ### A1. Install and follow the README in order
 
-`npm i @edgekits/astro-i18n`, then read the README and follow these sections in order:
+`npm i @edgekits/astro-i18n`, then follow these README sections in order:
 
-1. Requirements (Astro and adapter versions, `output: 'server'`, `wrangler.jsonc`).
+1. Requirements (versions, `output: 'server'`, `wrangler.jsonc`).
 2. Quick start 1–6: Install; Bind a KV namespace; Write `edgekits-i18n.config.ts` (the A0
    answers; no `countryCode` when flags are off); Add the integration; Write translations;
    Generate and seed.
-3. Route layout: move every existing page under `src/pages/[lang]/`, same relative path
-   (`about.astro` → `[lang]/about.astro`). No `index.astro` stays at the root: the
-   middleware redirects `/`. Non-localized endpoints (`robots.txt`, `sitemap`, `/api/*`) and
-   `public/` files stay at the root. Layouts set `<html lang>` from `Astro.locals.uiLocale`
-   through `toIetfTag`. Code: `references/seo.md` → Route layout.
+3. Route layout: every page moves under `src/pages/[lang]/`, same path
+   (`about.astro` → `[lang]/about.astro`); no root `index.astro` (the middleware redirects
+   `/`). Non-localized endpoints (`robots.txt`, `sitemap`, `/api/*`) and `public/` stay at the
+   root. Layouts set `<html lang>` from `Astro.locals.uiLocale` via `toIetfTag`. Code:
+   `references/seo.md` → Route layout.
 4. Quick start 7–8: Use translations in a page; Runtime switches.
 5. Reference: Which entry to import; `countryToLocale`; `markdownLocale`; Styling the
    components. Flags on: `references/seo.md` → Flags.
 
-Starter files: copy `assets/locales/common.json` and `assets/locales/messages.json` into
-`locales/<default>/` and translate them per locale (`messages.json` holds the banner texts and
-the form error codes).
+Starter files: copy `assets/locales/common.json` and `messages.json` into `locales/<default>/`
+and translate per locale (`messages.json`: banner texts, form error codes).
 
-Creating the KV namespace (`wrangler kv namespace create`) touches the user's Cloudflare
-account: ask before running it. Until then, local development works with any 32-character hex
-id (the CLI rejects other shapes).
+`wrangler kv namespace create` touches the user's Cloudflare account: ask before running it.
+Until then, local dev takes any 32-character hex id (the CLI rejects other shapes).
 
 ### A2. Generated files and the purge baseline
 
@@ -119,16 +120,17 @@ Read `references/seo.md`: using `t` in pages and components, `fmt` and `pluralIc
 
 ## Guardrails
 
-- Ask the A0 (or form) questions before writing code.
+- Ask the open A0 (or form) questions before writing code, in every mode; a default never
+  stands in for an unanswered question.
 - Locale codes are lowercase everywhere: config keys, `locales/` folders, URLs. Only
   `toIetfTag()` upper-cases the region, for `<html lang>` and hreflang.
-- The default locale's JSON defines the schema: a key added only to another locale is not typed.
-  Add it to the default locale first.
+- The default locale's JSON is the schema: a key only in another locale is not typed; add it
+  to the default locale first.
 - Generated files are produced by the CLI, never edited by hand.
 - Secrets (`.dev.vars`, `.env*`, API tokens) never enter git: run `git check-ignore <file>`
-  before writing a secret file, and stage files by name, never with `git add -A`.
+  before writing one; stage files by name, never `git add -A`.
 - Never import `@edgekits/astro-i18n/runtime` (or `/middleware`) from a module Node loads:
   `astro.config`, `edgekits-i18n.config.ts`, `src/content.config.ts`, unit tests. Use
-  `localesOf(config)` from `./config` and the helpers from `./format` there.
-- Do not copy engine code into the project. If something the project needs is not exported by
-  the package, say so instead of re-implementing it.
+  `localesOf(config)` (`./config`) and `./format` there.
+- Do not copy engine code into the project; if the package does not export something it needs,
+  say so instead of re-implementing it.

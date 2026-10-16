@@ -10,6 +10,8 @@ package is installed; `npx edgekits-i18n --help` lists the CLI.
 - [ ] `edgekits-i18n.config.ts` at the project root: `languages` and `defaultLocale` are what
       the user asked for; `markdownLocale`, `countryToLocale` and the middleware mode match the
       A0 answers.
+- [ ] The A0 questions the request did not answer were asked and answered before the config
+      was written, also in auto mode; no default stood in for an unanswered question.
 - [ ] Every locale code is **lowercase**, in the config and in the `locales/*` folder names.
 - [ ] Route layout: every page is under `src/pages/[lang]/`; nothing is left at
       `src/pages/*.astro`, and only non-localized endpoints (`robots.txt`, `sitemap.xml`,

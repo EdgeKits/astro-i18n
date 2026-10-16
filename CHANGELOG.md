@@ -4,6 +4,16 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.6 — 2026-10-16
+
+No runtime changes: the `astro-i18n` skill only, found on the first one-prompt run for the tutorial.
+
+### Skill
+
+- In Claude Code's auto mode the agent substituted the documented defaults for the A0 answers it had not been given.
+- `SKILL.md` now asks in every mode, only the questions the request has not answered, and applies the defaults only when the user says so.
+- The adoption checklist pins it.
+
 ## 0.1.5 — 2026-10-15
 
 No runtime changes: the `astro-i18n` skill only, found on edgekits.dev.
