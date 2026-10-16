@@ -10,7 +10,7 @@ No runtime changes: the `astro-i18n` skill only, found on the first one-prompt r
 
 ### Skill
 
-- In Claude Code's auto mode the agent substituted the documented defaults for the A0 answers it had not been given.
+- On a one-prompt run the agent treated the documented defaults as answers to the A0 questions the request had not covered, and wrote the config without asking.
 - `SKILL.md` now asks in every mode, only the questions the request has not answered, and applies the defaults only when the user says so.
 - The adoption checklist pins it.
 
