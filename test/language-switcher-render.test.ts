@@ -14,7 +14,7 @@ import { createServer, type InlineConfig } from 'vite'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 
-async function renderSwitcher(): Promise<string> {
+async function renderSwitcher(props: Record<string, unknown> = {}): Promise<string> {
   const configFn = getViteConfig(
     {
       resolve: {
@@ -33,7 +33,7 @@ async function renderSwitcher(): Promise<string> {
     const Flag = await load('test/fixtures/Flag.astro')
     const container = await AstroContainer.create()
     return await container.renderToString(Switcher, {
-      props: { flag: Flag },
+      props: { flag: Flag, ...props },
       locals: { uiLocale: 'en', translationLocale: 'en' },
     })
   } finally {
@@ -51,5 +51,20 @@ test('LanguageSwitcher: the flag renders only for a locale with a countryCode', 
   const html = await renderSwitcher()
   assert.match(item(html, 'en'), /<i data-flag="us" data-size="16"><\/i>English/)
   assert.doesNotMatch(item(html, 'eo'), /data-flag/)
-  assert.match(item(html, 'eo'), /<span>Esperanto<\/span>/)
+  assert.match(item(html, 'eo'), /<span lang="eo">Esperanto<\/span>/)
+})
+
+const triggerLabel = (html: string) => /<button[^>]*data-ls-trigger[^>]*aria-label="([^"]*)"/.exec(html)?.[1]
+
+test('LanguageSwitcher: the trigger label defaults to English and takes texts.trigger', async () => {
+  assert.equal(triggerLabel(await renderSwitcher()), 'Switch language')
+  assert.equal(triggerLabel(await renderSwitcher({ texts: { trigger: 'Sprache wechseln' } })), 'Sprache wechseln')
+})
+
+test('LanguageSwitcher: each item label carries lang with its locale', async () => {
+  const html = await renderSwitcher()
+  const items = [...html.matchAll(/<button[^>]*data-ls-item[^>]*data-lang="([^"]+)"[^>]*>\s*<span([^>]*)>/g)]
+  assert.equal(items.length, 2, 'both fixture locales render')
+  for (const [, locale, spanAttrs] of items)
+    assert.ok(spanAttrs!.includes(` lang="${locale}"`), `${locale}: ${spanAttrs}`)
 })

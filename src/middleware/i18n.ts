@@ -85,16 +85,16 @@ function buildLocalizedPath(locale: Locale, rest: string[]): string {
 // Resolves the most appropriate locale for the user based on a fallback cascade
 // (locale-fallback.ts, where the order is documented and tested):
 // 1. User's saved cookie preference.
-// 2. Astro's `preferredLocale` (Accept-Language matched against the project's Astro
-//    `i18n.locales`): full tag, then its language part.
-// 3. Only when Astro reports no preferred locale: the Cloudflare Geo-IP country, through
-//    the project's `countryToLocale` table (skipped when the config has none).
+// 2. The Accept-Language header, read here rather than through Astro (which drops
+//    regional tags before matching): each tag by q, full tag, then its language part.
+// 3. Only when no tag matched: the Cloudflare Geo-IP country, through the project's
+//    `countryToLocale` table (skipped when the config has none).
 // 4. Finally, falls back to the application's DEFAULT_LOCALE.
 function resolveFallbackLocale(context: I18nMiddlewareContext): Locale {
   return resolveFallbackFrom<Locale>(
     {
       cookieLocale: () => getCookieLang(context.cookies),
-      preferredLocale: () => context.preferredLocale,
+      acceptLanguage: () => context.request.headers.get('accept-language'),
       // cf is undefined in local dev unless simulated
       country: () => context.request?.cf?.country,
     },

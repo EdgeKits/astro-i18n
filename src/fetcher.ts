@@ -61,8 +61,9 @@ export async function fetchTranslations<N extends Namespace>(
   const { cache } = getEdgeCache()
 
   if (!cache) {
-    // Cache API unavailable (e.g. Astro dev server without Miniflare)
-    debug('i18n Cache API unavailable, using KV only', {
+    // `caches.default` absent (e.g. an untrusted Workers for Platforms namespace): read KV
+    // directly. The package does not use `caches.open()`.
+    debug('i18n caches.default absent, reading KV directly', {
       locale,
       namespaces,
     })

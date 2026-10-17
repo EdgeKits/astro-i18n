@@ -142,17 +142,24 @@ project's own UI as props (all optional):
   without them, small inline SVGs render;
 - `classes`: one class string per slot (`root`, `trigger`, `triggerIcon`, `dropdown`, `item`,
   `itemActive`, `itemLabel`, `activeIcon`). The slot table, the `data-*` hooks and a plain-CSS
-  example are in the package README, "Styling the components".
+  example are in the package README, "Styling the components";
+- `texts`: `{ trigger }`, the toggle's `aria-label` (default `Switch language`). The package
+  fetches nothing for it: the project fetches `common` and passes `common.switchLanguage`.
+  Each language name already carries `lang` with its locale.
 
 ```astro
 ---
 // src/components/Header.astro
 import LanguageSwitcher from '@edgekits/astro-i18n/components/LanguageSwitcher'
+import { fetchTranslations } from '@edgekits/astro-i18n/runtime'
 import Flag from './Flag.astro' // the project's own flag component, if any
+
+const { common } = await fetchTranslations(Astro.locals.translationLocale, ['common'])
 ---
 
 <LanguageSwitcher
   flag={Flag}
+  texts={{ trigger: common.switchLanguage }}
   classes={{
     root: 'relative',
     dropdown: 'absolute right-0 z-50 w-44 rounded-lg border bg-white shadow-lg',

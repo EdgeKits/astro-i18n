@@ -38,8 +38,8 @@ export function edgekitsI18n(config: I18nConfig, options: EdgekitsI18nOptions = 
           astroConfig.root,
         )
 
-        // Astro computes `preferredLocale` (the middleware's Accept-Language step) only
-        // with an `i18n` block: set it when the project has none, check it when it has one.
+        // Astro sets `Astro.currentLocale` (read by `resolveLocale`) only with an `i18n`
+        // block: set it when the project has none, check it when it has one.
         if (astroConfig.i18n) assertAstroI18n(astroConfig.i18n, i18nConfig)
 
         updateConfig({

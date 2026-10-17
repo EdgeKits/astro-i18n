@@ -55,6 +55,14 @@ export function defineI18nConfig<const C extends I18nConfig>(
   if (locales.length === 0) {
     throw new Error('[@edgekits/astro-i18n] `languages` must define at least one locale.')
   }
+  // Lowercase everywhere (config, `locales/` folders, URLs); `toIetfTag` relies on it.
+  for (const locale of locales) {
+    if (locale !== locale.toLowerCase()) {
+      throw new Error(
+        `[@edgekits/astro-i18n] \`languages\` key "${locale}" is not lowercase (use "${locale.toLowerCase()}").`,
+      )
+    }
+  }
   if (!locales.includes(config.defaultLocale)) {
     throw new Error(
       `[@edgekits/astro-i18n] \`defaultLocale\` "${config.defaultLocale}" is not one of \`languages\`: ${locales.join(', ')}.`,

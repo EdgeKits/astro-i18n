@@ -5,19 +5,19 @@
  *
  * Order (unchanged from the middleware):
  *   1. the lang cookie, if valid;
- *   2. the preferred locale (the middleware passes Astro's `preferredLocale`: its match of
- *      Accept-Language against the project's Astro `i18n.locales`, undefined when nothing
- *      matches or `i18n` is not configured), full match, then its language part
- *      ('pt-br' -> 'pt');
- *   3. ONLY when there is no preferred locale at all: the Cloudflare geo-IP country,
+ *   2. the Accept-Language header (the middleware passes the request header): each tag in
+ *      `q` order, full tag, then its language part ('es-mx' -> 'es'); the first tag that
+ *      names a supported locale wins (accept-language.ts);
+ *   3. ONLY when no tag matched (or there is no header): the Cloudflare geo-IP country,
  *      through the project's `countryToLocale` table (skipped without one);
  *   4. the default locale.
- * A preferred locale that does not parse goes straight to 4: geo is not consulted.
  */
+
+import { matchAcceptLanguage } from './accept-language'
 
 export type FallbackInputs<L extends string> = {
   cookieLocale: () => L | null
-  preferredLocale: () => string | undefined
+  acceptLanguage: () => string | null
   country: () => unknown
 }
 
@@ -32,17 +32,10 @@ export function resolveFallbackLocale<L extends string>(inputs: FallbackInputs<L
   const cookieLocale = inputs.cookieLocale()
   if (cookieLocale) return cookieLocale
 
-  const browserRaw = inputs.preferredLocale()
-  if (browserRaw) {
-    // Currently we support 2-chars locales only.
-    // 1) Try full match (for cases where you actually have 'pt-br' in SUPPORTED_LOCALES)
-    const full = options.parseLocale(browserRaw)
-    if (full) return full
+  const browser = matchAcceptLanguage(inputs.acceptLanguage(), options.parseLocale)
+  if (browser) return browser
 
-    // 2) Fallback: language part only, e.g. 'pt-br' -> 'pt'
-    const short = options.parseLocale(browserRaw.split('-')[0])
-    if (short) return short
-  } else if (options.countryToLocale) {
+  if (options.countryToLocale) {
     // 3) Cloudflare Geo-IP Strategy
     // cf is undefined in local dev unless simulated
     const geo = options.parseLocale(mapCountryToLocale(inputs.country(), options.countryToLocale))

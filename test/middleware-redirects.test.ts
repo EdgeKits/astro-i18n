@@ -11,7 +11,7 @@ import { i18nMiddleware } from '../src/middleware/i18n.ts'
  * en/de/es/ja, default en, cookie `lang`.
  */
 
-type Fake = { cookie?: string; preferredLocale?: string; country?: string }
+type Fake = { cookie?: string; acceptLanguage?: string; country?: string }
 
 type CookieSet = { name: string; value: string; options: Record<string, unknown> }
 
@@ -21,14 +21,18 @@ async function run(
 ): Promise<{ response: Response; nextCalled: boolean; cookieSets: CookieSet[] }> {
   let nextCalled = false
   const cookieSets: CookieSet[] = []
-  const request = new Request(`https://example.com${path}`)
+  const headers = fake.acceptLanguage ? { 'Accept-Language': fake.acceptLanguage } : undefined
+  const request = new Request(`https://example.com${path}`, { headers })
   Object.assign(request, { cf: fake.country ? { country: fake.country } : undefined })
 
   const context = {
     request,
     url: new URL(request.url),
     locals: {} as Record<string, unknown>,
-    preferredLocale: fake.preferredLocale,
+    // Astro's value is not an input: the middleware reads the header itself. For a
+    // regional tag (`de-DE`, `es-MX`) undefined is what Astro returns, since it filters
+    // Accept-Language down to exact matches of its `i18n.locales` before picking one.
+    preferredLocale: undefined,
     cookies: {
       get: (name: string) => (name === 'lang' && fake.cookie ? { value: fake.cookie } : undefined),
       set: (name: string, value: string, options: Record<string, unknown>) => {
@@ -54,25 +58,29 @@ function assertNegotiated(response: Response, location: string): void {
 }
 
 test('no locale in the URL: 302 to the negotiated locale, not cacheable', async () => {
-  assertNegotiated((await run('/', { preferredLocale: 'de' })).response, '/de/')
-  assertNegotiated((await run('/', { cookie: 'ja', preferredLocale: 'de' })).response, '/ja/')
+  assertNegotiated((await run('/', { acceptLanguage: 'de' })).response, '/de/')
+  assertNegotiated((await run('/', { cookie: 'ja', acceptLanguage: 'de' })).response, '/ja/')
   assertNegotiated((await run('/')).response, '/en/')
+})
+
+test('a regional Accept-Language tag negotiates its language (es-MX -> /es/)', async () => {
+  assertNegotiated((await run('/', { acceptLanguage: 'es-MX' })).response, '/es/')
 })
 
 test('an invalid locale in the URL: 302 to the negotiated locale with the path kept, not cacheable', async () => {
   assertNegotiated((await run('/zz/about/', { cookie: 'es' })).response, '/es/zz/about/')
-  assertNegotiated((await run('/blog/post', { preferredLocale: 'de-DE' })).response, '/de/blog/post/')
+  assertNegotiated((await run('/blog/post', { acceptLanguage: 'de-DE' })).response, '/de/blog/post/')
 })
 
 test('trailing-slash normalisation stays permanent and carries no negotiation headers', async () => {
-  const { response } = await run('/de/about', { preferredLocale: 'en' })
+  const { response } = await run('/de/about', { acceptLanguage: 'en' })
   assert.equal(response.status, 301)
   assert.equal(response.headers.get('Location'), '/de/about/')
   assert.equal(response.headers.get('Vary'), null)
 })
 
 test('a canonical localized URL is served, not redirected', async () => {
-  const { response, nextCalled } = await run('/de/about/', { preferredLocale: 'en' })
+  const { response, nextCalled } = await run('/de/about/', { acceptLanguage: 'en' })
   assert.equal(nextCalled, true)
   assert.equal(response.status, 200)
 })

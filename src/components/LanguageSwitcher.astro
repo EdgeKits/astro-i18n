@@ -17,9 +17,12 @@ interface Props {
   classes?: Partial<
     Record<'root' | 'trigger' | 'triggerIcon' | 'dropdown' | 'item' | 'itemActive' | 'itemLabel' | 'activeIcon', string>
   >
+  // The component's own words, like MissingTranslationBanner's `texts`: the engine fetches
+  // nothing and assumes no namespace. `trigger` is the toggle's aria-label.
+  texts?: { trigger?: string }
 }
 
-const { flag: Flag, triggerIcon: TriggerIcon, activeIcon: ActiveIcon, classes = {} } = Astro.props
+const { flag: Flag, triggerIcon: TriggerIcon, activeIcon: ActiveIcon, classes = {}, texts } = Astro.props
 const { uiLocale: currentLang } = Astro.locals
 ---
 
@@ -36,7 +39,7 @@ const { uiLocale: currentLang } = Astro.locals
       class={classes.trigger}
       aria-haspopup="true"
       aria-expanded="false"
-      aria-label="Switch language"
+      aria-label={texts?.trigger ?? 'Switch language'}
     >
       {
         TriggerIcon ? (
@@ -76,7 +79,8 @@ const { uiLocale: currentLang } = Astro.locals
               role="menuitem"
               disabled={isActive}
             >
-              <span class={classes.itemLabel}>
+              {/* The label is the language's own name: `lang` lets a screen reader say it in that language. */}
+              <span class={classes.itemLabel} lang={locale}>
                 {Flag && flagCode && <Flag code={flagCode} size={16} />}
                 {label.name}
               </span>

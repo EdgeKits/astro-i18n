@@ -4,6 +4,7 @@
     "description": "Your site description for search engines and social cards."
   },
   "backToHome": "Back to home",
+  "switchLanguage": "Switch language",
   "notFound": {
     "title": "Page not found",
     "message": "The page you are looking for does not exist."

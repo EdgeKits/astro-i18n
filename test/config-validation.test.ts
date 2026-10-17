@@ -47,6 +47,15 @@ test('markdownLocale: a value outside `languages` throws, naming it', () => {
   )
 })
 
+test('languages: a key that is not all-lowercase throws, naming it; a lowercase region tag passes', () => {
+  assert.throws(
+    () => defineI18nConfig({ ...BASE, languages: { en: { name: 'English' }, 'pt-BR': { name: 'Português' } } }),
+    /`languages` key "pt-BR" is not lowercase \(use "pt-br"\)\./,
+  )
+  const config = defineI18nConfig({ ...BASE, languages: { en: { name: 'English' }, 'pt-br': { name: 'Português' } } })
+  assert.deepEqual(Object.keys(config.languages), ['en', 'pt-br'])
+})
+
 test('countryCode is optional: a locale with only a name validates', () => {
   const config = defineI18nConfig({ ...BASE, languages: { en: { name: 'English' }, eo: { name: 'Esperanto' } } })
   assert.deepEqual(config.languages.eo, { name: 'Esperanto' })

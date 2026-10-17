@@ -4,6 +4,28 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.7 — 2026-10-17
+
+### Fixed
+
+- Accept-Language: a regional tag now reaches its language. The middleware reads the header itself (new `src/accept-language.ts`): each tag in `q` order, the full tag, then its language part, first match wins. `es-MX` now lands on `/es/`, and `es-MX, en;q=0.8` on `es` rather than `en`. The previous language-part fallback never ran for regional tags: it read Astro's `preferredLocale`, which keeps only tags equal to a configured locale before choosing, so `es-MX` arrived as undefined and fell through to geo or the default.
+- The cascade order is unchanged: cookie, Accept-Language, then the country only when no tag matched, then `defaultLocale`. Astro's `preferredLocale` is no longer read; the integration still sets Astro's `i18n` block when the project has none, for `Astro.currentLocale`.
+
+### Components
+
+- `LanguageSwitcher` takes `texts={{ trigger }}` for the toggle's `aria-label`. The default, `Switch language`, is unchanged, so existing markup stays the same apart from the item labels below.
+- Each item's label `span` carries `lang` with its locale, so a screen reader says `Deutsch` or `日本語` in that language.
+
+### Config
+
+- `defineI18nConfig` rejects a `languages` key that is not all-lowercase (`pt-BR`), naming the key and the lowercase form. Lowercase was documented but not enforced; `toIetfTag` relies on it.
+
+### Docs
+
+- README "Deployment targets": Workers on your own zone, Cloudflare for SaaS (`keyPrefix` inside the purge zone, one tenant per build), Workers for Platforms trusted (`keyPrefix` unique per tenant) and untrusted (no geo step, no `caches.default`: set `I18N_CACHE=off`).
+- "Installing it": a marketplace added from the `/plugin` panel lives in user settings; how a repository declares it under `extraKnownMarketplaces`.
+- The skill's `seo.md` documents `texts.trigger`; the starter `common.json` has `switchLanguage`.
+
 ## 0.1.6 — 2026-10-16
 
 No runtime changes: the `astro-i18n` skill only, found on the first one-prompt run for the tutorial.

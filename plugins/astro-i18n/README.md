@@ -64,6 +64,27 @@ turns the plugin on there, under `enabledPlugins` (`"astro-i18n@edgekits": true`
 honours those entries for a teammate once they trust the folder, but it does not download the
 plugin for them: each teammate runs the same `claude plugin install … --scope project` once.
 
+A marketplace added from the `/plugin` panel, or with `/plugin marketplace add`, is stored in
+your user settings, even when you then install the plugin at project scope. The committed
+`.claude/settings.json` then holds only `enabledPlugins`, and on a fresh clone the plugin does
+not resolve until the teammate runs `/plugin marketplace add EdgeKits/skills` (or the CLI line
+with `--scope project` above). To have the repository carry the marketplace itself, declare it
+under `extraKnownMarketplaces`, keyed by the marketplace's name; Claude Code applies it once the
+folder is trusted:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "edgekits": {
+      "source": { "source": "github", "repo": "EdgeKits/skills" }
+    }
+  },
+  "enabledPlugins": {
+    "astro-i18n@edgekits": true
+  }
+}
+```
+
 Any other agent, with the [skills CLI](https://skills.sh):
 
 ```sh

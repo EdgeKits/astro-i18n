@@ -117,7 +117,7 @@ The integration sets up:
 - `vite.ssr.noExternal` for the package, whose runtime ships as source;
 - Astro's `i18n` block, when `astro.config` has none: `locales` from `languages`, your
   `defaultLocale`, `routing: { prefixDefaultLocale: true, redirectToDefaultLocale: false }`.
-  Astro needs it to compute `preferredLocale` from `Accept-Language`. If you keep your own
+  Astro needs it to set `Astro.currentLocale`, which `resolveLocale` reads. If you keep your own
   block, its `locales` must include every configured locale and its `defaultLocale` must match,
   or the build stops with a message saying which;
 - the `Locale` type: the union of your locales, for the package's exports;
@@ -261,11 +261,11 @@ under Node and `src/content.config.ts` (evaluated by `astro sync`) can use them.
 ### Geo-IP locale fallback: `countryToLocale`
 
 When a request's URL has no locale, the middleware picks one in this order: the language
-cookie, then Astro's `preferredLocale` (full tag, then its language part), then, only when Astro
-reports no preferred locale, the visitor's country (`request.cf.country`) through your
-`countryToLocale` table, and finally `defaultLocale`. Astro computes `preferredLocale` by
-matching `Accept-Language` against its `i18n.locales`, which the integration sets from your
-`languages` unless your `astro.config` has its own `i18n` block.
+cookie, then the `Accept-Language` header (each tag in `q` order, the full tag, then its
+language part, so `es-MX` reaches `es`; the first tag that names one of your `languages` wins),
+then, only when no tag matched, the visitor's country (`request.cf.country`) through your
+`countryToLocale` table, and finally `defaultLocale`. The middleware reads the header itself;
+Astro's `preferredLocale` is not used.
 
 ```ts
 // edgekits-i18n.config.ts
@@ -324,6 +324,11 @@ Tailwind. Pass classes per element through the `classes` prop; a slot you leave 
 | `itemActive`  | appended to `item` on the current language                               |
 | `itemLabel`   | the `span` holding the flag and the language name                        |
 | `activeIcon`  | the current-language marker (your `activeIcon` component or the default) |
+
+`LanguageSwitcher` has one string of its own, the trigger's `aria-label`, `Switch language` by
+default. Translate it through `texts={{ trigger: … }}`, from a namespace you fetch yourself (the
+package fetches nothing for its components). Each language name renders with `lang` set to its
+locale, so a screen reader says `Deutsch` or `日本語` in that language.
 
 `MissingTranslationBanner` has one slot, `root` (the banner `div`).
 
@@ -394,6 +399,33 @@ name. A locale without a `countryCode` gets the name alone, and so does every lo
 pass no `flag`. A recipe that copies only the SVGs your locales use from the `flag-icons` npm
 package is under [Flags in the switcher](#flags-in-the-switcher) in "Using the skill".
 
+### Deployment targets
+
+**Workers Free or Paid, on your own zone.** Everything on this page applies as written.
+
+**Cloudflare for SaaS.** The Worker is the SaaS zone's fallback origin on a `*/*` route. It is
+a regular Worker: `request.cf`, `caches.default` and `env` behave as usual, and the host-only
+language cookie and the relative redirects keep visitors on their custom hostname. Two
+constraints:
+
+- `keyPrefix` must be a hostname inside the zone that `CLOUDFLARE_ZONE_ID` names: the zone name
+  itself or a subdomain of it. Single-file purge reaches only URLs on hostnames that zone owns.
+  With a `keyPrefix` on another domain, `migrate` reports success and nothing is purged.
+- One tenant per build. `keyPrefix`, the locales, `defaultLocale` and `countryToLocale` are
+  build-time constants, so one Worker serving many custom hostnames serves the same translation
+  set to all of them.
+
+**Workers for Platforms, trusted namespace.** `request.cf` and `caches.default` are available.
+The Cache API is shared across the namespace and the cache URL is `https://<keyPrefix>/…`, so
+`keyPrefix` must be unique per tenant, or two tenants read each other's translations from the
+cache.
+
+**Workers for Platforms, untrusted namespace.** `request.cf` is absent, so the country step of
+the locale cascade never runs. `caches.default` is disabled, so every render reads its
+namespaces from KV in one bulk read: the output is correct, only the cache layer and its KV
+savings are gone. Set `I18N_CACHE=off` so the behaviour is explicit, and expect one bulk KV read
+per render.
+
 <!-- skill-guide:start -->
 
 ## Using the skill
@@ -447,6 +479,27 @@ The first command declares the EdgeKits marketplace in `.claude/settings.json`; 
 turns the plugin on there, under `enabledPlugins` (`"astro-i18n@edgekits": true`). Claude Code
 honours those entries for a teammate once they trust the folder, but it does not download the
 plugin for them: each teammate runs the same `claude plugin install … --scope project` once.
+
+A marketplace added from the `/plugin` panel, or with `/plugin marketplace add`, is stored in
+your user settings, even when you then install the plugin at project scope. The committed
+`.claude/settings.json` then holds only `enabledPlugins`, and on a fresh clone the plugin does
+not resolve until the teammate runs `/plugin marketplace add EdgeKits/skills` (or the CLI line
+with `--scope project` above). To have the repository carry the marketplace itself, declare it
+under `extraKnownMarketplaces`, keyed by the marketplace's name; Claude Code applies it once the
+folder is trusted:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "edgekits": {
+      "source": { "source": "github", "repo": "EdgeKits/skills" }
+    }
+  },
+  "enabledPlugins": {
+    "astro-i18n@edgekits": true
+  }
+}
+```
 
 Any other agent, with the [skills CLI](https://skills.sh):
 
