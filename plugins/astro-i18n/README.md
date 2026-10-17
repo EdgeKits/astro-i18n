@@ -65,12 +65,13 @@ honours those entries for a teammate once they trust the folder, but it does not
 plugin for them: each teammate runs the same `claude plugin install … --scope project` once.
 
 A marketplace added from the `/plugin` panel, or with `/plugin marketplace add`, is stored in
-your user settings, even when you then install the plugin at project scope. The committed
-`.claude/settings.json` then holds only `enabledPlugins`, and on a fresh clone the plugin does
-not resolve until the teammate runs `/plugin marketplace add EdgeKits/skills` (or the CLI line
-with `--scope project` above). To have the repository carry the marketplace itself, declare it
-under `extraKnownMarketplaces`, keyed by the marketplace's name; Claude Code applies it once the
-folder is trusted:
+your user settings, even when you then install the plugin at project scope, so the committed
+`.claude/settings.json` holds only `enabledPlugins`. On a fresh clone a teammate therefore first
+adds the marketplace: `/plugin marketplace add EdgeKits/skills`, or the CLI line with
+`--scope project` above. Declaring it in `.claude/settings.json` under `extraKnownMarketplaces`,
+keyed by the marketplace's name as in the block below, spares them that step once they trust the
+folder. In both cases the plugin itself is still installed once per contributor with
+`claude plugin install astro-i18n@edgekits --scope project`, as the paragraph above says.
 
 ```json
 {
