@@ -14,7 +14,10 @@ import { createServer, type InlineConfig } from 'vite'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 
-async function renderSwitcher(props: Record<string, unknown> = {}): Promise<string> {
+async function renderSwitcher(
+  props: Record<string, unknown> = {},
+  astroConfig: { compressHTML?: boolean } = {},
+): Promise<string> {
   const configFn = getViteConfig(
     {
       resolve: {
@@ -23,7 +26,7 @@ async function renderSwitcher(props: Record<string, unknown> = {}): Promise<stri
       server: { middlewareMode: true, hmr: false, ws: false },
       logLevel: 'silent',
     },
-    { root: ROOT, logLevel: 'silent' },
+    { root: ROOT, logLevel: 'silent', ...astroConfig },
   )
   const config = (await configFn({ command: 'serve', mode: 'test' })) as InlineConfig
   const server = await createServer({ ...config, configFile: false })
@@ -67,4 +70,13 @@ test('LanguageSwitcher: each item label carries lang with its locale', async () 
   assert.equal(items.length, 2, 'both fixture locales render')
   for (const [, locale, spanAttrs] of items)
     assert.ok(spanAttrs!.includes(` lang="${locale}"`), `${locale}: ${spanAttrs}`)
+})
+
+test('LanguageSwitcher: under compressHTML an item opens with at most one space before its label', async () => {
+  // 0.1.7 had a JSX comment among the button's children; it split the whitespace run and
+  // compressHTML kept two spaces (found on edgekits.dev).
+  const html = await renderSwitcher({}, { compressHTML: true })
+  const items = [...html.matchAll(/<button[^>]*data-ls-item[^>]*>(\s*)<span/g)]
+  assert.equal(items.length, 2, 'both fixture locales render')
+  for (const [open, gap] of items) assert.ok(gap!.length <= 1, JSON.stringify(open))
 })

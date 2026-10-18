@@ -105,6 +105,8 @@ npx skills add EdgeKits/astro-i18n --skill astro-i18n
 - A Cloudflare account. Local development needs none until you create the real KV namespace.
 - For `edgekits-i18n migrate` (pushing copy to production): the site on a proxied Cloudflare
   zone (orange cloud), that zone's ID, and an API token with the Zone › Cache Purge permission.
+  Zone › Zone › Read on the same token is optional: with it, `migrate` checks `keyPrefix`
+  against the zone's name.
 
 ### First run on a fresh site
 

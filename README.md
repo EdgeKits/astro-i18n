@@ -22,7 +22,8 @@ The design is explained in the edgekits.dev series:
 - Node `>=22`.
 - A Workers KV namespace bound as `TRANSLATIONS`.
 - For `migrate` only: the site on a proxied Cloudflare zone, its zone ID, and an API token with
-  the Zone › Cache Purge permission.
+  the Zone › Cache Purge permission. Zone › Zone › Read is optional; with it, `migrate` checks
+  `keyPrefix` against the zone's name.
 
 ## Quick start
 
@@ -73,18 +74,18 @@ export default defineI18nConfig({
 })
 ```
 
-| Field                      | Required | Default      | Meaning                                                                                                  |
-| -------------------------- | -------- | ------------ | -------------------------------------------------------------------------------------------------------- |
-| `languages`                | yes      |              | `{ [locale]: { name, countryCode? } }`; `countryCode` is optional: the code your flag component receives |
-| `defaultLocale`            | yes      |              | one of `languages`; its JSON files define the schema                                                     |
-| `cookie`                   | yes      |              | `{ name, maxAge }` (seconds) of the language cookie                                                      |
-| `keyPrefix`                | yes      |              | KV keys are `<keyPrefix>:<namespace>:<locale>`                                                           |
-| `missingTranslationBanner` | yes      |              | enables `MissingTranslationBanner`                                                                       |
-| `routing`                  | yes      |              | `'prefix'`                                                                                               |
-| `localesDir`               | no       | `'locales'`  | where the CLI reads `<locale>/<namespace>.json`                                                          |
-| `generatedDir`             | no       | `'src/i18n'` | where the CLI writes `runtime-constants.ts` and `fallbacks.generated.ts`                                 |
-| `countryToLocale`          | no       | none         | geo-IP step of the locale fallback (see Reference)                                                       |
-| `markdownLocale`           | no       | none         | the locale `.md` endpoints are served in (see Reference)                                                 |
+| Field                      | Required | Default      | Meaning                                                                                                                                                                                                |
+| -------------------------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `languages`                | yes      |              | `{ [locale]: { name, countryCode? } }`; `countryCode` is optional: the code your flag component receives                                                                                               |
+| `defaultLocale`            | yes      |              | one of `languages`; its JSON files define the schema                                                                                                                                                   |
+| `cookie`                   | yes      |              | `{ name, maxAge }` (seconds) of the language cookie                                                                                                                                                    |
+| `keyPrefix`                | yes      |              | a hostname of your zone, or a unique name without a dot: KV keys are `<keyPrefix>:<namespace>:<locale>` and every cache URL is `https://<keyPrefix>/…` (see [Deployment targets](#deployment-targets)) |
+| `missingTranslationBanner` | yes      |              | enables `MissingTranslationBanner`                                                                                                                                                                     |
+| `routing`                  | yes      |              | `'prefix'`                                                                                                                                                                                             |
+| `localesDir`               | no       | `'locales'`  | where the CLI reads `<locale>/<namespace>.json`                                                                                                                                                        |
+| `generatedDir`             | no       | `'src/i18n'` | where the CLI writes `runtime-constants.ts` and `fallbacks.generated.ts`                                                                                                                               |
+| `countryToLocale`          | no       | none         | geo-IP step of the locale fallback (see Reference)                                                                                                                                                     |
+| `markdownLocale`           | no       | none         | the locale `.md` endpoints are served in (see Reference)                                                                                                                                               |
 
 Locale codes (the keys of `languages`) are lowercase everywhere: the config, the `locales/`
 folders and the URLs (`pt-br`, not `pt-BR`). `toIetfTag()` from `./format` gives the IETF form
@@ -408,9 +409,13 @@ a regular Worker: `request.cf`, `caches.default` and `env` behave as usual, and 
 language cookie and the relative redirects keep visitors on their custom hostname. Two
 constraints:
 
-- `keyPrefix` must be a hostname inside the zone that `CLOUDFLARE_ZONE_ID` names: the zone name
-  itself or a subdomain of it. Single-file purge reaches only URLs on hostnames that zone owns.
-  With a `keyPrefix` on another domain, `migrate` reports success and nothing is purged.
+- `keyPrefix` is the host of every cache URL that `migrate` purges from the zone
+  `CLOUDFLARE_ZONE_ID` names. Recommended: a hostname of that zone (the zone name or a
+  subdomain). A unique name without a dot works too: single-file purge from your zone reaches
+  any URL whose hostname is no proxied Cloudflare zone. Never another domain that is a proxied
+  Cloudflare zone: its URLs can be purged only from that zone, by its owner, and the Purge API
+  reports success anyway. When the token can read the zone (Zone › Zone › Read), `migrate`
+  warns about a dotted `keyPrefix` outside the zone.
 - One tenant per build. `keyPrefix`, the locales, `defaultLocale` and `countryToLocale` are
   build-time constants, so one Worker serving many custom hostnames serves the same translation
   set to all of them.
@@ -521,6 +526,8 @@ npx skills add EdgeKits/astro-i18n --skill astro-i18n
 - A Cloudflare account. Local development needs none until you create the real KV namespace.
 - For `edgekits-i18n migrate` (pushing copy to production): the site on a proxied Cloudflare
   zone (orange cloud), that zone's ID, and an API token with the Zone › Cache Purge permission.
+  Zone › Zone › Read on the same token is optional: with it, `migrate` checks `keyPrefix`
+  against the zone's name.
 
 ### First run on a fresh site
 

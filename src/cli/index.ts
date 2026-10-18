@@ -19,6 +19,7 @@ import { diffHashes, purgeUrlsFor, type HashMap } from './hashes.ts'
 import { CONFIG_FILE, loadI18nConfig } from './load-config.ts'
 import { purgeTranslationsCache } from './purge.ts'
 import { getKvNamespaceId, getWranglerVar, KV_BINDING, resolveWranglerBin } from './wrangler.ts'
+import { checkKeyPrefixZone } from './zone.ts'
 
 const HELP = `Usage: edgekits-i18n <command> [--fallbacks]
 
@@ -346,6 +347,10 @@ async function deploy({
           'Skipping cache purge — hash file NOT updated. Re-run `edgekits-i18n migrate` after setting the secret.',
       )
     } else {
+      // Advisory: the Purge API reports success even for URLs it cannot reach, so the
+      // name is all there is to check. Never decides shouldWriteHashes.
+      await checkKeyPrefixZone(config.keyPrefix, zoneId, apiToken)
+
       console.log(`[i18n] Purging ${purgeUrls.length} cache entries via Cloudflare API...`)
       const purgeSuccess = await purgeTranslationsCache(zoneId, apiToken, purgeUrls)
 

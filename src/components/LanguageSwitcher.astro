@@ -69,6 +69,9 @@ const { uiLocale: currentLang } = Astro.locals
           const label = LANGUAGES[locale]
           const flagCode = label.countryCode
 
+          // The label is the language's own name: `lang` lets a screen reader say it in that
+          // language. (A comment here, not among the button's children: there it splits the
+          // whitespace run, and compressHTML keeps two spaces before the label.)
           return (
             <button
               type="button"
@@ -79,7 +82,6 @@ const { uiLocale: currentLang } = Astro.locals
               role="menuitem"
               disabled={isActive}
             >
-              {/* The label is the language's own name: `lang` lets a screen reader say it in that language. */}
               <span class={classes.itemLabel} lang={locale}>
                 {Flag && flagCode && <Flag code={flagCode} size={16} />}
                 {label.name}

@@ -4,6 +4,20 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.1.8 — 2026-10-18
+
+### Added
+
+- `migrate` checks `keyPrefix` against the purge zone before purging. It reads the zone's name (`GET /zones/{id}`, same token) and warns when `keyPrefix` is a hostname with a dot that is neither the zone name nor a subdomain of it (case-insensitive, on a label boundary: `edgekits.dev.evil.com` warns against `edgekits.dev`). The Purge API answers success even for a URL on another proxied zone, so the name is the only thing left to check. The check needs Zone › Zone › Read on the token; without it (or on any lookup failure) `migrate` prints one info line saying the check was skipped. Either way the purge and the `.i18n-hashes.json` write behave as before.
+
+### Fixed
+
+- `LanguageSwitcher`: under `compressHTML` each item rendered two spaces before its label, because a JSX comment among the button's children split the whitespace run. The comment now sits in the `map` callback. 0.1.7's note that the markup "stays the same apart from the item labels" missed this one extra space per item.
+
+### Docs
+
+- The `keyPrefix` rule corrected (README "Deployment targets", config table, requirements and the skill guide's prerequisites). A unique name without a dot is valid: single-file purge from your zone reaches any URL whose hostname is no proxied Cloudflare zone. The danger is a hostname that is another proxied Cloudflare zone: its URLs can be purged only from that zone, and the API cannot tell you. Zone › Zone › Read on the token is optional and enables the `migrate` check.
+
 ## 0.1.7 — 2026-10-17
 
 ### Fixed
